@@ -1,6 +1,12 @@
 #include "pch.h"
+
+class a
+{
+	int b;
+};
 int main()
 {
-	cout << "Hello World" << endl;
+	a* b = new a;
+	ASSERT_CRASH(b != nullptr);
 	return 0;
 }
