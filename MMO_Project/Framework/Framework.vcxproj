@@ -154,9 +154,19 @@
     <ClInclude Include="FwPch.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Thread.h" />
+    <ClInclude Include="ThreadMgr.h" />
+    <ClInclude Include="ThreadWk.h" />
+    <ClInclude Include="TLS.h" />
+    <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Thread.cpp" />
+    <ClCompile Include="ThreadMgr.cpp" />
+    <ClCompile Include="ThreadWk.cpp" />
+    <ClCompile Include="TLS.cpp" />
+    <ClCompile Include="Types.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
