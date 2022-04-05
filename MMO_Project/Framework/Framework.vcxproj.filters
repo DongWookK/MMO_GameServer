@@ -25,7 +25,7 @@
     <ClInclude Include="ThreadWk.h">
       <Filter>Thread</Filter>
     </ClInclude>
-    <ClInclude Include="Thread.h">
+    <ClInclude Include="ThreadOrig.h">
       <Filter>Thread</Filter>
     </ClInclude>
     <ClInclude Include="ThreadMgr.h">
@@ -42,7 +42,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Thread.cpp">
+    <ClCompile Include="ThreadOrig.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
     <ClCompile Include="ThreadWk.cpp">

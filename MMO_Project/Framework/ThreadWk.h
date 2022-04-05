@@ -1,8 +1,8 @@
 #pragma once
-#include "Thread.h"
+#include "ThreadOrig.h"
 
 
-class ThreadWk : public Thread
+class ThreadWk : public ThreadOrig
 {
 
 };

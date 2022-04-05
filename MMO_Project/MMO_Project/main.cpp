@@ -8,5 +8,7 @@ int main()
 {
 	a* b = new a;
 	ASSERT_CRASH(b != nullptr);
+
+	
 	return 0;
 }

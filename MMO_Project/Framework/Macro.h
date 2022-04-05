@@ -1,6 +1,12 @@
 #pragma once
 
 
+
+
+/*---------------------------------------------
+Crash Define
+---------------------------------------------*/
+
 #define CRASH(cause)						\
 {											\
 	unsigned int* crash = nullptr;				\
@@ -16,3 +22,10 @@
 		__analysis_assume(expr);	\
 	}								\
 }
+
+
+/*---------------------------------------------
+For Log
+---------------------------------------------*/
+#define __FILE _CRT_WIDE(__FILE__) 
+#define FILELINE __FILE, __LINE__

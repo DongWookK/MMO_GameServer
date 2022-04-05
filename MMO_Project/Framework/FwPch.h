@@ -9,6 +9,9 @@
 #include <thread>
 #include <mutex>
 
+//types
+#include <windows.h>
+
 //util
 #include <chrono>
 #include "Types.h"
