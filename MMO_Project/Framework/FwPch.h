@@ -18,6 +18,9 @@
 #include "Macro.h"
 
 
+extern class ThreadBase GThreadBase;
+
+
 
 
 using namespace std;

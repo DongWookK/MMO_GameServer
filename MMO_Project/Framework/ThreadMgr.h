@@ -13,6 +13,8 @@ public:
 	int32				open();
 	int32				openWk();
 private:
+
+	//CPool 积己 规过 利侩鞘夸
 	unordered_map<uint32, ThreadWk> WorkerPool;
 	
 };

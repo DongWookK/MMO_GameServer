@@ -151,10 +151,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FwGlobal.h" />
     <ClInclude Include="FwPch.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="ThreadOrig.h" />
+    <ClInclude Include="ThreadBase.h" />
     <ClInclude Include="ThreadMgr.h" />
     <ClInclude Include="ThreadWk.h" />
     <ClInclude Include="TLS.h" />
@@ -167,7 +168,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ThreadOrig.cpp" />
+    <ClCompile Include="ThreadBase.cpp" />
     <ClCompile Include="ThreadMgr.cpp" />
     <ClCompile Include="ThreadWk.cpp" />
     <ClCompile Include="TLS.cpp" />

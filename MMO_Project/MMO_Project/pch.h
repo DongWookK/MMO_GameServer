@@ -9,7 +9,6 @@
 #pragma comment(lib, "Framework\\Release\\Framework.lib")
 #endif
 
-
 #include <iostream>
 #include "FwPch.h"
 using namespace std;
