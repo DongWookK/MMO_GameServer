@@ -1,7 +1,7 @@
 #pragma once
 
 
-extern class ThreadBase GThreadBase;
+extern class CThreadMgr threadMgr;
 
 /*
 ThreadManager* GThreadManager = nullptr;

@@ -8,6 +8,7 @@
 //multi-thread
 #include <thread>
 #include <mutex>
+#include <atomic>
 
 //types
 #include <windows.h>
@@ -18,7 +19,7 @@
 #include "Macro.h"
 
 
-extern class ThreadBase GThreadBase;
+extern class CThreadBase GThreadBase;
 
 
 

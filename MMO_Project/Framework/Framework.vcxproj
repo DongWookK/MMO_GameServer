@@ -155,10 +155,10 @@
     <ClInclude Include="FwPch.h" />
     <ClInclude Include="Macro.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="ThreadBase.h" />
-    <ClInclude Include="ThreadMgr.h" />
-    <ClInclude Include="ThreadWk.h" />
-    <ClInclude Include="TLS.h" />
+    <ClInclude Include="CThreadBase.h" />
+    <ClInclude Include="CThreadMgr.h" />
+    <ClInclude Include="CThreadWk.h" />
+    <ClInclude Include="FwTLS.h" />
     <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
@@ -168,10 +168,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ThreadBase.cpp" />
-    <ClCompile Include="ThreadMgr.cpp" />
-    <ClCompile Include="ThreadWk.cpp" />
-    <ClCompile Include="TLS.cpp" />
+    <ClCompile Include="CThreadBase.cpp" />
+    <ClCompile Include="CThreadMgr.cpp" />
+    <ClCompile Include="CThreadWk.cpp" />
+    <ClCompile Include="FwTLS.cpp" />
     <ClCompile Include="Types.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

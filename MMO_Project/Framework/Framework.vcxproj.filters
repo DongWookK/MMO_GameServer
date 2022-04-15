@@ -22,16 +22,16 @@
     <ClInclude Include="FwPch.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadWk.h">
+    <ClInclude Include="CThreadWk.h">
       <Filter>Thread</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadBase.h">
+    <ClInclude Include="CThreadBase.h">
       <Filter>Thread</Filter>
     </ClInclude>
-    <ClInclude Include="ThreadMgr.h">
+    <ClInclude Include="CThreadMgr.h">
       <Filter>Manager</Filter>
     </ClInclude>
-    <ClInclude Include="TLS.h">
+    <ClInclude Include="FwTLS.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="Types.h">
@@ -45,16 +45,16 @@
     <ClCompile Include="pch.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadBase.cpp">
+    <ClCompile Include="CThreadBase.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadWk.cpp">
+    <ClCompile Include="CThreadWk.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadMgr.cpp">
+    <ClCompile Include="CThreadMgr.cpp">
       <Filter>Manager</Filter>
     </ClCompile>
-    <ClCompile Include="TLS.cpp">
+    <ClCompile Include="FwTLS.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Types.cpp">

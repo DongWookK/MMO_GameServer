@@ -4,8 +4,9 @@
 desc :  각 스레드별 개별저장 변수
 --------------------------------*/
 
-extern thread_local uint32				LThreadId;
-extern thread_local stack<int32>		LLockStack;
+thread_local uint32 LThreadId = 0;
+thread_local std::stack<int32>	LLockStack;
 //extern thread_local SendBufferChunkRef	LSendBufferChunk;
 
 
+static Atomic<uint32> SThreadId = 0;
