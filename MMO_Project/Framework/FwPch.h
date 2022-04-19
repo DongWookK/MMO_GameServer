@@ -10,6 +10,9 @@
 #include <mutex>
 #include <atomic>
 
+
+#include <memory>
+
 //types
 #include <windows.h>
 

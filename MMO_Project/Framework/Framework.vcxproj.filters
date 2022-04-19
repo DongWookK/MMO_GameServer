@@ -46,6 +46,9 @@
     <ClInclude Include="Allocator.h">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="ObjectPool.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -67,6 +70,9 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Allocator.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="ObjectPool.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
   </ItemGroup>
