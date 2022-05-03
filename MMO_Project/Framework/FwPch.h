@@ -21,10 +21,5 @@
 #include "Types.h"
 #include "Macro.h"
 
-
-extern class CThreadBase GThreadBase;
-
-
-
-
-using namespace std;
+extern class CThreadMgr GThreadMgr;
+extern class CThreadBase GThread;

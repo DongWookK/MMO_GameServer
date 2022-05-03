@@ -5,7 +5,7 @@ template <typename T>
 ObjectPool<T>::ObjectPool(size_t chunkSize)
 {
 	if (chunkSize == 0) {
-		throw std::invalid_argument("Chunk size must be positive")
+		throw std::invalid_argument("Chunk size must be positive");
 	}
 	mChunkSize = chunkSize;
 	//초기 풀로서 mChunkSize만큼의 객체를 생성한다.
