@@ -155,12 +155,14 @@
     <ClInclude Include="FwGlobal.h" />
     <ClInclude Include="FwPch.h" />
     <ClInclude Include="Macro.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="ObjectPool.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="CThreadBase.h" />
     <ClInclude Include="CThreadMgr.h" />
     <ClInclude Include="CThreadWk.h" />
     <ClInclude Include="FwTLS.h" />
+    <ClInclude Include="Singleton.h" />
     <ClInclude Include="Types.h" />
   </ItemGroup>
   <ItemGroup>
@@ -176,6 +178,7 @@
     <ClCompile Include="CThreadMgr.cpp" />
     <ClCompile Include="CThreadWk.cpp" />
     <ClCompile Include="FwTLS.cpp" />
+    <ClCompile Include="Singleton.cpp" />
     <ClCompile Include="Types.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

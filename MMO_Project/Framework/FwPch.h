@@ -20,6 +20,7 @@
 #include <chrono>
 #include "Types.h"
 #include "Macro.h"
+#include "Singleton.h"
 
 extern class CThreadMgr GThreadMgr;
 extern class CThreadBase GThread;

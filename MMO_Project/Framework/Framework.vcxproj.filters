@@ -49,6 +49,10 @@
     <ClInclude Include="ObjectPool.h">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="main.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -74,6 +78,9 @@
     </ClCompile>
     <ClCompile Include="ObjectPool.cpp">
       <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Singleton.cpp">
+      <Filter>Manager</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

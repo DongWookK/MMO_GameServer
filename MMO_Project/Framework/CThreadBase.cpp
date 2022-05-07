@@ -3,9 +3,14 @@
 
 CThreadBase::CThreadBase()
 {
-
+	ResetAttr();
 }
 
+void CThreadBase::ResetAttr()
+{
+	_mThdHandler = nullptr;
+	_mThreadMgr = nullptr;
+}
 HANDLE CThreadBase::Open()
 {
 	//스레드 생성
@@ -13,7 +18,8 @@ HANDLE CThreadBase::Open()
 
 	if (aRv == 0)
 	{
-		//추후 에러로그, 크러쉬
+		//0이면 생성에 실패
+		CRASH();
 	}
 	else
 	{
@@ -25,6 +31,7 @@ HANDLE CThreadBase::Open()
 unsigned __stdcall CThreadBase::Start(void *pThis)
 {
 	CThreadBase* thd = static_cast<CThreadBase*>(pThis);
+	thd->_mThreadMgr = CThreadMgr::This();
 	thd->Main();
 
 	return 0;
@@ -32,8 +39,9 @@ unsigned __stdcall CThreadBase::Start(void *pThis)
 
 void CThreadBase::Main()
 {
-	//flag가 ~로 바뀌면 stopped
-	while(1)
+	ASSERT_CRASH(_mThreadMgr == nullptr);
+
+	while(_mThreadMgr->_mFlag != Flag::STOPPED)
 	{
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		std::cout << std::this_thread::get_id << std::endl;

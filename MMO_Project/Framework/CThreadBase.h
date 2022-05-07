@@ -1,10 +1,12 @@
 #pragma once
+#include "CThreadMgr.h"
 
 class CThreadBase
 {
 
 public:
 	CThreadBase();
+	void ResetAttr();
 	virtual HANDLE Open();
 	virtual uint32 Close();
 	static unsigned __stdcall Start(void *pThis);
@@ -13,6 +15,7 @@ public:
 private:
 
 	HANDLE _mThdHandler;
+	CThreadMgr* _mThreadMgr;
 };
 
 unsigned Start(void *pthis);

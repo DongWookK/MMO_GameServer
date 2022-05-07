@@ -5,15 +5,29 @@ desc : Managing Priamry, Worker, Db, Log Thread
 warn :
 ----------------------------------------------------------------------*/
 
-class CThreadMgr
+//싱글턴 패턴 적용 필요
+enum class Flag {
+	START,
+	INITIAL,
+	STOPPED,
+	END
+};
+
+
+class CThreadMgr : public Singleton<CThreadMgr>
 {
 public:
-	int32				open();
-	int32				openWk();
+	
+	Atomic<Flag> _mFlag = Flag::START;
+
+	int32				Open();
+	int32				Close();
+
+
+	int32				OpenWk();
 
 private:
 
-	//CPool 생성 방법 적용필요
 	uint32 _mThreadNo = 5;
 	std::vector<HANDLE> _mThreads;
 

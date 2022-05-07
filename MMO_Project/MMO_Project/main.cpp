@@ -1,17 +1,20 @@
 #include "pch.h"
 #include "CThreadMgr.h"
 #include "CThreadBase.h"
-class a
-{
-	int b;
-};
+
 int main()
 {
-	a* b = new a;
-	ASSERT_CRASH(b != nullptr);
+	// ASSERT_CRASH(b != nullptr);
 
-	CThreadBase* aNew = new CThreadBase;
-	HANDLE aRv = aNew->Open();
-	//join해주기
+
+	//ThreadMgr를 통해서 5개 Thread 생성 
+	CThreadMgr::This()->Open();
+
+
+	while (1)
+	{
+		this_thread::sleep_for(5s);
+		CThreadMgr::This()->Close();
+	}
 	return 0;
 }
