@@ -14,6 +14,9 @@
     <Filter Include="Memory">
       <UniqueIdentifier>{328e6639-ce17-42e4-86ca-815011418bac}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{8b200fcf-7274-4a68-bd6a-fe6d82bfed71}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -53,6 +56,15 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="main.h" />
+    <ClInclude Include="SendBuffer.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Container.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Lock.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -81,6 +93,12 @@
     </ClCompile>
     <ClCompile Include="Singleton.cpp">
       <Filter>Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="SendBuffer.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Lock.cpp">
+      <Filter>Thread</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

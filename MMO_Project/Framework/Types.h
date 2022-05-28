@@ -12,5 +12,6 @@ using uint32 = unsigned __int32;
 using uint64 = unsigned __int64;
 
 
-template<typename T>
-using Atomic = std::atomic<T>;
+
+using SendBufferRef = std::shared_ptr<class SendBuffer>;
+using SendBufferChunkRef = std::shared_ptr<class SendBufferChunk>;

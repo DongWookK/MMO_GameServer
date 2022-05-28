@@ -1,9 +1,6 @@
 //data structure
 #include <iostream>
-#include <stack>
-#include <queue>
-#include <unordered_map>
-#include <iostream>
+#include "Container.h"
 
 //multi-thread
 #include <thread>
@@ -21,6 +18,7 @@
 #include "Types.h"
 #include "Macro.h"
 #include "Singleton.h"
+#include "rapidjson/document.h"
 
 extern class CThreadMgr GThreadMgr;
 extern class CThreadBase GThread;
