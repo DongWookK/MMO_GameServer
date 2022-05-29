@@ -7,7 +7,6 @@
 #include <mutex>
 #include <atomic>
 
-
 #include <memory>
 
 //types
@@ -20,5 +19,6 @@
 #include "Singleton.h"
 #include "rapidjson/document.h"
 
-extern class CThreadMgr GThreadMgr;
-extern class CThreadBase GThread;
+//Project
+#include "FwGlobal.h"
+#include "FwTLS.h"

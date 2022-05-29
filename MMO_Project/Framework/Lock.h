@@ -1,13 +1,61 @@
 #pragma once
+#include "Types.h"
 
-//lock 구현 고민해볼것
-//기본적으로 spinlock
-//SendBuffer용 WriteLock구현
+/*----------------
+    RW SpinLock
+-----------------*/
 
-// USE LOck , READ LOCK, WRITE LOCK
+/*--------------------------------------------
+[WWWWWWWW][WWWWWWWW][RRRRRRRR][RRRRRRRR]
+W : WriteFlag (Exclusive Lock Owner ThreadId)
+R : ReadFlag (Shared Lock Count)
+---------------------------------------------*/
 
 class Lock
 {
+    enum : uint32
+    {
+        ACQUIRE_TIMEOUT_TICK = 10000,
+        MAX_SPIN_COUNT = 5000,
+        WRITE_THREAD_MASK = 0xFFFF'0000,
+        READ_COUNT_MASK = 0x0000'FFFF,
+        EMPTY_FLAG = 0x0000'0000
+    };
+
+public:
+    //SpinLock
+    void WriteLock(const char* name);
+    void WriteUnlock(const char* name);
+    void ReadLock(const char* name);
+    void ReadUnlock(const char* name);
+
+private:
+    Atomic<uint32> _lockFlag = EMPTY_FLAG;
+    uint16 _writeCount = 0;
 };
 
+/*----------------
+    LockGuards
+-----------------*/
 
+class ReadLockGuard
+{
+public:
+    ReadLockGuard(Lock& lock, const char* name) : _lock(lock), _name(name) { _lock.ReadLock(name); }
+    ~ReadLockGuard() { _lock.ReadUnlock(_name); }
+
+private:
+    Lock& _lock;
+    const char* _name;
+};
+
+class WriteLockGuard
+{
+public:
+    WriteLockGuard(Lock& lock, const char* name) : _lock(lock), _name(name) { _lock.WriteLock(name); }
+    ~WriteLockGuard() { _lock.WriteUnlock(_name); }
+
+private:
+    Lock& _lock;
+    const char* _name;
+};

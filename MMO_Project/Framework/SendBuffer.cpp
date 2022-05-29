@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "SendBuffer.h"
+#include "ObjectPool.h"
+#include "Memory.h"
 
 
 SendBuffer::SendBuffer(SendBufferChunkRef owner, BYTE* buffer, uint32 allocSize)
