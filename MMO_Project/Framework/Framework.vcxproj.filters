@@ -71,6 +71,12 @@
     <ClInclude Include="Memory.h">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="NetAddress.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketUtils.h">
+      <Filter>Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -97,9 +103,6 @@
     <ClCompile Include="ObjectPool.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
-    <ClCompile Include="Singleton.cpp">
-      <Filter>Manager</Filter>
-    </ClCompile>
     <ClCompile Include="SendBuffer.cpp">
       <Filter>Network</Filter>
     </ClCompile>
@@ -114,6 +117,15 @@
     </ClCompile>
     <ClCompile Include="Memory.cpp">
       <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Singleton.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="NetAddress.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketUtils.cpp">
+      <Filter>Network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -24,24 +24,21 @@ int main()
 	//}
 
 
-	struct A{
-		int a;
+	struct Msg{
+		wchar_t* msg[10];
 
 	};
-	struct B{
-		long long b;
-		long long c;
+	struct Number{
+		uint64 no;
+		float prime;
 	};
-	A a;
-	B b;
-
-	cout << "size of a:" << sizeof(a) << endl;
-	cout << "size of b:" << sizeof(b) << endl;
 	
-	variant<struct A, struct B> v, w;
-	v = a; // v contains int
+	variant<struct Msg, struct Number> var{};
+	copy_n(L"Hello", 6, var);
 	
-	cout << "size of variant v:" << sizeof(v) << endl;
+	
+	cout << "content of variant : " << get<string>(var) << endl;
+	
 
 
 	

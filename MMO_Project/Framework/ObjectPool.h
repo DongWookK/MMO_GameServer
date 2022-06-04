@@ -22,11 +22,12 @@ public:
 	Object acquireObject();
 
 private:
-		//mFreeList는 현재 가용한(클라이언트가 점유하지 않은) 객체들을 보관한다.
+	//mFreeList는 현재 가용한(클라이언트가 점유하지 않은) 객체들을 보관한다.
 	std::queue<std::unique_ptr<T>> mFreeList;
 	size_t mChunkSize;
 	static const size_t KDefaultChunkSize = 10;
 	//mChunkSize만큼의 새로운 객체를 생성하여 mFreeList에 추가한다. 
+
 	void allocateChunk();
 
 };

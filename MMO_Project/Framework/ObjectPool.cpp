@@ -12,10 +12,11 @@ ObjectPool<T>::ObjectPool(size_t chunkSize)
 	allocateChunk();
 }
 
-// mChunkSize마늠의 새로운 객체를 할당한다.
+// mChunkSize만의 새로운 객체를 할당한다.
 template <typename T>
 void ObjectPool<T>::allocateChunk()
 {
+	
 	for (size_t i = 0; i < mChunkSize; ++i)
 	{
 		mFreeList.emplace(std::make_unique<T>());
