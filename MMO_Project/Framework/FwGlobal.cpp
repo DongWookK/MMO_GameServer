@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "FwGlobal.h"
 #include "CThreadMgr.h"
-//#include "Memory.h"
+#include "Memory.h"
 #include "DeadLockProfiler.h"
-//#include "SocketUtils.h"
+#include "SocketUtils.h"
 #include "SendBuffer.h"
 
 CThreadMgr* GThreadManager = nullptr;
-//Memory* GMemory = nullptr;
+Memory* GMemory = nullptr;
 SendBufferManager* GSendBufferManager = nullptr;
 
 DeadLockProfiler* GDeadLockProfiler = nullptr;
@@ -18,18 +18,18 @@ public:
 	CoreGlobal()
 	{
 		GThreadManager = new CThreadMgr();
-		//GMemory = new Memory();
+		GMemory = new Memory();
 		GSendBufferManager = new SendBufferManager();
 		GDeadLockProfiler = new DeadLockProfiler();
-		//SocketUtils::Init();
+		SocketUtils::Init();
 	}
 
 	~CoreGlobal()
 	{
 		delete GThreadManager;
-		//delete GMemory;
+		delete GMemory;
 		delete GSendBufferManager;
 		delete GDeadLockProfiler;
-		//SocketUtils::Clear();
+		SocketUtils::Clear();
 	}
 } GCoreGlobal;

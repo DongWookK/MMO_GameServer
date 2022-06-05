@@ -3,7 +3,11 @@
 
 /*----------------
     RW SpinLock
+
+ Atomic_Flag를 이용한 lock방식은 Core를 바쁘게한다.
+ Server단에서는 Mutex, Framework에서는 Spinlock을 채용한다.
 -----------------*/
+
 
 /*--------------------------------------------
 [WWWWWWWW][WWWWWWWW][RRRRRRRR][RRRRRRRR]

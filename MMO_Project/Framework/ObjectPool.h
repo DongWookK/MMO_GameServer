@@ -26,9 +26,11 @@ private:
 	std::queue<std::unique_ptr<T>> mFreeList;
 	size_t mChunkSize;
 	static const size_t KDefaultChunkSize = 10;
-	//mChunkSize만큼의 새로운 객체를 생성하여 mFreeList에 추가한다. 
 
+
+	//mChunkSize만큼의 새로운 객체를 생성하여 mFreeList에 추가한다. 
 	void allocateChunk();
+	//Intial 함수포인터를 통해 allocate 이후 open까지 시켜주는 allocateChunk 개량함수 추가 필요
 
 };
 

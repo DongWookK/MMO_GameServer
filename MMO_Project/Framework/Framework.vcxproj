@@ -156,14 +156,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Allocator.h" />
+    <ClInclude Include="FwIocp.h" />
+    <ClInclude Include="FwIocpEvent.h" />
     <ClInclude Include="Container.h" />
     <ClInclude Include="DeadLockProfiler.h" />
     <ClInclude Include="FwGlobal.h" />
+    <ClInclude Include="FwListener.h" />
     <ClInclude Include="FwPch.h" />
     <ClInclude Include="Lock.h" />
-    <ClInclude Include="Macro.h" />
+    <ClInclude Include="FwMacro.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Memory.h" />
+    <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="NetAddress.h" />
     <ClInclude Include="ObjectPool.h" />
     <ClInclude Include="pch.h" />
@@ -178,10 +182,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Allocator.cpp" />
+    <ClCompile Include="FwIocp.cpp" />
+    <ClCompile Include="FwIocpEvent.cpp" />
     <ClCompile Include="DeadLockProfiler.cpp" />
     <ClCompile Include="FwGlobal.cpp" />
+    <ClCompile Include="FwListener.cpp" />
     <ClCompile Include="Lock.cpp" />
     <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="MemoryPool.cpp" />
     <ClCompile Include="NetAddress.cpp" />
     <ClCompile Include="ObjectPool.cpp" />
     <ClCompile Include="pch.cpp">

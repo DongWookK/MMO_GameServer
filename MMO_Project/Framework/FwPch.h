@@ -1,28 +1,32 @@
-//data structure
-#include <iostream>
+#pragma once
+
+#include "Types.h"
+#include "FwGlobal.h"
+#include "FwTLS.h"
+#include "FwMacro.h"
 #include "Container.h"
+
+
+//win
+#include <windows.h>
+#include <iostream>
+using namespace std;
+
+#include <winsock2.h>
+#include <mswsock.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+
 
 //multi-thread
 #include <thread>
 #include <mutex>
 #include <atomic>
 
-#include <memory>
-
-//types
-#include <windows.h>
-#include <winsock2.h>
-#include <mswsock.h>
-#include <ws2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-
 //util
 #include <chrono>
-#include "Types.h"
-#include "Macro.h"
+
 #include "Singleton.h"
 #include "rapidjson/document.h"
 
-//Project
-#include "FwGlobal.h"
-#include "FwTLS.h"
+

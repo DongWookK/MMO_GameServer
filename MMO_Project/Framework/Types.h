@@ -1,5 +1,7 @@
 #pragma once
-#include "pch.h"
+#include <mutex>
+#include <atomic>
+
 
 using BYTE = unsigned char;
 using int8 = __int8;
@@ -18,6 +20,12 @@ using CondVar = std::condition_variable;
 using UniqueLock = std::unique_lock<std::mutex>;
 using LockGuard = std::lock_guard<std::mutex>;
 
+
+using FwIocpRef = std::shared_ptr<class FwIocp>;
+using FwIocpObjectRef = std::shared_ptr<class FwIocpObject>;
+using SessionRef = std::shared_ptr<class Session>;
+using PacketSessionRef = std::shared_ptr<class PacketSession>;
+using ListenerRef = std::shared_ptr<class Listener>;
 
 
 using SendBufferRef = std::shared_ptr<class SendBuffer>;
