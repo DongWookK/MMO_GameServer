@@ -1,5 +1,5 @@
 #pragma once
-#include "CThreadMgr.h"
+
 
 class CThreadBase
 {

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "CThreadBase.h"
+#include "CThreadMgr.h"
 
 CThreadBase::CThreadBase()
 {

@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 /*---------------------------------------------------------------------
 	Thread Manager
 desc : Managing Priamry, Worker, Db, Log Thread

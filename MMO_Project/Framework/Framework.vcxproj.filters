@@ -49,25 +49,13 @@
     <ClInclude Include="Allocator.h">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectPool.h">
+    <ClInclude Include="FwCObjectPool.h">
       <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="Singleton.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="main.h" />
-    <ClInclude Include="SendBuffer.h">
-      <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Lock.h">
-      <Filter>Thread</Filter>
-    </ClInclude>
-    <ClInclude Include="DeadLockProfiler.h">
-      <Filter>Thread</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory.h">
-      <Filter>Memory</Filter>
-    </ClInclude>
     <ClInclude Include="NetAddress.h">
       <Filter>Network</Filter>
     </ClInclude>
@@ -80,13 +68,7 @@
     <ClInclude Include="FwIocpEvent.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="FwListener.h">
-      <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="MemoryPool.h">
-      <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="Container.h">
+    <ClInclude Include="FwCContainer.h">
       <Filter>Memory</Filter>
     </ClInclude>
   </ItemGroup>
@@ -112,23 +94,11 @@
     <ClCompile Include="Allocator.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
-    <ClCompile Include="ObjectPool.cpp">
+    <ClCompile Include="FwCObjectPool.cpp">
       <Filter>Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="SendBuffer.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="Lock.cpp">
-      <Filter>Thread</Filter>
-    </ClCompile>
-    <ClCompile Include="DeadLockProfiler.cpp">
-      <Filter>Thread</Filter>
     </ClCompile>
     <ClCompile Include="FwGlobal.cpp">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory.cpp">
-      <Filter>Memory</Filter>
     </ClCompile>
     <ClCompile Include="Singleton.cpp">
       <Filter>Utils</Filter>
@@ -144,12 +114,6 @@
     </ClCompile>
     <ClCompile Include="FwIocpEvent.cpp">
       <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="FwListener.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="MemoryPool.cpp">
-      <Filter>Memory</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
