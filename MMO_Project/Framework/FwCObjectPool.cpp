@@ -10,7 +10,7 @@ inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitfunc, size
 
 template <typename T>
 template<typename TDerived, typename TInitializeFunction>
-inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitifunc, TUnacquireFunction&& pUnacFunc, size_t pInitSize, bool pIsExpandable)
+inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitifunc, size_t pInitSize, bool pIsExpandable)
 {
 	static_assert(std::is_base_of_v<T, TDerived>);
 	ASSERT_CRASH(0 == __mAllocateSize);
@@ -100,6 +100,8 @@ typename CObjectPool<T>::Object CObjectPool<T>::AcquireObject()
 			return nullptr;
 		}
 	}
+
+	
 	Object aSmartObject;
 	/*
 	//큐의 제일 위에 있는 가용 객체를 로컬 unique_ptr로 옮긴다.
@@ -113,4 +115,29 @@ typename CObjectPool<T>::Object CObjectPool<T>::AcquireObject()
 	*/
 
 	return aSmartObject;
+}
+
+template <typename T>
+inline const bool CObjectPool<T>::IsFull() const
+{
+	auto alt = std::find_if(__mFreeList.cbegin(), __mFreeList.cend(), [](auto& pPartition)
+		{
+			return false == pPartition.second.empty();
+		});
+		return(__mFreeList.cend() == alt) ? true : false;
+}
+
+template <typename T>
+inline const size_t CObjectPool<T>::GetUsableKey() const
+{
+	if (false == __mIsExpandable)
+	{
+		return 0;
+	}
+
+	auto alt = std::find_if(__mFreeList.cbegin(), __mFreeList.cend(), [](auto& pPartition)
+		{
+			return false == pPartition.second.empty();
+	});
+	return(__mFreeList.cend() != alt) ? alt->first : -1;
 }
