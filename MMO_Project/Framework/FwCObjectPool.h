@@ -4,7 +4,7 @@ class CObjectPool
 {
 
 private:
-	using TUObject	= std::unique_ptr;
+	using TUObject	= std::unique_ptr<T>;
 	using TLocker	= std::shared_mutex;
 
 public:
@@ -31,8 +31,6 @@ public:
 
 	//mChunkSize만큼의 새로운 객체를 생성하여 mFreeList에 추가한다. 
 	//initializefunction을 통해 open까지 수행
-	template<typename TDerived, typename TInitializeFunction>
-	DWORD	AllocateChunk(TInitializeFunction&& pInitifunc, size_t pInitSize = DEFAULT_CHUNK_SIZE, bool pIsExpandable = false);
 
 	template<typename TDerived, typename TInitializeFunction>
 	DWORD	AllocateChunk(TInitializeFunction&& pInitifunc, size_t pInitSIze = DEFAULT_CHUNK_SIZE, bool pIsExpandable = false);
@@ -55,11 +53,13 @@ public:
 
 private:
 	//mFreeList는 현재 가용한(클라이언트가 점유하지 않은) 객체들을 보관한다.
-	mutable TLocker__mLocker;
+	mutable TLocker __mLocker;
 	TFreeList __mFreeList;
 
 	size_t __mInitSize;
 	size_t __mChunkSize;
+	size_t __mAllocateSize;
+	size_t __mUsedCount;
 	bool __mIsExpandable;
 
 	std::function<DWORD(void)> __mAllocateChunk;

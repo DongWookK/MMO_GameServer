@@ -1,16 +1,11 @@
 #include "pch.h"
 #include "FwCObjectPool.h"
+#include <ppl.h>
+#undef max
 
 template <typename T>
 template<typename TDerived, typename TInitializeFunction>
-inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitfunc, size_t pInitSize, bool pIsExpandable)
-{
-	return AllocateChunk<TDerived>(std::forward<TInitializeFunction>(pInitfunc), nullptr, pInitSize, pIsExpandable);
-}
-
-template <typename T>
-template<typename TDerived, typename TInitializeFunction>
-inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitifunc, size_t pInitSize, bool pIsExpandable)
+inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitFunc, size_t pInitSize, bool pIsExpandable)
 {
 	static_assert(std::is_base_of_v<T, TDerived>);
 	ASSERT_CRASH(0 == __mAllocateSize);
@@ -23,9 +18,6 @@ inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitifunc, siz
 	__mInitSize = pInitSize;
 	__mChunkSize = DEFAULT_CHUNK_SIZE;
 	__mIsExpandable = pIsExpandable;
-
-
-	__mUnacquire = std::forward<TUnacquireFunction>(pUnacFunc);
 
 	__mAllocateChunk = [this, aInitFunc = std::forward<TInitializeFunction>(pInitFunc)]() {
 		const size_t aBegin = 0;
@@ -59,8 +51,8 @@ inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitifunc, siz
 		DWORD aErrorCode = 0;
 		std::atomic<size_t> aIndex = aKey;
 
-		concurrency::cancellation_token_source cts;
-		concurrency::run_with_cancellation_token([&]() {
+		Concurrency::cancellation_token_source cts;
+		Concurrency::run_with_cancellation_token([&]() {
 			concurrency::parallel_for_each(std::next(__mFreeList[aKey].begin(), aBegin), __mFreeList[aKey].end(), [&](auto& pObj) {
 				DWORD aError = 0;
 				const auto aCurrent = aIndex.fetch_add(1);
@@ -73,7 +65,8 @@ inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitifunc, siz
 				});
 			}, cts.get_token());
 		ASSERT_CRASH((aKey + aSize) == aIndex);
-		__mAllocateSize == std::max(__mAllocateSize, (aKey + aSize));
+
+		__mAllocateSize = std::max(__mAllocateSize, (aKey + aSize));
 
 		return aErrorCode;
 	};
@@ -100,19 +93,16 @@ typename CObjectPool<T>::Object CObjectPool<T>::AcquireObject()
 			return nullptr;
 		}
 	}
-
 	
-	Object aSmartObject;
-	/*
 	//큐의 제일 위에 있는 가용 객체를 로컬 unique_ptr로 옮긴다.
-	std::unique_ptr<T> obj(std::move(mFreeList.front()));
-	mFreeList.pop();
+	std::unique_ptr<T> obj(std::move(__mFreeList.front()));
+	__mFreeList.pop();
 
 	//객체 포인터를 Object 타입 으로 변환한다.
-	Object smartObject(obj.release(), [this](T* t) {
-		mFreeList.push(std::unique_ptr<T>(t));
+	Object aSmartObject(obj.release(), [this](T* t) {
+		__mFreeList.push(std::unique_ptr<T>(t));
 		});
-	*/
+	
 
 	return aSmartObject;
 }
