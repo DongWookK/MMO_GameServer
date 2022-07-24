@@ -9,10 +9,9 @@ CThreadBase::CThreadBase()
 
 void CThreadBase::ResetAttr()
 {
-	_mThdHandler = nullptr;
 	_mThreadMgr = nullptr;
 }
-HANDLE CThreadBase::Open()
+DWORD CThreadBase::Open()
 {
 	//스레드 생성
 	uintptr_t aRv = _beginthreadex(NULL, 0, &CThreadBase::Start, this, 0, 0);
@@ -24,7 +23,7 @@ HANDLE CThreadBase::Open()
 	}
 	else
 	{
-		_mThdHandler = (HANDLE)aRv;
+		_mThdHandler = (DWORD)aRv;
 	}
 	return _mThdHandler;
 }

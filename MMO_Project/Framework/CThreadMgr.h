@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include "FwCObjectPool.h"
 /*---------------------------------------------------------------------
 	Thread Manager
 desc : Managing Priamry, Worker, Db, Log Thread
@@ -31,7 +32,7 @@ private:
 
 	uint32 _mThreadNo = 5;
 	std::vector<HANDLE> _mThreads;
-
+	CObjectPool<CThreadBase> __mThreadPool;
 	
 };
 

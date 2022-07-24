@@ -4,16 +4,8 @@
 
 int32 CThreadMgr::Open()
 {
-
-	//기본스레드 생성 테스트
-	for (int i = 0; i < _mThreadNo; i++)
-	{
-		CThreadBase* aNew = new CThreadBase;
-		_mThreads.push_back(aNew->Open());
-	}
-
 	// threadwk 생성
-
+	const auto& aInit = [this]()->DWORD {return this->Open(); };
 
 	return 0;
 }
