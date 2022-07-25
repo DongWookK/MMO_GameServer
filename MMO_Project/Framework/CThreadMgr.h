@@ -18,6 +18,7 @@ enum class Flag {
 
 class CThreadMgr : public Singleton<CThreadMgr>
 {
+	using TPool = CObjectPool<CThreadBase>;
 public:
 	
 	Atomic<Flag> _mFlag = Flag::START;
@@ -32,7 +33,7 @@ private:
 
 	uint32 _mThreadNo = 5;
 	std::vector<HANDLE> _mThreads;
-	CObjectPool<CThreadBase> __mThreadPool;
+	std::shared_ptr<TPool> __mThreadPool;
 	
 };
 

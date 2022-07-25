@@ -5,9 +5,13 @@
 int32 CThreadMgr::Open()
 {
 	// threadwk 생성
-	const auto& aInit = [this]()->DWORD {return this->Open(); };
-
-	return 0;
+	// close될 경우 factory로 돌아가게해야하지않을까?
+	__mThreadPool = std::make_shared<TPool>();
+	__mThreadPool->AllocateChunk<CThreadBase>([](TPool::TObject * p, size_t i) {
+		DWORD aRv = p->Open();
+		return aRv;
+		}
+	);
 }
 
 int32 CThreadMgr::Close()
