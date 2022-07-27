@@ -5,7 +5,7 @@
 
 template <typename T>
 template<typename TDerived, typename TInitializeFunction>
-inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitFunc, size_t pInitSize, bool pIsExpandable)
+inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitfunc, TUnAcquire&& pUnAcqFunc, size_t pInitSize, bool pIsExpandable)
 {
 	static_assert(std::is_base_of_v<T, TDerived>);
 	ASSERT_CRASH(0 == __mAllocateSize);
@@ -70,6 +70,9 @@ inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitFunc, size
 
 		return aErrorCode;
 	};
+
+	__mUnAcquire = pUnAcqFunc;
+
 	std::lock_guard aLock(__mLocker);
 	return __mAllocateChunk();
 }

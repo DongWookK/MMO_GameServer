@@ -1,17 +1,36 @@
 #include "pch.h"
 #include "CThreadMgr.h"
-#include "CThreadBase.h"
+
+uint32_t CThreadPool::Initialize()
+{
+	uint32_t aRv = 0;
+	__mPool = std::make_shared<TPool>();
+	aRv = __mPool->AllocateChunk<CThreadBase>([](TPool::TObject* p, size_t i) {
+		DWORD aRv = p->Open();
+		return aRv;
+		}, [](TPool::TObject* p) {
+			DWORD aRv = p->Close();
+			return aRv;
+		}
+		);
+	
+	if (0 < aRv)
+	{
+		//에러로그
+	}
+	return aRv;
+}
+
+CThreadPool::Object CThreadPool::Acquire()
+{
+	//IsOpen 체크필요
+	//하위호출에서 nullptr 체크필요
+	return __mPool->AcquireObject();
+}
+
 
 int32 CThreadMgr::Open()
 {
-	// threadwk 생성
-	// close될 경우 factory로 돌아가게해야하지않을까?
-	__mThreadPool = std::make_shared<TPool>();
-	__mThreadPool->AllocateChunk<CThreadBase>([](TPool::TObject * p, size_t i) {
-		DWORD aRv = p->Open();
-		return aRv;
-		}
-	);
 }
 
 int32 CThreadMgr::Close()
@@ -29,3 +48,4 @@ int32 CThreadMgr::OpenWk()
 	
 	
 }
+

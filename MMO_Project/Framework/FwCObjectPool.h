@@ -11,6 +11,7 @@ public:
 	using TObject = T;
 	using TPartition = std::deque<TUObject>;
 	using TFreeList  = std::map<size_t, TPartition>;
+	using TUnAcquire = std::function<void(T* Target)>;
 
 private:
 	static constexpr size_t DEFAULT_PARTITION_KEY = 0;
@@ -33,7 +34,7 @@ public:
 	//initializefunction을 통해 open까지 수행
 
 	template<typename TDerived, typename TInitializeFunction>
-	DWORD	AllocateChunk(TInitializeFunction&& pInitifunc, size_t pInitSIze = DEFAULT_CHUNK_SIZE, bool pIsExpandable = false);
+	DWORD	AllocateChunk(TInitializeFunction&& pInitfunc, TUnAcquire&& pUnAcqFunc, size_t pInitSIze = DEFAULT_CHUNK_SIZE, bool pIsExpandable = false);
 
 
 	//acquireObject()가 리턴할 스마트 포인터이다.
@@ -63,6 +64,7 @@ private:
 	bool __mIsExpandable;
 
 	std::function<DWORD(void)> __mAllocateChunk;
+	TUnAcquire __mUnAcquire;
 
 
 

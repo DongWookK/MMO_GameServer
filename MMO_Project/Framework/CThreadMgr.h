@@ -1,6 +1,6 @@
 #pragma once
-#include <vector>
 #include "FwCObjectPool.h"
+#include "CThreadBase.h"
 /*---------------------------------------------------------------------
 	Thread Manager
 desc : Managing Priamry, Worker, Db, Log Thread
@@ -13,6 +13,18 @@ enum class Flag {
 	INITIAL,
 	STOPPED,
 	END
+};
+
+class CThreadPool
+{
+	using TPool = CObjectPool<CThreadBase>;
+	using Object = TPool::Object;
+
+	uint32_t Initialize();
+	Object Acquire();
+
+private:
+	std::shared_ptr<TPool> __mPool;
 };
 
 
@@ -30,10 +42,6 @@ public:
 	int32				OpenWk();
 
 private:
-
-	uint32 _mThreadNo = 5;
-	std::vector<HANDLE> _mThreads;
-	std::shared_ptr<TPool> __mThreadPool;
-	
+	CThreadPool __mThreadPool;
 };
 
