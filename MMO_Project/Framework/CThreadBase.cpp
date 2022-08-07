@@ -1,10 +1,11 @@
+#pragma once
 #include "pch.h"
 #include "CThreadBase.h"
 #include "CThreadMgr.h"
 
 CThreadBase::CThreadBase()
 {
-	ResetAttr();
+
 }
 
 void CThreadBase::ResetAttr()
@@ -18,8 +19,7 @@ DWORD CThreadBase::Open()
 
 	if (aRv == 0)
 	{
-		//0이면 생성에 실패
-		CRASH();
+
 	}
 	else
 	{
@@ -41,7 +41,7 @@ void CThreadBase::Main()
 {
 	ASSERT_CRASH(_mThreadMgr == nullptr);
 
-	while(_mThreadMgr->_mFlag != Flag::STOPPED)
+	while(_mThreadMgr->__mFlag != Flag::STOPPED)
 	{
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		std::cout << std::this_thread::get_id << std::endl;
@@ -51,7 +51,7 @@ void CThreadBase::Main()
 
 
 
-uint32 CThreadBase::Close()
+DWORD CThreadBase::Close()
 {
 	return 0;
 }

@@ -1,6 +1,4 @@
 #include "pch.h"
-#include "CThreadMgr.h"
-#include "CThreadBase.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -23,7 +21,8 @@ int main()
 
 
 	
-
+	CThreadMgr::This()->Open();
+	
 
 	system("pause");
 	return 0;

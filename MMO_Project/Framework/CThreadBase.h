@@ -8,7 +8,7 @@ public:
 	CThreadBase();
 	void ResetAttr();
 	virtual DWORD Open();
-	virtual uint32 Close();
+	virtual DWORD Close();
 	static unsigned __stdcall Start(void *pThis);
 	virtual void Main();
 

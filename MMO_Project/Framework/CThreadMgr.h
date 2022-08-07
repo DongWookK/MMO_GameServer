@@ -1,6 +1,6 @@
 #pragma once
-#include "FwCObjectPool.h"
 #include "CThreadBase.h"
+#include "FwCObjectPool.h"
 /*---------------------------------------------------------------------
 	Thread Manager
 desc : Managing Priamry, Worker, Db, Log Thread
@@ -10,7 +10,7 @@ warn :
 //싱글턴 패턴 적용 필요
 enum class Flag {
 	START,
-	INITIAL,
+	OPENED,
 	STOPPED,
 	END
 };
@@ -18,13 +18,18 @@ enum class Flag {
 class CThreadPool
 {
 	using TPool = CObjectPool<CThreadBase>;
-	using Object = TPool::Object;
+	using TObject = TPool::Object;
 
-	uint32_t Initialize();
-	Object Acquire();
+public:
+	int32_t Initialize();
+	int32_t Acquire(uint32 pThreadCount = 1);
+	
+	bool	IsOpen();
 
 private:
 	std::shared_ptr<TPool> __mPool;
+	std::vector<TObject> __mThreads;
+	bool	__mIsOpen = false;
 };
 
 
@@ -33,15 +38,16 @@ class CThreadMgr : public Singleton<CThreadMgr>
 	using TPool = CObjectPool<CThreadBase>;
 public:
 	
-	Atomic<Flag> _mFlag = Flag::START;
+	int32_t				Open();
+	int32_t				Close();
+	int32_t				OpenWk();
 
-	int32				Open();
-	int32				Close();
-
-
-	int32				OpenWk();
+public:
+	Flag		__mFlag; //상태플래그
 
 private:
 	CThreadPool __mThreadPool;
+
+	
 };
 

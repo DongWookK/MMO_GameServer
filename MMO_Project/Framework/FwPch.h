@@ -27,8 +27,21 @@
 
 //util
 #include <chrono>
-
 #include "Singleton.h"
 #include "rapidjson/document.h"
 
+#include <ppl.h>
 
+#include "CThreadMgr.h"
+#include "CThreadBase.h"
+#include "FwCObjectPool.h"
+
+
+
+#include <ppl.h>
+#include <concurrent_vector.h>
+#include <array>
+#include <vector>
+#include <tuple>
+#include <algorithm>
+#include <iostream>

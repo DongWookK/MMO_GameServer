@@ -1,7 +1,8 @@
+#pragma once
 #include "pch.h"
 #include "FwCObjectPool.h"
-#include <ppl.h>
 #undef max
+#include <concurrent_vector.h>
 
 template <typename T>
 template<typename TDerived, typename TInitializeFunction>
@@ -19,7 +20,7 @@ inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitfunc, TUnA
 	__mChunkSize = DEFAULT_CHUNK_SIZE;
 	__mIsExpandable = pIsExpandable;
 
-	__mAllocateChunk = [this, aInitFunc = std::forward<TInitializeFunction>(pInitFunc)]() {
+	__mAllocateChunk = [this, aInitFunc = std::forward<TInitializeFunction>(pInitfunc)]() {
 		const size_t aBegin = 0;
 		const size_t aSize = (0 == __mFreeList.size()) ? __mInitSize : __mChunkSize;
 
