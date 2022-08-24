@@ -1,6 +1,9 @@
 #pragma once
-#include "CThreadBase.h"
+#include "main.h"
 #include "FwCObjectPool.h"
+#include "pch.h"
+#include <crtdbg.h>
+
 /*---------------------------------------------------------------------
 	Thread Manager
 desc : Managing Priamry, Worker, Db, Log Thread
@@ -17,7 +20,7 @@ enum class Flag {
 
 class CThreadPool
 {
-	using TPool = CObjectPool<CThreadBase>;
+	using TPool = FnlApi::CObjectPool<CThreadBase>;
 	using TObject = TPool::Object;
 
 public:
@@ -35,7 +38,6 @@ private:
 
 class CThreadMgr : public Singleton<CThreadMgr>
 {
-	using TPool = CObjectPool<CThreadBase>;
 public:
 	
 	int32_t				Open();
@@ -43,7 +45,7 @@ public:
 	int32_t				OpenWk();
 
 public:
-	Flag		__mFlag; //상태플래그
+	Flag		__mFlag = Flag::END; //상태플래그
 
 private:
 	CThreadPool __mThreadPool;

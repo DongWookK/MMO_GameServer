@@ -5,17 +5,16 @@ class CThreadBase
 {
 
 public:
-	CThreadBase();
 	void ResetAttr();
-	virtual DWORD Open();
-	virtual DWORD Close();
+	DWORD Open();
+	DWORD Close();
 	static unsigned __stdcall Start(void *pThis);
 	virtual void Main();
 
 private:
 
 	DWORD _mThdHandler;
-	CThreadMgr* _mThreadMgr;
+	CThreadMgr* _mThreadMgr = nullptr;
 };
 
 unsigned Start(void *pthis);

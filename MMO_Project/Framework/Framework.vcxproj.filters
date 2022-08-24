@@ -71,6 +71,9 @@
     <ClInclude Include="FwCContainer.h">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="FwCObjectPool.inl">
+      <Filter>Memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -92,9 +95,6 @@
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="Allocator.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="FwCObjectPool.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
     <ClCompile Include="FwGlobal.cpp">

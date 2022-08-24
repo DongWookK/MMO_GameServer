@@ -1,17 +1,21 @@
 #pragma once
+#include "pch.h"
+namespace FnlApi
+{
+
 template <typename T>
 class CObjectPool
 {
 
 private:
-	using TUObject	= std::unique_ptr<T>;
-	using TLocker	= std::shared_mutex;
+	using TUObject = std::unique_ptr<T>;
+	using TLocker = std::shared_mutex;
 
 public:
 	using TObject = T;
-	using TPartition = std::deque<TUObject>;
-	using TFreeList  = std::map<size_t, TPartition>;
 	using TUnAcquire = std::function<void(T* Target)>;
+	using TPartition = std::deque<TUObject>;
+	using TFreeList = std::map<size_t, TPartition>;
 
 private:
 	static constexpr size_t DEFAULT_PARTITION_KEY = 0;
@@ -34,6 +38,9 @@ public:
 	//initializefunction을 통해 open까지 수행
 
 	template<typename TDerived, typename TInitializeFunction>
+	DWORD	AllocateChunk(TInitializeFunction&& pInitfunc, size_t pInitSize = DEFAULT_CHUNK_SIZE, bool pIsExpandable = false);
+
+	template<typename TDerived, typename TInitializeFunction>
 	DWORD	AllocateChunk(TInitializeFunction&& pInitfunc, TUnAcquire&& pUnAcqFunc, size_t pInitSize = DEFAULT_CHUNK_SIZE, bool pIsExpandable = false);
 
 
@@ -43,16 +50,15 @@ public:
 	//객체를 클라이언트에 제공한다..
 	Object AcquireObject(void);
 
-
-	const bool IsFull() const;
-	const size_t GetUsableKey() const;
-	/*
 	constexpr size_t FreeCount(void) const;
 	constexpr size_t UseCount(void) const;
 	constexpr size_t AllocateCount(void) const;
-	
 	constexpr bool	IsExpandable(void) const;
-	*/
+
+private:
+	const bool IsFull() const;
+	const size_t GetUsableKey() const;
+	void	Organize(const size_t pKey);
 
 private:
 	//mFreeList는 현재 가용한(클라이언트가 점유하지 않은) 객체들을 보관한다.
@@ -68,12 +74,6 @@ private:
 	std::function<DWORD(void)> __mAllocateChunk;
 	TUnAcquire __mUnAcquire;
 
-
-
-	
-
 };
-
-template<typename T>
-const size_t CObjectPool<T>::DEFAULT_CHUNK_SIZE;
-
+}
+#include "FwCObjectPool.inl"

@@ -3,10 +3,6 @@
 #include "CThreadBase.h"
 #include "CThreadMgr.h"
 
-CThreadBase::CThreadBase()
-{
-
-}
 
 void CThreadBase::ResetAttr()
 {
@@ -39,9 +35,9 @@ unsigned __stdcall CThreadBase::Start(void *pThis)
 
 void CThreadBase::Main()
 {
-	ASSERT_CRASH(_mThreadMgr == nullptr);
+	ASSERT_CRASH(_mThreadMgr != nullptr);
 
-	while(_mThreadMgr->__mFlag != Flag::STOPPED)
+	while(Flag::STOPPED != _mThreadMgr->__mFlag)
 	{
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 		std::cout << std::this_thread::get_id << std::endl;

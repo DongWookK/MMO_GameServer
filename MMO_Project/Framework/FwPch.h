@@ -26,22 +26,18 @@
 #include <functional>
 
 //util
-#include <chrono>
 #include "Singleton.h"
-#include "rapidjson/document.h"
 
 #include <ppl.h>
-
-#include "CThreadMgr.h"
-#include "CThreadBase.h"
-#include "FwCObjectPool.h"
-
-
-
-#include <ppl.h>
-#include <concurrent_vector.h>
 #include <array>
 #include <vector>
+#include <map>
 #include <tuple>
 #include <algorithm>
 #include <iostream>
+#include <concrt.h>
+#undef max
+#include <concurrent_vector.h>
+
+#include "FwCObjectPool.h"
+#include "CThreadBase.h"
