@@ -166,9 +166,7 @@
     <ClInclude Include="NetAddress.h" />
     <ClInclude Include="FwCObjectPool.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="CThreadBase.h" />
     <ClInclude Include="CThreadMgr.h" />
-    <ClInclude Include="CThreadWk.h" />
     <ClInclude Include="FwTLS.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="SocketUtils.h" />
@@ -186,9 +184,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="CThreadBase.cpp" />
     <ClCompile Include="CThreadMgr.cpp" />
-    <ClCompile Include="CThreadWk.cpp" />
     <ClCompile Include="FwTLS.cpp" />
     <ClCompile Include="Singleton.cpp" />
     <ClCompile Include="SocketUtils.cpp" />

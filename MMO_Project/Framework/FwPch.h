@@ -22,8 +22,9 @@
 #include <mutex>
 #include <shared_mutex>
 #include <atomic>
-
 #include <functional>
+
+#include <process.h>
 
 //util
 #include "Singleton.h"
@@ -40,4 +41,3 @@
 #include <concurrent_vector.h>
 
 #include "FwCObjectPool.h"
-#include "CThreadBase.h"
