@@ -1,10 +1,9 @@
 #include "pch.h"
-#include "CThreadMgr.h"
+#include "FwCThreadPm.h"
 
 int main()
 {
-	CThreadMgr::This()->Open();
+	FwCThreadPm::This()->Start();
 	system("pause");
 	return 0;
-
 }

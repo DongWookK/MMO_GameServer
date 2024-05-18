@@ -1,7 +1,7 @@
 #pragma once
 #include "main.h"
-#include "FwCObjectPool.h"
 #include "pch.h"
+#include "FwCObjectPool.h"
 #include <crtdbg.h>
 
 /*---------------------------------------------------------------------
@@ -50,7 +50,6 @@ public:
 public:
 	Flag		__mFlag = Flag::COUNT;
 	CThreadPool __mThreadPool;
-
-	
 };
+
 

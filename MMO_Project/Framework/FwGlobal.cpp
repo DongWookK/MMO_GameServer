@@ -5,7 +5,6 @@
 
 CThreadMgr* GThreadManager = nullptr;
 SendBufferManager* GSendBufferManager = nullptr;
-
 DeadLockProfiler* GDeadLockProfiler = nullptr;
 
 class CoreGlobal

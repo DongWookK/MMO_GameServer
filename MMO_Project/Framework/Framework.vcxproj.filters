@@ -42,7 +42,6 @@
     <ClInclude Include="Singleton.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="main.h" />
     <ClInclude Include="NetAddress.h">
       <Filter>Network</Filter>
     </ClInclude>
@@ -62,6 +61,9 @@
       <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="CThreadMgr.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="FwCThreadPm.h">
       <Filter>Thread</Filter>
     </ClInclude>
   </ItemGroup>
@@ -97,6 +99,9 @@
       <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="CThreadMgr.cpp">
+      <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="FwCThreadPm.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
   </ItemGroup>

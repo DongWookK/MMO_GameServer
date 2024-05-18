@@ -23,7 +23,6 @@
 #include <shared_mutex>
 #include <atomic>
 #include <functional>
-
 #include <process.h>
 
 //util

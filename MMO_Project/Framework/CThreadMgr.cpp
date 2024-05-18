@@ -13,12 +13,12 @@ int32_t CThreadPool::Initialize()
 	uint32_t aRv = 0;
 	__mPool = std::make_shared<TPool>();
 	aRv = __mPool->AllocateChunk<std::thread>([](TPool::TObject* p, size_t i) {
-		DWORD aRv = OpenWk();
+		DWORD aRv = OpenWk();					// pInitfunc
 		return aRv;
 		}, [](TPool::TObject* p) {
-			DWORD aRv = CloseWk();
+			DWORD aRv = CloseWk();				// pUnAcqFunc
 			return aRv;
-		},eThreadCount,false);
+		},eThreadCount,false);					// size_t pInitSize, bool pIsExpandable
 
 	__mIsOpen = true;
 	return aRv;
@@ -58,6 +58,7 @@ int32 CThreadPool::OpenWk()
 
 	while (Flag::OPENED == CThreadMgr::This()->__mFlag)
 	{
+		// thread work
 		std::thread::id this_id = std::this_thread::get_id();
 
 		std::cout << "thread " << this_id << " sleeping...\n";
