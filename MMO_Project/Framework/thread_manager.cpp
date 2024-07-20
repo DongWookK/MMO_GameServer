@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "CThreadMgr.h"
+#include "thread_manager.h"
 
 /*---------------------------------------------------------------------
 	Thread Manager
@@ -8,7 +8,7 @@ desc : based on FwCObjectPool
 warn :
 ----------------------------------------------------------------------*/
 
-int32_t CThreadPool::Initialize()
+int32_t thread_pool::Initialize()
 {
 	uint32_t aRv = 0;
 	__mPool = std::make_shared<TPool>();
@@ -24,13 +24,13 @@ int32_t CThreadPool::Initialize()
 	return aRv;
 }
 
-int32_t CThreadPool::Acquire(uint32 pThreadCount)
+int32_t thread_pool::Acquire(uint32 pThreadCount)
 {
 	//Thread 몇개 열지 인자받도록 수정 필요
 	int32_t aRv = 0;
 	for (uint32 i = 0; i < pThreadCount; ++i)
 	{
-		CThreadPool::TObject aThread = __mPool->AcquireObject();
+		thread_pool::TObject aThread = __mPool->AcquireObject();
 		if (nullptr == aThread)
 		{
 			//임시에러로그 4
@@ -42,21 +42,21 @@ int32_t CThreadPool::Acquire(uint32 pThreadCount)
 	return aRv;
 }
 
-std::vector<CThreadPool::TObject>& CThreadPool::GetThreads()
+std::vector<thread_pool::TObject>& thread_pool::GetThreads()
 {
 	return __mThreads;
 }
 
-bool CThreadPool::IsOpen()
+bool thread_pool::IsOpen()
 {
 	return __mIsOpen;
 }
 
-int32 CThreadPool::OpenWk()
+int32 thread_pool::OpenWk()
 {
 	uint32 aRv = 0;
 
-	while (Flag::OPENED == CThreadMgr::This()->__mFlag)
+	while (Flag::OPENED == thread_manager::This()->__mFlag)
 	{
 		// thread work
 		std::thread::id this_id = std::this_thread::get_id();
@@ -69,7 +69,7 @@ int32 CThreadPool::OpenWk()
 	return aRv;
 }
 
-int32 CThreadPool::CloseWk()
+int32 thread_pool::CloseWk()
 {
 	uint32 aRv = 0;
 	return aRv;
@@ -81,7 +81,7 @@ desc : Managing Priamry, Worker, Db, Log Thread
 warn :
 ----------------------------------------------------------------------*/
 
-int32 CThreadMgr::Open()
+int32 thread_manager::setup()
 {
 	int32 aRv = 0;
 	__mFlag = Flag::OPENED;
@@ -97,7 +97,7 @@ int32 CThreadMgr::Open()
 	return aRv;
 }
 
-int32 CThreadMgr::Close()
+int32 thread_manager::stop()
 {
 	//flag 변경해 loop중인 thread들이 중단하게끔. ( 아직 Pool기반이아닌 vector 리스트이므로 나중엔 freelist로 돌아가게끔?)
 	__mFlag = Flag::STOPPED;

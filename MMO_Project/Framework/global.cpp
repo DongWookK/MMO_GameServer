@@ -1,9 +1,9 @@
 #include "pch.h"
-#include "FwGlobal.h"
-#include "CThreadMgr.h"
+#include "global.h"
+#include "thread_manager.h"
 #include "SocketUtils.h"
 
-CThreadMgr* GThreadManager = nullptr;
+thread_manager* GThreadManager = nullptr;
 SendBufferManager* GSendBufferManager = nullptr;
 DeadLockProfiler* GDeadLockProfiler = nullptr;
 
@@ -12,7 +12,7 @@ class CoreGlobal
 public:
 	CoreGlobal()
 	{
-		GThreadManager = new CThreadMgr();
+		GThreadManager = new thread_manager();
 		SocketUtils::Init();
 	}
 

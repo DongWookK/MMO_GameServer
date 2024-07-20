@@ -1,9 +1,9 @@
 #include "pch.h"
-#include "FwCThreadPm.h"
+#include "thread_pm.h"
 
 int main()
 {
-	FwCThreadPm::This()->Start();
+	thread_pm::This()->Start();
 	system("pause");
 	return 0;
 }

@@ -18,28 +18,25 @@
     <ClInclude Include="pch.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="FwMacro.h">
+    <ClInclude Include="macro.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="FwPch.h">
+    <ClInclude Include="pch_fw.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="FwTLS.h">
+    <ClInclude Include="thread_local.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Types.h">
+    <ClInclude Include="types.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="FwGlobal.h">
+    <ClInclude Include="global.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="Allocator.h">
-      <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="FwCObjectPool.h">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="Singleton.h">
+    <ClInclude Include="singleton.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="NetAddress.h">
@@ -60,10 +57,10 @@
     <ClInclude Include="FwCObjectPool.inl">
       <Filter>Memory</Filter>
     </ClInclude>
-    <ClInclude Include="CThreadMgr.h">
+    <ClInclude Include="thread_manager.h">
       <Filter>Thread</Filter>
     </ClInclude>
-    <ClInclude Include="FwCThreadPm.h">
+    <ClInclude Include="thread_pm.h">
       <Filter>Thread</Filter>
     </ClInclude>
   </ItemGroup>
@@ -71,19 +68,16 @@
     <ClCompile Include="pch.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="FwTLS.cpp">
+    <ClCompile Include="thread_local.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Types.cpp">
+    <ClCompile Include="types.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Allocator.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
-    <ClCompile Include="FwGlobal.cpp">
+    <ClCompile Include="global.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="Singleton.cpp">
+    <ClCompile Include="singleton.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="NetAddress.cpp">
@@ -98,10 +92,10 @@
     <ClCompile Include="FwIocpEvent.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="CThreadMgr.cpp">
+    <ClCompile Include="thread_manager.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
-    <ClCompile Include="FwCThreadPm.cpp">
+    <ClCompile Include="thread_pm.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
   </ItemGroup>

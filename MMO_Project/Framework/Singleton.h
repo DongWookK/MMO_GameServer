@@ -1,6 +1,6 @@
 #pragma once
 template <typename T>
-class Singleton
+class singleton
 {
 protected:
     static T* instance;
@@ -21,4 +21,4 @@ public:
 };
 
 template<typename T>
-T* Singleton<T>::instance = nullptr;
+T* singleton<T>::instance = nullptr;

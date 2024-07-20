@@ -18,7 +18,7 @@ enum class Flag {
 	COUNT
 };
 
-class CThreadPool
+class thread_pool
 {
 	using TPool = FnlApi::CObjectPool<std::thread>;
 	using TObject = TPool::Object;
@@ -40,16 +40,17 @@ private:
 };
 
 
-class CThreadMgr : public Singleton<CThreadMgr>
+class thread_manager : public Singleton<thread_manager>
 {
 public:
-	
-	int32_t		Open();
-	int32_t		Close();
+	int32_t		setup();
+	int32_t		start();
+	int32_t		stop();
+	int32_t		teardown();
 
 public:
 	Flag		__mFlag = Flag::COUNT;
-	CThreadPool __mThreadPool;
+	thread_pool __mThreadPool;
 };
 
 

@@ -7,7 +7,7 @@
 	- 府家胶 积己
 */
 
-class FwCThreadPm : public Singleton<FwCThreadPm>
+class thread_pm : public Singleton<thread_pm>
 {
 public:
 	void		Start(void);
