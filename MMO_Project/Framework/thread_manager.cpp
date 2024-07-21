@@ -8,55 +8,54 @@ desc : based on FwCObjectPool
 warn :
 ----------------------------------------------------------------------*/
 
-int32_t thread_pool::Initialize()
+int32_t thread_pool::initialize()
 {
 	uint32_t aRv = 0;
-	__mPool = std::make_shared<TPool>();
-	aRv = __mPool->AllocateChunk<std::thread>([](TPool::TObject* p, size_t i) {
-		DWORD aRv = OpenWk();					// pInitfunc
+	pool_ = std::make_shared<TPool>();
+	aRv = pool_->AllocateChunk<std::thread>([](TPool::TObject* p, size_t i) {
+		DWORD aRv = open_worker();					// pInitfunc
 		return aRv;
 		}, [](TPool::TObject* p) {
-			DWORD aRv = CloseWk();				// pUnAcqFunc
+			DWORD aRv = close_worker();				// pUnAcqFunc
 			return aRv;
-		},eThreadCount,false);					// size_t pInitSize, bool pIsExpandable
+		}, eThreadCount, false);					// size_t pInitSize, bool pIsExpandable
 
-	__mIsOpen = true;
+	is_setup_ = true;
 	return aRv;
 }
 
-int32_t thread_pool::Acquire(uint32 pThreadCount)
+int32_t thread_pool::acquire(uint32_t pThreadCount)
 {
-	//Thread 몇개 열지 인자받도록 수정 필요
 	int32_t aRv = 0;
-	for (uint32 i = 0; i < pThreadCount; ++i)
+	for (uint32_t i = 0; i < pThreadCount; ++i)
 	{
-		thread_pool::TObject aThread = __mPool->AcquireObject();
+		thread_pool::TObject aThread = pool_->AcquireObject();
 		if (nullptr == aThread)
 		{
 			//임시에러로그 4
 			aRv = 4;
 			break;
 		}
-		__mThreads.emplace_back(aThread);
+		threads_.emplace_back(aThread);
 	}
 	return aRv;
 }
 
-std::vector<thread_pool::TObject>& thread_pool::GetThreads()
+std::vector<thread_pool::TObject>& thread_pool::get_all_threads()
 {
-	return __mThreads;
+	return threads_;
 }
 
-bool thread_pool::IsOpen()
+auto thread_pool::is_setup() const -> const bool
 {
-	return __mIsOpen;
+	return is_setup_;
 }
 
-int32 thread_pool::OpenWk()
+auto thread_pool::open_worker() -> fw::error
 {
-	uint32 aRv = 0;
+	fw::error error{};
 
-	while (Flag::OPENED == thread_manager::This()->__mFlag)
+	while (Flag::START == thread_manager::This()->flag_)
 	{
 		// thread work
 		std::thread::id this_id = std::this_thread::get_id();
@@ -66,13 +65,13 @@ int32 thread_pool::OpenWk()
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 
-	return aRv;
+	return error;
 }
 
-int32 thread_pool::CloseWk()
+auto thread_pool::close_worker() -> fw::error
 {
-	uint32 aRv = 0;
-	return aRv;
+	fw::error error{};
+	return error;
 }
 
 /*---------------------------------------------------------------------
@@ -81,25 +80,24 @@ desc : Managing Priamry, Worker, Db, Log Thread
 warn :
 ----------------------------------------------------------------------*/
 
-int32 thread_manager::setup()
+auto thread_manager::setup() -> fw::error
 {
-	int32 aRv = 0;
-	__mFlag = Flag::OPENED;
+	fw::error error = 0;
+	flag_ = Flag::NONE;
 
-	aRv = __mThreadPool.Initialize();
-	if (0 < aRv)
+	error = thread_pool_.initialize();
+	if (0 < error)
 	{
 		//에러로그
-		return aRv;
+		return error;
 	}
-	aRv = __mThreadPool.Acquire(eThreadCount);
+	error = thread_pool_.acquire(eThreadCount);
 
-	return aRv;
+	return error;
 }
 
-int32 thread_manager::stop()
+auto thread_manager::stop() -> fw::error
 {
-	//flag 변경해 loop중인 thread들이 중단하게끔. ( 아직 Pool기반이아닌 vector 리스트이므로 나중엔 freelist로 돌아가게끔?)
-	__mFlag = Flag::STOPPED;
-	return 0;
+	flag_ = Flag::STOP;
+	return fw::error{};
 }

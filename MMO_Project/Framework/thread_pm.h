@@ -1,4 +1,5 @@
 #pragma once
+#include "types.h"
 
 /*
 	TODO
@@ -7,11 +8,14 @@
 	- 府家胶 积己
 */
 
-class thread_pm : public Singleton<thread_pm>
+class thread_pm : public singleton<thread_pm>
 {
 public:
-	void		Start(void);
-	void		Terminate(void);
+	auto setup() -> fw::error;
+	auto start() -> fw::error;
+	auto stop() -> fw::error;
+	auto teardown() -> void;
+
 private:
 	void		Load(void);
 	void		LoadFromDB(void);

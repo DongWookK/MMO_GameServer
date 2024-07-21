@@ -1,56 +1,61 @@
 #pragma once
-#include "main.h"
 #include "pch.h"
 #include "FwCObjectPool.h"
-#include <crtdbg.h>
 
 /*---------------------------------------------------------------------
 	Thread Manager
-desc : Managing Priamry, Worker, Db, Log Thread
+desc : Managing Priamry, Worker, Log_Worker
 warn :
 ----------------------------------------------------------------------*/
 
+uint32_t eThreadCount = 4;
+
 //싱글턴 패턴 적용 필요
 enum class Flag {
-	OPENED,
-	STOPPED,
-	ENDED,
-	COUNT
+	NONE,
+	START,
+	STOP,
+	TEARDOWN,
 };
 
 class thread_pool
 {
+	friend thread_manager;
+
+private:
 	using TPool = FnlApi::CObjectPool<std::thread>;
 	using TObject = TPool::Object;
 
+private:
+	auto initialize() -> fw::error;
+	auto acquire(uint32_t pThreadCount = 1) -> fw::error;
+
 public:
-	int32_t Initialize();
-	int32_t Acquire(uint32 pThreadCount = 1);
-	std::vector<TObject>& GetThreads();
-	bool	IsOpen();
+	static auto open_worker() -> fw::error;
+	static auto close_worker() -> fw::error;
 
-
-	static int32_t		OpenWk();
-	static int32_t		CloseWk();
+public:
+	auto is_setup() const -> const bool;
+	std::vector<TObject>& get_all_threads();
 
 private:
-	std::shared_ptr<TPool> __mPool;
-	std::vector<TObject> __mThreads;
-	bool	__mIsOpen = false;
+	std::shared_ptr<TPool> pool_;
+	std::vector<TObject> threads_;
+	bool is_setup_{};
 };
 
 
-class thread_manager : public Singleton<thread_manager>
+class thread_manager : public singleton<thread_manager>
 {
 public:
-	int32_t		setup();
-	int32_t		start();
-	int32_t		stop();
-	int32_t		teardown();
+	auto setup() -> fw::error;
+	auto start() -> fw::error;
+	auto stop() -> fw::error;
+	auto teardown() -> fw::error;
 
 public:
-	Flag		__mFlag = Flag::COUNT;
-	thread_pool __mThreadPool;
+	Flag flag_{};
+	thread_pool thread_pool_{};
 };
 
 

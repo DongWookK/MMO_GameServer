@@ -1,13 +1,14 @@
 #include "pch.h"
+#include "types.h"
 #include "thread_pm.h"
 #include "thread_manager.h"
 
-void thread_pm::Start(void)
+auto thread_pm::start() -> fw::error
 {
-	uint32 aErrorCode = 0;
+	fw::error error = 0;
 
-	aErrorCode = thread_manager::This()->Open();
-	if (0 < aErrorCode)
+	error = thread_manager::This()->start();
+	if (0 < error)
 	{
 		// CONSOLE_SYS
 	}
