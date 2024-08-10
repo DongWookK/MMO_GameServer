@@ -1,7 +1,8 @@
-#include "pch.h"
+#pragma once
+
+#include "pch_fw.h"
 #include "global.h"
 #include "thread_manager.h"
-#include "SocketUtils.h"
 
 thread_manager* GThreadManager = nullptr;
 SendBufferManager* GSendBufferManager = nullptr;
@@ -13,12 +14,10 @@ public:
 	CoreGlobal()
 	{
 		GThreadManager = new thread_manager();
-		SocketUtils::Init();
 	}
 
 	~CoreGlobal()
 	{
 		delete GThreadManager;
-		SocketUtils::Clear();
 	}
 } GCoreGlobal;

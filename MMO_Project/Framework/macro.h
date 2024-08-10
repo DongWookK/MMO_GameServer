@@ -18,7 +18,6 @@ Lock Macro
 /*---------------------------------------------
 Crash Define
 ---------------------------------------------*/
-
 #define CRASH(cause)						\
 {											\
 	unsigned int* crash = nullptr;				\
@@ -44,7 +43,7 @@ For Log
 /*---------------------------------------------
 Simple API
 ---------------------------------------------*/
-#define size16(val)		static_cast<int16>(sizeof(val))
-#define size32(val)		static_cast<int32>(sizeof(val))
-#define len16(arr)		static_cast<int16>(sizeof(arr)/sizeof(arr[0]))
-#define len32(arr)		static_cast<int32>(sizeof(arr)/sizeof(arr[0]))
+#define size16(val)		static_cast<int16_t>(sizeof(val))
+#define size32(val)		static_cast<int32_t>(sizeof(val))
+#define len16(arr)		static_cast<int16_t>(sizeof(arr)/sizeof(arr[0]))
+#define len32(arr)		static_cast<int32_t>(sizeof(arr)/sizeof(arr[0]))

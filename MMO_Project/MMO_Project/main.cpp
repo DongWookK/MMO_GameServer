@@ -1,9 +1,10 @@
 #include "pch.h"
-#include "thread_pm.h"
+#include "thread_manager.h"
 
 int main()
 {
-	thread_pm::This()->Start();
+	thread_manager::This()->setup();
+	thread_manager::This()->start();
 	system("pause");
 	return 0;
 }

@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="macro.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -39,18 +36,6 @@
     <ClInclude Include="singleton.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="NetAddress.h">
-      <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="SocketUtils.h">
-      <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="FwIocp.h">
-      <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="FwIocpEvent.h">
-      <Filter>Network</Filter>
-    </ClInclude>
     <ClInclude Include="FwCContainer.h">
       <Filter>Memory</Filter>
     </ClInclude>
@@ -65,32 +50,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="thread_local.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="types.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
     <ClCompile Include="global.cpp">
       <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="singleton.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="NetAddress.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="SocketUtils.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="FwIocp.cpp">
-      <Filter>Network</Filter>
-    </ClCompile>
-    <ClCompile Include="FwIocpEvent.cpp">
-      <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="thread_manager.cpp">
       <Filter>Thread</Filter>

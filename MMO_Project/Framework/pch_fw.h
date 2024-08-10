@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Types.h"
-#include "FwGlobal.h"
-#include "FwTLS.h"
-#include "FwMacro.h"
+#include "types.h"
+#include "global.h"
+#include "thread_local.h"
+#include "macro.h"
 #include "FwCContainer.h"
 
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
 //win
 #include <windows.h>
@@ -26,7 +27,7 @@
 #include <process.h>
 
 //util
-#include "Singleton.h"
+#include "singleton.h"
 
 #include <ppl.h>
 #include <array>
@@ -36,6 +37,7 @@
 #include <algorithm>
 #include <iostream>
 #include <concrt.h>
+
 #undef max
 #include <concurrent_vector.h>
 

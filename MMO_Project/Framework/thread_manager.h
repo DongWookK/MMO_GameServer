@@ -1,6 +1,6 @@
 #pragma once
-#include "pch.h"
 #include "FwCObjectPool.h"
+#include "pch_fw.h"
 
 /*---------------------------------------------------------------------
 	Thread Manager
@@ -8,11 +8,10 @@ desc : Managing Priamry, Worker, Log_Worker
 warn :
 ----------------------------------------------------------------------*/
 
-uint32_t eThreadCount = 4;
+static constexpr uint32_t eThreadCount = 4;
 
 //싱글턴 패턴 적용 필요
 enum class Flag {
-	NONE,
 	START,
 	STOP,
 	TEARDOWN,
@@ -39,11 +38,10 @@ public:
 	std::vector<TObject>& get_all_threads();
 
 private:
-	std::shared_ptr<TPool> pool_;
-	std::vector<TObject> threads_;
+	std::shared_ptr<TPool> pool_{};
+	std::vector<TObject> threads_{};
 	bool is_setup_{};
 };
-
 
 class thread_manager : public singleton<thread_manager>
 {

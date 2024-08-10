@@ -1,5 +1,4 @@
-#include "pch.h"
-#include "types.h"
+#include "pch_fw.h"
 #include "thread_pm.h"
 #include "thread_manager.h"
 
@@ -13,5 +12,5 @@ auto thread_pm::start() -> fw::error
 		// CONSOLE_SYS
 	}
 
-	return;
+	return error;
 }

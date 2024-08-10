@@ -126,9 +126,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch_fw.h</PrecompiledHeaderFile>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -157,37 +158,20 @@
   <ItemGroup>
     <ClInclude Include="FwCContainer.h" />
     <ClInclude Include="thread_pm.h" />
-    <ClInclude Include="FwIocp.h" />
-    <ClInclude Include="FwIocpEvent.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="pch_fw.h" />
     <ClInclude Include="macro.h" />
-    <ClInclude Include="NetAddress.h" />
     <ClInclude Include="FwCObjectPool.h" />
-    <ClInclude Include="pch.h" />
     <ClInclude Include="thread_manager.h" />
     <ClInclude Include="thread_local.h" />
     <ClInclude Include="singleton.h" />
-    <ClInclude Include="SocketUtils.h" />
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_pm.cpp" />
-    <ClCompile Include="FwIocp.cpp" />
-    <ClCompile Include="FwIocpEvent.cpp" />
     <ClCompile Include="global.cpp" />
-    <ClCompile Include="NetAddress.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="thread_manager.cpp" />
     <ClCompile Include="thread_local.cpp" />
-    <ClCompile Include="singleton.cpp" />
-    <ClCompile Include="SocketUtils.cpp" />
-    <ClCompile Include="types.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FwCObjectPool.inl">

@@ -1,5 +1,5 @@
 #pragma once
-#include "pch.h"
+#include "pch_fw.h"
 #include "thread_manager.h"
 
 /*---------------------------------------------------------------------
@@ -38,6 +38,7 @@ int32_t thread_pool::acquire(uint32_t pThreadCount)
 		}
 		threads_.emplace_back(aThread);
 	}
+
 	return aRv;
 }
 
@@ -83,15 +84,23 @@ warn :
 auto thread_manager::setup() -> fw::error
 {
 	fw::error error = 0;
-	flag_ = Flag::NONE;
+	flag_ = Flag::START;
 
-	error = thread_pool_.initialize();
+	return error;
+}
+
+auto thread_manager::start() -> fw::error
+{
+	ASSERT_CRASH(thread_pool_.is_setup() == false);
+	
+	fw::error error = 0;
+
+	error = thread_pool_.acquire();
 	if (0 < error)
 	{
 		//에러로그
 		return error;
 	}
-	error = thread_pool_.acquire(eThreadCount);
 
 	return error;
 }
