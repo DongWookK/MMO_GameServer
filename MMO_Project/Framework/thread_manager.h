@@ -1,6 +1,7 @@
 #pragma once
 #include "FwCObjectPool.h"
 #include "pch_fw.h"
+#include "thread_pm.h"
 
 /*---------------------------------------------------------------------
 	Thread Manager
@@ -22,12 +23,12 @@ class thread_pool
 	friend thread_manager;
 
 private:
-	using TPool = FnlApi::CObjectPool<std::thread>;
+	using TPool = FnlApi::CObjectPool<worker>;
 	using TObject = TPool::Object;
 
 private:
 	auto initialize() -> fw::error;
-	auto acquire(uint32_t pThreadCount = 1) -> fw::error;
+	auto acquire(uint32_t pThreadCount = eThreadCount) -> fw::error;
 
 public:
 	static auto open_worker() -> fw::error;

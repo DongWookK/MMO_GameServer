@@ -12,8 +12,8 @@ int32_t thread_pool::initialize()
 {
 	uint32_t aRv = 0;
 	pool_ = std::make_shared<TPool>();
-	aRv = pool_->AllocateChunk<std::thread>([](TPool::TObject* p, size_t i) {
-		DWORD aRv = open_worker();					// pInitfunc
+	aRv = pool_->AllocateChunk<worker>([](TPool::TObject* p, size_t i) {
+		DWORD aRv = open_worker();					// pInitfunc 풀의 객체들을 초기화하는 함수
 		return aRv;
 		}, [](TPool::TObject* p) {
 			DWORD aRv = close_worker();				// pUnAcqFunc
@@ -32,7 +32,6 @@ int32_t thread_pool::acquire(uint32_t pThreadCount)
 		thread_pool::TObject aThread = pool_->AcquireObject();
 		if (nullptr == aThread)
 		{
-			//임시에러로그 4
 			aRv = 4;
 			break;
 		}
@@ -56,16 +55,6 @@ auto thread_pool::open_worker() -> fw::error
 {
 	fw::error error{};
 
-	while (Flag::START == thread_manager::This()->flag_)
-	{
-		// thread work
-		std::thread::id this_id = std::this_thread::get_id();
-
-		std::cout << "thread " << this_id << " sleeping...\n";
-
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
-
 	return error;
 }
 
@@ -84,22 +73,33 @@ warn :
 auto thread_manager::setup() -> fw::error
 {
 	fw::error error = 0;
-	flag_ = Flag::START;
+
+	error = thread_pool_.initialize();
+	if (0 < error)
+	{
+		return error;
+	}
+
+	error = thread_pool_.acquire();
+	if (0 < error)
+	{
+		return error;
+	}
 
 	return error;
 }
 
 auto thread_manager::start() -> fw::error
 {
-	ASSERT_CRASH(thread_pool_.is_setup() == false);
+	ASSERT_CRASH(thread_pool_.is_setup() == true);
 	
 	fw::error error = 0;
+	
+	flag_ = Flag::START;
 
-	error = thread_pool_.acquire();
-	if (0 < error)
+	for (auto& thread : thread_pool_.get_all_threads())
 	{
-		//에러로그
-		return error;
+		thread->allocate_job();
 	}
 
 	return error;
