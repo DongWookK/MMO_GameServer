@@ -3,8 +3,6 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-External\boost_1_86_0\
-
 # User-specific files
 *.rsuser
 *.suo
@@ -354,3 +352,4 @@ MigrationBackup/
 # proj FIle (KDW add)
 **/*/vcxproj
 **/*.vcxproj.*
+/External/boost_1_86_0

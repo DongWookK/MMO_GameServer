@@ -62,5 +62,8 @@
     <ClCompile Include="thread_pm.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
+    <ClCompile Include="acceptor.h">
+      <Filter>Network</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
