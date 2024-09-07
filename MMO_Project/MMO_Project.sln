@@ -11,6 +11,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Framework", "Framework\Framework.vcxproj", "{8EE028A8-6F7A-4508-9E52-A39F66EE167D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{B5AF15F6-5057-451D-B804-BB084546AFA2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8EE028A8-6F7A-4508-9E52-A39F66EE167D} = {8EE028A8-6F7A-4508-9E52-A39F66EE167D}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
