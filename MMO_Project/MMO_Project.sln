@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "MMO_Project\MMO_P
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Framework", "Framework\Framework.vcxproj", "{8EE028A8-6F7A-4508-9E52-A39F66EE167D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{B5AF15F6-5057-451D-B804-BB084546AFA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,6 +36,14 @@ Global
 		{8EE028A8-6F7A-4508-9E52-A39F66EE167D}.Release|x64.Build.0 = Release|x64
 		{8EE028A8-6F7A-4508-9E52-A39F66EE167D}.Release|x86.ActiveCfg = Release|Win32
 		{8EE028A8-6F7A-4508-9E52-A39F66EE167D}.Release|x86.Build.0 = Release|Win32
+		{B5AF15F6-5057-451D-B804-BB084546AFA2}.Debug|x64.ActiveCfg = Debug|x64
+		{B5AF15F6-5057-451D-B804-BB084546AFA2}.Debug|x64.Build.0 = Debug|x64
+		{B5AF15F6-5057-451D-B804-BB084546AFA2}.Debug|x86.ActiveCfg = Debug|Win32
+		{B5AF15F6-5057-451D-B804-BB084546AFA2}.Debug|x86.Build.0 = Debug|Win32
+		{B5AF15F6-5057-451D-B804-BB084546AFA2}.Release|x64.ActiveCfg = Release|x64
+		{B5AF15F6-5057-451D-B804-BB084546AFA2}.Release|x64.Build.0 = Release|x64
+		{B5AF15F6-5057-451D-B804-BB084546AFA2}.Release|x86.ActiveCfg = Release|Win32
+		{B5AF15F6-5057-451D-B804-BB084546AFA2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
