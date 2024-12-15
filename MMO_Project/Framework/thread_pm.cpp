@@ -4,7 +4,7 @@
 
 worker::worker()
 {
-	std::cout << "my id is %d" << LThreadId << std::endl;
+	std::cout << "my id is %d" << thread_Id_ << std::endl;
 }
 
 auto worker::allocate_job() -> const uint32_t
@@ -15,7 +15,7 @@ auto worker::allocate_job() -> const uint32_t
 
 auto worker::job() -> const uint32_t
 {
-	while (Flag::START == thread_manager::This()->flag_)
+	while (Flag::START == thread_manager::instance()->flag_)
 	{
 		// thread work
 		std::thread::id this_id = std::this_thread::get_id();
@@ -32,7 +32,7 @@ auto thread_pm::start() -> fw::error
 {
 	fw::error error = 0;
 
-	error = thread_manager::This()->start();
+	error = thread_manager::instance()->start();
 	if (0 < error)
 	{
 		// CONSOLE_SYS

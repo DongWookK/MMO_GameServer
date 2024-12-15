@@ -1,24 +1,27 @@
 #pragma once
+
 template <typename T>
 class singleton
 {
 protected:
-    static T* instance;
+	static T* instance_;
 
 public:
-    static T* This()
-    {
-        if (instance == nullptr)
-            instance = new T();
+	static T* instance()
+	{
+		if (instance_ == nullptr)
+		{
+			instance_ = new T();
+		}
 
-        return instance;
-    }
+		return instance_;
+	}
 
-    static void Delete()
-    {
-        delete instance;
-    }
+	static void teardown()
+	{
+		delete instance_;
+	}
 };
 
 template<typename T>
-T* singleton<T>::instance = nullptr;
+T* singleton<T>::instance_ = nullptr;

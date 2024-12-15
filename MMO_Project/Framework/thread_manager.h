@@ -20,13 +20,11 @@ enum class Flag {
 
 class thread_pool
 {
-	friend thread_manager;
-
 private:
 	using TPool = FnlApi::CObjectPool<worker>;
 	using TObject = TPool::Object;
 
-private:
+public:
 	auto initialize() -> fw::error;
 	auto acquire(uint32_t pThreadCount = eThreadCount) -> fw::error;
 

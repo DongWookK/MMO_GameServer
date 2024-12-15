@@ -23,7 +23,7 @@
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{8ee028a8-6f7a-4508-9e52-a39f66ee167d}</ProjectGuid>
     <RootNamespace>Framework</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.22621.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -82,7 +82,7 @@
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Libraries\Libs\Framework\$(Configuration)\</OutDir>
     <IncludePath>$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\DongWook\Desktop\Project\MMO_GameServer\External\boost_1_86_0\stage\lib;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -126,19 +126,26 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_WIN32_WINNT=0x0A00;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch_fw.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
-      <AdditionalIncludeDirectories>$(ProjectDir)\include;C:\Users\DongWook\Desktop\Project\MMO_GameServer\External\boost_1_86_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>5260</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>$(ProjectDir)\include;C:\Users\DongWook\Desktop\Project\MMO_GameServer\External\boost_1_84_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\DongWook\Desktop\Project\MMO_GameServer\External\boost_1_84_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\Users\DongWook\Desktop\Project\MMO_GameServer\External\boost_1_84_0\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <TreatLibWarningAsErrors>false</TreatLibWarningAsErrors>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -160,23 +167,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="FwCContainer.h" />
+    <ClInclude Include="thread_local.h" />
     <ClInclude Include="thread_pm.h" />
-    <ClInclude Include="global.h" />
     <ClInclude Include="pch_fw.h" />
     <ClInclude Include="macro.h" />
     <ClInclude Include="FwCObjectPool.h" />
     <ClInclude Include="thread_manager.h" />
-    <ClInclude Include="thread_local.h" />
     <ClInclude Include="singleton.h" />
-    <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="acceptor.h" />
-    <ClCompile Include="thread_pm.cpp" />
-    <ClCompile Include="global.cpp" />
-    <ClCompile Include="thread_manager.cpp" />
     <ClCompile Include="thread_local.cpp" />
+    <ClCompile Include="thread_pm.cpp" />
+    <ClCompile Include="thread_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FwCObjectPool.inl">

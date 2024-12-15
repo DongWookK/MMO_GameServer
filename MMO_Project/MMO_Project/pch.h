@@ -5,3 +5,5 @@
 #else
 #pragma comment(lib, "Framework\\Release\\Framework.lib")
 #endif
+
+int main2();

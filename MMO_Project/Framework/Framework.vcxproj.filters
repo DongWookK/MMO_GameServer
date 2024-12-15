@@ -21,23 +21,11 @@
     <ClInclude Include="pch_fw.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="thread_local.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="types.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="global.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
     <ClInclude Include="FwCObjectPool.h">
       <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="singleton.h">
       <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="FwCContainer.h">
-      <Filter>Memory</Filter>
     </ClInclude>
     <ClInclude Include="FwCObjectPool.inl">
       <Filter>Memory</Filter>
@@ -48,14 +36,11 @@
     <ClInclude Include="thread_pm.h">
       <Filter>Thread</Filter>
     </ClInclude>
+    <ClInclude Include="thread_local.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="thread_local.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
-    <ClCompile Include="global.cpp">
-      <Filter>Utils</Filter>
-    </ClCompile>
     <ClCompile Include="thread_manager.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
@@ -64,6 +49,9 @@
     </ClCompile>
     <ClCompile Include="acceptor.h">
       <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="thread_local.cpp">
+      <Filter>Thread</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
