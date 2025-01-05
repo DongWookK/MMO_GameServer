@@ -1,4 +1,2 @@
-﻿#pragma once
-#include <stack>
-
-extern thread_local uint32_t thread_Id_;
+#pragma once
+#include "pch.h"

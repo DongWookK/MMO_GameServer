@@ -1,55 +1,37 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Utils">
-      <UniqueIdentifier>{bbae3c55-7bc3-427b-a83e-8b79f7148728}</UniqueIdentifier>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Thread">
-      <UniqueIdentifier>{d13ecd72-21a1-4a6c-b523-68b882f5a012}</UniqueIdentifier>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Memory">
-      <UniqueIdentifier>{328e6639-ce17-42e4-86ca-815011418bac}</UniqueIdentifier>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
     <Filter Include="Network">
-      <UniqueIdentifier>{8b200fcf-7274-4a68-bd6a-fe6d82bfed71}</UniqueIdentifier>
+      <UniqueIdentifier>{00f66829-08e9-4c63-9751-6c9a9d2784ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Thread">
+      <UniqueIdentifier>{e7cf3ac4-94fb-4f21-b4ca-3d0ad25650b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="macro.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="pch_fw.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="FwCObjectPool.h">
-      <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="singleton.h">
-      <Filter>Utils</Filter>
-    </ClInclude>
-    <ClInclude Include="FwCObjectPool.inl">
-      <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="thread_manager.h">
-      <Filter>Thread</Filter>
-    </ClInclude>
-    <ClInclude Include="thread_pm.h">
-      <Filter>Thread</Filter>
+    <ClInclude Include="acceptor.h">
+      <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="thread_local.h">
       <Filter>Thread</Filter>
     </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="thread_manager.cpp">
-      <Filter>Thread</Filter>
-    </ClCompile>
-    <ClCompile Include="thread_pm.cpp">
-      <Filter>Thread</Filter>
-    </ClCompile>
-    <ClCompile Include="acceptor.h">
-      <Filter>Network</Filter>
-    </ClCompile>
     <ClCompile Include="thread_local.cpp">
       <Filter>Thread</Filter>
     </ClCompile>

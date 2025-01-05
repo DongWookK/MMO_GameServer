@@ -1,9 +1,7 @@
 #pragma once
 
 #ifdef _DEBUG
-#pragma comment(lib, "Framework\\Debug\\Framework.lib")
+#pragma comment(lib, "Debug\\Framework.lib")
 #else
-#pragma comment(lib, "Framework\\Release\\Framework.lib")
+#pragma comment(lib, "Release\\Framework.lib")
 #endif
-
-int main2();

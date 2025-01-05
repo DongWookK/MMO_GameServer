@@ -1,6 +1,5 @@
 #pragma once
-
-#include "pch_fw.h"
+#include "pch.h"
 
 using namespace boost;
 
@@ -10,7 +9,7 @@ int main()
 	unsigned short port_num = 3333;
 
 	boost::system::error_code ec;
-	asio::ip::address ip_address = asio::ip::address::from_string(raw_ip_address, ec);
+	asio::ip::address ip_address;
 
 	if (ec.value() != 0)
 	{
