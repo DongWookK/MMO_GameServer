@@ -19,6 +19,9 @@
     <Filter Include="Thread">
       <UniqueIdentifier>{e7cf3ac4-94fb-4f21-b4ca-3d0ad25650b7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Util">
+      <UniqueIdentifier>{2ce5afb0-d655-465c-8215-c826bbbda7ce}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="acceptor.h">
@@ -30,9 +33,24 @@
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="thread_worker.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="thread_manager.h">
+      <Filter>Thread</Filter>
+    </ClInclude>
+    <ClInclude Include="singleton.h">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
+      <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="thread_worker.cpp">
+      <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="thread_manager.cpp">
       <Filter>Thread</Filter>
     </ClCompile>
   </ItemGroup>

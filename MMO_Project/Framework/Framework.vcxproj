@@ -149,10 +149,15 @@
   <ItemGroup>
     <ClInclude Include="acceptor.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="singleton.h" />
     <ClInclude Include="thread_local.h" />
+    <ClInclude Include="thread_manager.h" />
+    <ClInclude Include="thread_worker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp" />
+    <ClCompile Include="thread_manager.cpp" />
+    <ClCompile Include="thread_worker.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
