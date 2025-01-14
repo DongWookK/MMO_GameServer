@@ -42,6 +42,9 @@
     <ClInclude Include="singleton.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="macro.h">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">

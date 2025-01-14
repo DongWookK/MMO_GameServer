@@ -1,46 +1,34 @@
 #pragma once
 
-//#include "FwCObjectPool.h"
 #include "pch.h"
 #include "thread_worker.h"
 
 /*---------------------------------------------------------------------
 	Thread Manager
-desc : Managing Priamry, Worker, Log_Worker
-warn :
+desc : worker_thread
+warn : 
 ----------------------------------------------------------------------*/
 
-static constexpr uint32_t eThreadCount = 4;
-
-//싱글턴 패턴 적용 필요
-enum class Flag {
-	START,
-	STOP,
-	TEARDOWN,
-};
+static constexpr uint32_t G_thread_count = 4;
 
 class thread_pool
 {
-	/*
 private:
-	using TPool = FnlApi::CObjectPool<worker>;
-	using TObject = TPool::Object;
+	using pool_t = boost::object_pool<worker>;
 
 public:
 	auto initialize() -> fw::error;
-	auto acquire(uint32_t pThreadCount = eThreadCount) -> fw::error;
+	auto acquire(uint32_t pThreadCount = G_thread_count) -> fw::error;
 
 public:
-	static auto open_worker() -> fw::error;
-	static auto close_worker() -> fw::error;
-
-public:
-	auto is_setup() const -> const bool;
-	std::vector<TObject>& get_all_threads();
+	static auto set_up() -> fw::error;
+	static auto start() -> fw::error;
+	static auto stop() -> fw::error;
+	static auto remove() -> fw::error;
 
 private:
-	std::shared_ptr<TPool> pool_{};
-	std::vector<TObject> threads_{};
+	pool_t pool_{};
+	std::vector<worker> threads_{};
 	bool is_setup_{};
 };
 
@@ -53,10 +41,7 @@ public:
 	auto teardown() -> fw::error;
 
 public:
-	Flag flag_{};
 	thread_pool thread_pool_{};
-
-	*/
 };
 
 
