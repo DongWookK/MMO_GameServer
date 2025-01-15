@@ -45,6 +45,9 @@
     <ClInclude Include="macro.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="object_pool.h">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
@@ -55,6 +58,9 @@
     </ClCompile>
     <ClCompile Include="thread_manager.cpp">
       <Filter>Thread</Filter>
+    </ClCompile>
+    <ClCompile Include="object_pool.cpp">
+      <Filter>Util</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

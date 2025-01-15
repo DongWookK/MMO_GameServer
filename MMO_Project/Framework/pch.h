@@ -7,3 +7,9 @@
 
 #include "macro.h"
 #include "singleton.h"
+
+#include <deque>
+#include <map>
+#include <ppl.h>
+
+#include "object_pool.h"
