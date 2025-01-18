@@ -1,5 +1,10 @@
 #pragma once
 
+
+// boost asio warning 
+// https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt?view=msvc-160
+#define _WIN32_WINNT 0x0A000000		// win10
+
 #include <stdint.h>
 #include <boost/asio.hpp>
 #include <boost/pool/object_pool.hpp>
