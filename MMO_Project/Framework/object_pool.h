@@ -24,7 +24,6 @@ namespace fw
 		//chunkSize 만큼의 객체 생성
 		// 객체 풀의 객체가 모두 비게 되면 chunksize만큼의 객체를 추가로 생성하여 풀에 투입한다.
 		// 풀은 커지기만 하고 줄어들지는 않는다. 객체들도 풀에서 삭제(memory해제) 되지 않는다.
-		// 풀이 삭제되는 경우는 예외다.
 
 		CObjectPool(void) = default;
 		//CObjectPool(size_t chunkSize = KDefaultChunkSize);

@@ -3,32 +3,33 @@
 #include "pch.h"
 #include "thread_worker.h"
 
-/*---------------------------------------------------------------------
-	Thread Manager
-desc : worker_thread
-warn : 
-----------------------------------------------------------------------*/
+namespace fw
+{
 
 static constexpr uint32_t G_thread_count = 4;
 
 class thread_pool
 {
-private:
-	using pool_t = boost::object_pool<worker>;
+public:
+	using pool_t = fw::CObjectPool<worker>;
+	using worker_shd_t = std::shared_ptr<worker>;
 
 public:
+	auto setup() -> fw::error;
+	auto start() -> fw::error;
+	auto stop() -> fw::error;
+	auto teardown() -> fw::error;
+
+private:
 	auto initialize() -> fw::error;
 	auto acquire(uint32_t pThreadCount = G_thread_count) -> fw::error;
 
-public:
-	static auto set_up() -> fw::error;
-	static auto start() -> fw::error;
-	static auto stop() -> fw::error;
-	static auto remove() -> fw::error;
+	static auto setup_worker() -> fw::error;
+	static auto teardown_worker() -> fw::error;
 
 private:
 	pool_t pool_{};
-	std::vector<worker> threads_{};
+	std::vector<worker_shd_t> threads_{};
 	bool is_setup_{};
 };
 
@@ -41,7 +42,11 @@ public:
 	auto teardown() -> fw::error;
 
 public:
+	auto get_flag() const->fw::flag;
+
+private:
+	fw::flag flag_{};
 	thread_pool thread_pool_{};
+
 };
-
-
+};
