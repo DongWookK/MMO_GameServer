@@ -12,6 +12,7 @@ class thread_pool
 {
 public:
 	using pool_t = fw::CObjectPool<worker>;
+	using object_t = pool_t::Object;
 	using worker_shd_t = std::shared_ptr<worker>;
 
 public:
@@ -22,14 +23,14 @@ public:
 
 private:
 	auto initialize() -> fw::error;
-	auto acquire(uint32_t pThreadCount = G_thread_count) -> fw::error;
+	auto acquire(uint32_t thread_count = G_thread_count) -> fw::error;
 
 	static auto setup_worker() -> fw::error;
 	static auto teardown_worker() -> fw::error;
 
 private:
 	pool_t pool_{};
-	std::vector<worker_shd_t> threads_{};
+	std::vector<object_t> threads_{};
 	bool is_setup_{};
 };
 
@@ -42,10 +43,11 @@ public:
 	auto teardown() -> fw::error;
 
 public:
-	auto get_flag() const->fw::flag;
+
+public:
+	std::atomic_bool is_on_service_;
 
 private:
-	fw::flag flag_{};
 	thread_pool thread_pool_{};
 
 };

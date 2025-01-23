@@ -17,7 +17,7 @@ auto worker::allocate_job() -> const uint32_t
 
 auto worker::job() -> const uint32_t
 {
-	while (fw::flag::start == fw::thread_manager::instance()->get_flag())
+	while (fw::thread_manager::instance()->is_on_service_)
 	{
 		// thread work
 		std::thread::id this_id = std::this_thread::get_id();
