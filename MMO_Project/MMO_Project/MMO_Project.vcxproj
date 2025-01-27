@@ -86,13 +86,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Binary\$(Configuration)\</OutDir>
-    <IncludePath>$(SolutionDir)Framework\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Framework\;C:\boost_1_87_0;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Binary\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Binary\$(Configuration)\</OutDir>
-    <IncludePath>$(SolutionDir)Framework\;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)Framework\;C:\boost_1_87_0;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Binary\;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

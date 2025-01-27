@@ -5,8 +5,7 @@
 
 namespace fw
 {
-
-static constexpr uint32_t G_thread_count = 4;
+static constexpr uint32_t thread_count = 4;
 
 class thread_pool
 {
@@ -23,7 +22,7 @@ public:
 
 private:
 	auto initialize() -> fw::error;
-	auto acquire(uint32_t thread_count = G_thread_count) -> fw::error;
+	auto acquire(uint32_t thread_count = thread_count) -> void;
 
 	static auto setup_worker() -> fw::error;
 	static auto teardown_worker() -> fw::error;
