@@ -33,6 +33,10 @@ auto thread_pool::start() -> fw::error
 
 auto thread_pool::stop() -> fw::error
 {
+	for (auto& thread : threads_) {
+		thread->join();
+	}
+
 	return fw::error();
 }
 
@@ -107,6 +111,8 @@ auto thread_manager::start() -> fw::error
 
 auto thread_manager::stop() -> fw::error
 {
+	thread_pool_.stop();
+
 	return fw::error();
 }
 

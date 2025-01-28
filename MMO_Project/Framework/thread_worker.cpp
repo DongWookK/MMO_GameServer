@@ -6,7 +6,7 @@
 
 worker::worker()
 {
-	//std::cout << "my id is %d" << thread_Id_ << std::endl;
+	std::cout << "my id is %d" << std::this_thread::get_id() << std::endl;
 }
 
 auto worker::allocate_job() -> void
@@ -17,14 +17,18 @@ auto worker::allocate_job() -> void
 
 auto worker::job() -> void
 {
-	uint32_t this_id = 3;
-
 	while (fw::thread_manager::instance()->is_on_service_.load())
 	{
-		//std::thread::id this_id = std::this_thread::get_id();
+		std::thread::id this_id = std::this_thread::get_id();
 		std::cout << "thread " << this_id << " sleeping...\n";
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 
+	return;
+}
+
+auto worker::join() -> void
+{
+	thread_.join();
 	return;
 }

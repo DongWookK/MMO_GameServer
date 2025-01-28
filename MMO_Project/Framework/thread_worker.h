@@ -8,6 +8,7 @@ public:
 
 public:
 	auto allocate_job() -> void;
+	auto join() -> void;
 
 private:
 	static auto job() -> void;
