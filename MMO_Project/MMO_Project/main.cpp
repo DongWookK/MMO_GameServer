@@ -1,13 +1,11 @@
 #pragma once
 #include "pch.h"
 #include "thread_manager.h"
-
+#include "macro.h"
 int main()
 {
-	fw::thread_manager::instance()->setup();
-	fw::thread_manager::instance()->start();
-	fw::thread_manager::instance()->stop();
-
+	RETURN_VALUE(0);
+	ASSERT_CRASH(false);
 	std::cout << " end " << std::endl;
 
 	return 0;

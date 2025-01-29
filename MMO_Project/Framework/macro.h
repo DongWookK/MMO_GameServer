@@ -21,6 +21,16 @@ Crash Define
 }
 
 /*---------------------------------------------
+For Code
+---------------------------------------------*/
+#define RETURN_VALUE(error_code)			\
+{ if (error_code != 0) {					\
+		ASSERT_CRASH(error_code);			\
+		return error_code;					\
+	}										\
+}
+
+/*---------------------------------------------
 For Log
 ---------------------------------------------*/
 #define __FILE _CRT_WIDE(__FILE__) 
