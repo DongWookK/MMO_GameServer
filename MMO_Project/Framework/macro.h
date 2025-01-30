@@ -13,7 +13,7 @@ Crash Define
 
 #define ASSERT_CRASH(expr)			\
 {									\
-	if (!(expr))					\
+	if (!(expr))						\
 	{								\
 		CRASH("ASSERT_CRASH");		\
 		__analysis_assume(expr);	\
@@ -23,12 +23,20 @@ Crash Define
 /*---------------------------------------------
 For Code
 ---------------------------------------------*/
+#ifdef NDEBUG	// NDEBUG is typically defined in release mode
 #define RETURN_VALUE(error_code)			\
 { if (error_code != 0) {					\
-		ASSERT_CRASH(error_code);			\
 		return error_code;					\
 	}										\
 }
+#else			// Debug mode
+#define RETURN_VALUE(error_code)			\
+{ if (error_code != 0) {					\
+		ASSERT_CRASH(!(error_code));		\
+		return error_code;					\
+	}										\
+}
+#endif
 
 /*---------------------------------------------
 For Log
