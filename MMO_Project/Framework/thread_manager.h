@@ -33,7 +33,7 @@ private:
 	bool is_setup_{};
 };
 
-class thread_manager : public singleton<thread_manager>
+class thread_manager : public feature, public singleton<thread_manager>
 {
 public:
 	auto setup() -> fw::error;

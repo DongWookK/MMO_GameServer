@@ -4,8 +4,8 @@
 #include "macro.h"
 int main()
 {
-	RETURN_VALUE(0);
-	ASSERT_CRASH(false);
+	main_server
+
 	std::cout << " end " << std::endl;
 
 	return 0;

@@ -86,9 +86,9 @@ auto fw::thread_pool::setup_worker() -> fw::error
 
 auto fw::thread_pool::teardown_worker() -> fw::error
 {
+	// todo :: gracefule shutdown
 	return fw::error();
 }
-
 
 auto thread_manager::setup() -> fw::error
 {
@@ -101,7 +101,6 @@ auto thread_manager::setup() -> fw::error
 
 auto thread_manager::start() -> fw::error
 {
-	//notify_all ??  아토믹 변수 기다리기
 	is_on_service_.store(true);
 
 	thread_pool_.start();

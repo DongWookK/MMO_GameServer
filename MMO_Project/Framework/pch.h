@@ -20,6 +20,7 @@
 #include <thread>
 
 #include "object_pool.hpp"
+#include "feature.h"
 
 namespace fw
 {
