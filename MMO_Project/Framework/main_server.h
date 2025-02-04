@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.h"
-#include "thread_manager.h"
 
 class main_server : public singleton<main_server>
 {
@@ -13,8 +12,12 @@ public:
 	auto stop_service() -> fw::error;
 
 private:
-	auto load_feature() -> void;
+	auto core_setup() -> fw::error;
+	auto core_start() -> fw::error;
+	auto core_stop() -> fw::error;
+	auto core_teardown() -> fw::error;
 
+	auto load_feature() -> void;
 	auto feature_setup() -> fw::error;
 	auto feature_start() -> fw::error;
 	auto feature_stop() -> fw::error;

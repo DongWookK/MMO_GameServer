@@ -161,6 +161,7 @@
     <ClInclude Include="thread_worker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="feature.cpp" />
     <ClCompile Include="main_server.cpp" />
     <ClCompile Include="object_pool.inl" />
     <ClCompile Include="thread_local.cpp" />

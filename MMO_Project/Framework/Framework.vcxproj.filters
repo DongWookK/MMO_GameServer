@@ -71,5 +71,8 @@
     <ClCompile Include="main_server.cpp">
       <Filter>main</Filter>
     </ClCompile>
+    <ClCompile Include="feature.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

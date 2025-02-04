@@ -95,6 +95,7 @@ auto thread_manager::setup() -> fw::error
 	fw::error error_code{};
 
 	error_code = thread_pool_.setup();
+	RETURN_VALUE(error_code);
 
 	return error_code;
 }
