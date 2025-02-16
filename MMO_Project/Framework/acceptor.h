@@ -3,21 +3,9 @@
 
 using namespace boost;
 
-int main()
+auto get_endpoint() -> const asio::ip::tcp::endpoint&
 {
-	std::string raw_ip_address = "127.0.0.1";
-	unsigned short port_num = 3333;
-
-	boost::system::error_code ec;
-	asio::ip::address ip_address;
-
-	if (ec.value() != 0)
-	{
-		std::cout << "Failed to parse the IP address. Error Code = " << ec.value() << ". Message:: " << ec.message();
-		return ec.value();
-	}
-
-	asio::ip::tcp::endpoint ep(ip_address, port_num);
-
-	return 0;
+	static unsigned short port_num = 0221;
+	asio::ip::address_v4 ip_address = asio::ip::address_v4::any();
+	return asio::ip::tcp::endpoint(ip_address, port_num);
 }
