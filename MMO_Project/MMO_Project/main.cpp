@@ -2,6 +2,10 @@
 #include "pch.h"
 #include "main_server.h"
 #include "thread_manager.h"
+#include <boost/asio.hpp>
+#include "acceptor.h"
+
+using namespace boost;
 
 int main()
 {

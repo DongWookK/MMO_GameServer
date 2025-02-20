@@ -24,9 +24,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="acceptor.h">
-      <Filter>Network</Filter>
-    </ClInclude>
     <ClInclude Include="thread_local.h">
       <Filter>Thread</Filter>
     </ClInclude>
@@ -54,6 +51,9 @@
     <ClInclude Include="feature.h">
       <Filter>Util</Filter>
     </ClInclude>
+    <ClInclude Include="network_manager.h">
+      <Filter>Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
@@ -73,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="feature.cpp">
       <Filter>Util</Filter>
+    </ClCompile>
+    <ClCompile Include="network_manager.cpp">
+      <Filter>Network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

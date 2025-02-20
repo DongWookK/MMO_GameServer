@@ -23,6 +23,8 @@ private:
 	auto feature_stop() -> fw::error;
 	auto feature_teardown() -> fw::error;
 
+	auto on_service() -> fw::error;
+
 private:
 	feature_list_t feature_list{};
 };

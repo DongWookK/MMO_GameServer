@@ -21,6 +21,8 @@ auto main_server::start_service() -> fw::error
     error_code = feature_start();
     RETURN_VALUE(error_code);
 
+    on_service();
+
     return error_code;
 }
 
@@ -100,5 +102,13 @@ auto main_server::feature_stop() -> fw::error
 
 auto main_server::feature_teardown() -> fw::error
 {
+    return fw::error();
+}
+
+auto main_server::on_service() -> fw::error
+{
+    // todo connection start
+    // tcp - connection establishment(¼ö¸³)
+
     return fw::error();
 }
