@@ -2,6 +2,7 @@
 #include "pch.h"
 
 using namespace boost;
+using namespace std;
 
 int main()
 {
@@ -42,12 +43,39 @@ int main()
 	}
 #pragma endregion
 
+#pragma region connect server
 	
+#pragma endregion
 
+	std::string message{};
+	bool out = true;
+	cout << "client ready" << endl;
+	while (out)
+	{
+	cin >> message;
+		
+	if ("connect" == message)
+	{
+		try
+		{
+			sock.connect(ep); // 동기적이다. 연결될때까지 thread stop
+		}
+		catch (system::system_error& e)
+		{
+			std::cout << "Error occured! Error Code =" << e.code() << ". Message: " << e.what() << endl;
+		}
+	}
+	else if ("disconnect" == message)
+	{
+		out = false;
+	}
+	else
+	{
+		std::cout << "invalid command" << endl;
+	}
+	}
 	
+	std::cout << "~client terminated" << endl;
 	
 	return 0;
-
-
-
 }

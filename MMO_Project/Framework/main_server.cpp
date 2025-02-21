@@ -69,8 +69,10 @@ auto main_server::core_stop() -> fw::error
 {
     fw::error error_code{};
 
-    fw::thread_manager::instance()->stop();
+    error_code = fw::thread_manager::instance()->stop();
     RETURN_VALUE(error_code);
+
+    return error_code;
 }
 
 auto main_server::core_teardown() -> fw::error

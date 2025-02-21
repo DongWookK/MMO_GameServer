@@ -28,5 +28,18 @@ auto network_manager::setup() -> fw::error
 		return ec.value();
 	}
 
+	const uint16_t BACKLOG_SIZE = 30; // 대기열 연결요청 최대 수
+	acceptor_.listen(BACKLOG_SIZE);
+
+	asio::ip::tcp::socket sock(context_);
+	try 
+	{
+		acceptor_.accept(sock);
+	}
+	catch(system::system_error &e)
+	{
+		std::cout << "server accept fail! Error code = << = " << e.code() << ". Message: " << e.what();
+	}
+	
 	return fw::error{};
 }
