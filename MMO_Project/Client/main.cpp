@@ -4,12 +4,13 @@
 using namespace boost;
 using namespace std;
 
+static const std::string raw_ip_address = "127.0.0.1";
+static constexpr uint16_t port_no = 0221;
+
 int main()
 {
 #pragma region get_endpoint
 	// point Client to Server's endpoint
-	std::string raw_ip_address = "127.0.0.1";
-	unsigned short port_num = 3333;
 
 	boost::system::error_code ec;
 	asio::ip::address ip_address = asio::ip::make_address_v4(raw_ip_address);
@@ -20,7 +21,7 @@ int main()
 		return ec.value();
 	}
 
-	asio::ip::tcp::endpoint ep(ip_address, port_num);
+	asio::ip::tcp::endpoint ep(ip_address, port_no);
 #pragma endregion
 	
 #pragma region create active socket

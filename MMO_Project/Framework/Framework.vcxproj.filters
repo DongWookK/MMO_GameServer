@@ -54,6 +54,9 @@
     <ClInclude Include="network_manager.h">
       <Filter>Network</Filter>
     </ClInclude>
+    <ClInclude Include="session.h">
+      <Filter>Network</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
@@ -75,6 +78,9 @@
       <Filter>Util</Filter>
     </ClCompile>
     <ClCompile Include="network_manager.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="session.cpp">
       <Filter>Network</Filter>
     </ClCompile>
   </ItemGroup>

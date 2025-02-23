@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "network_manager.h"
+#include "session.h"
+#include "boost/bind/bind.hpp"
 
-auto network_manager::setup() -> fw::error
+auto fw::network_manager::setup() -> fw::error
 {
 	boost::system::error_code ec;
 
@@ -28,18 +30,58 @@ auto network_manager::setup() -> fw::error
 		return ec.value();
 	}
 
-	const uint16_t BACKLOG_SIZE = 30; // 대기열 연결요청 최대 수
 	acceptor_.listen(BACKLOG_SIZE);
 
-	asio::ip::tcp::socket sock(context_);
 	try 
 	{
-		acceptor_.accept(sock);
+		start_accept();
 	}
 	catch(system::system_error &e)
 	{
 		std::cout << "server accept fail! Error code = << = " << e.code() << ". Message: " << e.what();
 	}
-	
+
 	return fw::error{};
+}
+
+auto fw::network_manager::start() -> fw::error
+{
+	try
+	{
+		std::cout << "context_ run" << std::endl;
+		context_.run(); // event loop start (ex. network_manager::start_accept())
+	}
+	catch (system::system_error& e)
+	{
+		std::cout << "context_ run fail.  Error code = << = " << e.code() << ". Message: " << e.what();
+	}
+
+	return fw::error{};
+}
+
+
+auto fw::network_manager::start_accept() -> void
+{
+	asio::ip::tcp::socket sock(context_);
+	auto new_session = std::make_shared<session>(std::move(sock));
+
+	acceptor_.async_accept(new_session->get_socket()
+						   , boost::bind(&network_manager::handle_accept, this, new_session, boost::asio::placeholders::error));
+}
+
+auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system::error_code error) -> void
+{
+	if (!error)
+	{
+		new_session->on_accept();
+		// todo session list에 넣기.
+	}
+	else
+	{
+		std::cout << "handle_accept fail." << std::endl;
+		std::cout << error.what() << error.message() << std::endl;
+
+		new_session.reset();
+		start_accept();
+	}
 }

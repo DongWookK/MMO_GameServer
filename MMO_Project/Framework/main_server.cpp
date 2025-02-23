@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "main_server.h"
 #include "thread_manager.h"
+#include "network_manager.h"
 
 auto main_server::start_service() -> fw::error
 {
@@ -49,7 +50,10 @@ auto main_server::core_setup() -> fw::error
 {
     fw::error error_code{};
 
-    fw::thread_manager::instance()->setup();
+    error_code = fw::thread_manager::instance()->setup();
+    RETURN_VALUE(error_code);
+
+    error_code = fw::network_manager::instance()->setup();
     RETURN_VALUE(error_code);
 
     return error_code;
@@ -59,7 +63,10 @@ auto main_server::core_start() -> fw::error
 {
     fw::error error_code{};
 
-    fw::thread_manager::instance()->start();
+    error_code = fw::thread_manager::instance()->start();
+    RETURN_VALUE(error_code);
+
+    error_code = fw::network_manager::instance()->start();
     RETURN_VALUE(error_code);
 
     return error_code;
@@ -109,8 +116,6 @@ auto main_server::feature_teardown() -> fw::error
 
 auto main_server::on_service() -> fw::error
 {
-    // todo connection start
-    // tcp - connection establishment(¼ö¸³)
 
     return fw::error();
 }
