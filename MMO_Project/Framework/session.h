@@ -15,5 +15,6 @@ public:
     auto get_socket() const -> tcp_t::socket&;
 
 private:
+    asio::streambuf input_{};
     tcp_t::socket socket_;
 };

@@ -7,6 +7,17 @@ using namespace std;
 static const std::string raw_ip_address = "127.0.0.1";
 static constexpr uint16_t port_no = 0221;
 
+void write_to_socket(asio::ip::tcp::socket& sock)
+{
+	std::string buf = "hello";
+	std::size_t total_bytes_written = 0;
+	
+	while (total_bytes_written != buf.length())
+	{
+		total_bytes_written += sock.write_some(asio::buffer(buf.c_str() + total_bytes_written, buf.length() - total_bytes_written));
+	}
+}
+
 int main()
 {
 #pragma region get_endpoint
@@ -44,10 +55,6 @@ int main()
 	}
 #pragma endregion
 
-#pragma region connect server
-	
-#pragma endregion
-
 	std::string message{};
 	bool out = true;
 	cout << "client ready" << endl;
@@ -74,7 +81,10 @@ int main()
 	{
 		std::cout << "invalid command" << endl;
 	}
+
 	}
+
+
 	
 	std::cout << "~client terminated" << endl;
 	
