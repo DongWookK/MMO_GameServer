@@ -10,13 +10,11 @@ static constexpr uint16_t port_no = 0221;
 void write_to_socket(asio::ip::tcp::socket& sock)
 {
 	std::string buf = "hello";
-	std::size_t total_bytes_written = 0;
 	
-	while (total_bytes_written != buf.length())
-	{
-		total_bytes_written += sock.write_some(asio::buffer(buf.c_str() + total_bytes_written, buf.length() - total_bytes_written));
-	}
+	// 동기 전송, 완전히 전송된 이후에 응답한다.
+	asio::write(sock, asio::buffer(buf));
 }
+
 
 int main()
 {
@@ -58,24 +56,29 @@ int main()
 	std::string message{};
 	bool out = true;
 	cout << "client ready" << endl;
+	
+	cin >> message;
+
+	try
+	{
+		sock.connect(ep); // 동기적이다. 연결될때까지 thread stop
+	}
+	catch (system::system_error& e)
+	{
+		std::cout << "Error occured! Error Code =" << e.code() << ". Message: " << e.what() << endl;
+	}
+
 	while (out)
 	{
-	cin >> message;
-		
-	if ("connect" == message)
-	{
-		try
-		{
-			sock.connect(ep); // 동기적이다. 연결될때까지 thread stop
-		}
-		catch (system::system_error& e)
-		{
-			std::cout << "Error occured! Error Code =" << e.code() << ". Message: " << e.what() << endl;
-		}
-	}
-	else if ("disconnect" == message)
+		cin >> message;
+
+	if ("disconnect" == message)
 	{
 		out = false;
+	}
+	if ("send" == message)
+	{
+		write_to_socket(sock);
 	}
 	else
 	{
