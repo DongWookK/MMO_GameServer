@@ -12,3 +12,6 @@
 
 #include <boost/asio.hpp>
 #include <iostream>
+
+#include <flatbuffers/flatbuffers.h>
+#include "game_generated.h"

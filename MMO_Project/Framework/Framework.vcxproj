@@ -71,12 +71,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>C:\boost_1_87_0;$(IncludePath)</IncludePath>
+    <IncludePath>C:\boost_1_87_0;..\..\IDL\flatbuffers-25.2.10\include;..\..\IDL;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)Binary\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>C:\boost_1_87_0;$(IncludePath)</IncludePath>
+    <IncludePath>C:\boost_1_87_0;..\..\IDL\flatbuffers-25.2.10\include;..\..\IDL;$(IncludePath)</IncludePath>
     <OutDir>$(SolutionDir)Binary\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>

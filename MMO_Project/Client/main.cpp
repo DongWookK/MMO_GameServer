@@ -9,7 +9,15 @@ static constexpr uint16_t port_no = 0221;
 
 void write_to_socket(asio::ip::tcp::socket& sock)
 {
+	flatbuffers::FlatBufferBuilder builder;
+	auto data = builder.CreateString("hello");
+	builder.Finish(CreateTestEcho(builder, data));
+
+	const uint8_t* data = builder.GetBufferPointer();
+	int level = builder.GetSize();
+
 	std::string buf = "hello";
+	//버퍼의 타입은 뭐로해야하지?
 	
 	// 동기 전송, 완전히 전송된 이후에 응답한다.
 	asio::write(sock, asio::buffer(buf));
