@@ -1,7 +1,0 @@
-namespace MyGame;
-
-enum sql_type : uint8_t
-{ 
-	info = 0
-	, game
-}
