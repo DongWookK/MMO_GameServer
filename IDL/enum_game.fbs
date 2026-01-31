@@ -1,0 +1,8 @@
+namespace MyGame;
+
+enum type : uint8_t
+{ 
+	player = 0
+	, npc
+	, monster 
+}
