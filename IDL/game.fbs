@@ -1,5 +1,0 @@
-table TestEcho{
-	data: string;
-}
-
-root_type TestEcho;
