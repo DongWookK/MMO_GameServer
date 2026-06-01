@@ -22,8 +22,8 @@
 #include "object_pool.hpp"
 #include "feature.h"
 
-#include <flatbuffers/flatbuffers.h>
-#include "game_generated.h"
+//#include <flatbuffers/flatbuffers.h>
+#include "enum_game_generated.h"
 
 namespace fw
 {
