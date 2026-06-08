@@ -14,4 +14,4 @@
 #include <iostream>
 
 #include <flatbuffers/flatbuffers.h>
-#include "game_generated.h"
+#include "enum_game_generated.h"
