@@ -9,18 +9,18 @@ auto main_server::start_service() -> fw::error
     fw::error error_code{};
     
     error_code = core_setup();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = core_start();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     load_feature();
 
     error_code = feature_setup();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = feature_start();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     on_service();
 
@@ -32,16 +32,16 @@ auto main_server::stop_service() -> fw::error
     fw::error error_code{};
 
     error_code = feature_stop();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = feature_teardown();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = core_stop();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = core_teardown();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
 }
@@ -51,10 +51,10 @@ auto main_server::core_setup() -> fw::error
     fw::error error_code{};
 
     error_code = fw::thread_manager::instance()->setup();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = fw::network_manager::instance()->setup();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
 }
@@ -64,10 +64,10 @@ auto main_server::core_start() -> fw::error
     fw::error error_code{};
 
     error_code = fw::thread_manager::instance()->start();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = fw::network_manager::instance()->start();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
 }
@@ -77,7 +77,7 @@ auto main_server::core_stop() -> fw::error
     fw::error error_code{};
 
     error_code = fw::thread_manager::instance()->stop();
-    RETURN_VALUE(error_code);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
 }

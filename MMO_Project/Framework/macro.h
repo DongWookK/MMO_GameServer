@@ -24,17 +24,17 @@ Crash Define
 For Code
 ---------------------------------------------*/
 #ifdef NDEBUG	// NDEBUG is typically defined in release mode
-#define RETURN_VALUE(error_code)			\
-{ if (error_code != 0) {					\
-		return error_code;					\
-	}										\
+#define ASSERT_RETURN_VALUE(expr, error_code)				\
+{ if (!expr) {						\
+		return error_code;						\
+	}											\
 }
 #else			// Debug mode
-#define RETURN_VALUE(error_code)			\
-{ if (error_code != 0) {					\
-		ASSERT_CRASH(!(error_code));		\
-		return error_code;					\
-	}										\
+#define ASSERT_RETURN_VALUE(expr, error_code)	\
+{ if (!(expr)) {								\
+		ASSERT_CRASH(expr);						\
+		return error_code;						\
+	}											\
 }
 #endif
 
