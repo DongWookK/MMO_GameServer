@@ -10,8 +10,13 @@ static constexpr uint16_t port_no = 0221;
 void write_to_socket(asio::ip::tcp::socket& sock)
 {
 	flatbuffers::FlatBufferBuilder builder;
-	auto data = builder.CreateString("hello");
-	builder.Finish(CreateTestEcho(builder, data));
+
+	// 1. 문자열 데이터를 FlatBuffer 내부에 생성
+	auto str_data = builder.CreateString("hello");
+
+	// 2. TestEcho 객체 생성 및 빌더 마감 (스키마 구조에 맞게 호출)
+	auto echo_offset = Game::CreateTestEcho(builder, std::to_underlying(Game::tr_type::TestEcho), str_data);
+	builder.Finish(echo_offset);
 
 	const uint8_t* data = builder.GetBufferPointer();
 	int level = builder.GetSize();
@@ -22,7 +27,6 @@ void write_to_socket(asio::ip::tcp::socket& sock)
 	// 동기 전송, 완전히 전송된 이후에 응답한다.
 	asio::write(sock, asio::buffer(buf));
 }
-
 
 int main()
 {

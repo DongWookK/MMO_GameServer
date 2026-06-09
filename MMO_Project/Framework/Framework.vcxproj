@@ -153,7 +153,6 @@
     <ClInclude Include="session.h" />
     <ClInclude Include="feature.h" />
     <ClInclude Include="macro.h" />
-    <ClInclude Include="main_server.h" />
     <ClInclude Include="network_manager.h" />
     <ClInclude Include="object_pool.hpp" />
     <ClInclude Include="pch.h" />
@@ -164,7 +163,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="feature.cpp" />
-    <ClCompile Include="main_server.cpp" />
     <ClCompile Include="network_manager.cpp" />
     <ClCompile Include="object_pool.inl" />
     <ClCompile Include="session.cpp" />

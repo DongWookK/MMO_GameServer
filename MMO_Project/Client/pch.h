@@ -12,6 +12,8 @@
 
 #include <boost/asio.hpp>
 #include <iostream>
+#include <utility>
 
 #include <flatbuffers/flatbuffers.h>
 #include "enum_game_generated.h"
+#include "game_generated.h"
