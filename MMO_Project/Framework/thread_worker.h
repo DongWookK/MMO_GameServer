@@ -15,5 +15,5 @@ private:
 
 private:
 	std::thread thread_;
-	// jthread·Î stop À» Áö¿øÇÏ°ÔÇÑ´Ù?
+	// jthreadï¿½ï¿½ stop ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ï¿½Ñ´ï¿½?
 };

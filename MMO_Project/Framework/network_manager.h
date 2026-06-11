@@ -12,7 +12,7 @@ class network_manager : public singleton<network_manager>
 {
 public:
 	static constexpr uint16_t port_no = 0221;
-	static constexpr uint16_t BACKLOG_SIZE = 30; // ´ë±â¿­ ¿¬°á¿äÃ» ÃÖ´ë 
+	static constexpr uint16_t BACKLOG_SIZE = 30; // ï¿½ï¿½â¿­ ï¿½ï¿½ï¿½ï¿½ï¿½Ã» ï¿½Ö´ï¿½ 
 
 	using session_ptr_t = std::shared_ptr<session>;
 

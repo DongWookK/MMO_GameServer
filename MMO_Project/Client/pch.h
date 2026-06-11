@@ -8,7 +8,10 @@
 
 // boost asio warning 
 // https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt?view=msvc-160
-#define _WIN32_WINNT 0x0A000000	// win10
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0A00 // Windows 10 / 11 이상을 타겟으로 설정
+#endif
+
 
 #include <boost/asio.hpp>
 #include <iostream>

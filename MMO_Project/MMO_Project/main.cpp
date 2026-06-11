@@ -1,13 +1,12 @@
 #pragma once
 #include "pch.h"
 #include "main_server.h"
-#include "thread_manager.h"
-#include <boost/asio.hpp>
-
-using namespace boost;
 
 int main()
 {
+	spdlog::info("Welcome to spdlog!");
+	spdlog::error("Some error message with arg: {}", 1);
+
 	main_server::instance()->start_service();
 	main_server::instance()->stop_service();
 

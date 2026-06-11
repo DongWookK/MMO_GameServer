@@ -49,7 +49,7 @@ auto thread_pool::initialize() -> fw::error
 {
 	fw::error error_code{};
 	error_code = pool_.AllocateChunk<worker>([](pool_t::TObject* p, size_t i) {
-												DWORD aRv = setup_worker();				// pInitfunc Ç®ÀÇ °´Ã¼µéÀ» ÃÊ±âÈ­ÇÏ´Â ÇÔ¼ö
+												DWORD aRv = setup_worker();				// pInitfunc Ç®ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½Ï´ï¿½ ï¿½Ô¼ï¿½
 												return aRv;
 												}
 											 , [](pool_t::TObject* p) {

@@ -74,7 +74,7 @@ auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system
 	if (!error)
 	{
 		new_session->on_accept();
-		// todo session list¿¡ ³Ö±â.
+		// todo session listì— ë„£ê¸°.
 	}
 	else
 	{
