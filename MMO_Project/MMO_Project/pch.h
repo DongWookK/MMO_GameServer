@@ -14,7 +14,10 @@
 
 #include <stdint.h>
 #include <boost/asio.hpp>
-#include <spdlog/spdlog.h>
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/sinks/basic_file_sink.h"
+
 #include <iostream>
 #include <utility>
 
