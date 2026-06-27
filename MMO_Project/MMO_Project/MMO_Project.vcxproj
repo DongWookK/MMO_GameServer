@@ -175,6 +175,7 @@
     <ClCompile Include="main_server.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="logger.h" />
     <ClInclude Include="main_server.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
