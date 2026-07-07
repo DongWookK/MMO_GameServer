@@ -5,8 +5,6 @@
 
 namespace fw
 {
-static constexpr uint32_t thread_count = 4;
-
 class thread_pool
 {
 public:
@@ -15,22 +13,22 @@ public:
 	using worker_shd_t = std::shared_ptr<worker>;
 
 public:
-	auto setup() -> fw::error;
+	auto setup(const uint32_t thread_count) -> fw::error;
 	auto start() -> fw::error;
 	auto stop() -> fw::error;
 	auto teardown() -> fw::error;
 
 private:
-	auto initialize() -> fw::error;
-	auto acquire(uint32_t thread_count = thread_count) -> void;
+	auto initialize(const uint32_t thread_count) -> fw::error;
+	auto acquire() -> fw::error;
 
 	static auto setup_worker() -> fw::error;
 	static auto teardown_worker() -> fw::error;
 
 private:
-	pool_t pool_{};
+	uint32_t thread_count_{};
 	std::vector<object_t> threads_{};
-	bool is_setup_{};
+	pool_t pool_{};
 };
 
 class thread_manager : public singleton<thread_manager>
@@ -48,6 +46,5 @@ public:
 
 private:
 	thread_pool thread_pool_{};
-
 };
 };

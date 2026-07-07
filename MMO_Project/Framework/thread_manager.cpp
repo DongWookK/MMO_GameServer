@@ -5,13 +5,12 @@
 
 using namespace fw;
 
-auto thread_pool::setup() -> fw::error
+auto thread_pool::setup(const uint32_t thread_count) -> fw::error
 {
 	fw::error error_code{};
 
-	error_code = initialize();
-	if (error_code != 0)
-		return error_code;
+	error_code = initialize(thread_count);
+	ASSERT_RETURN_VALUE(!(error_code), error_code);
 
 	acquire();
 
@@ -45,37 +44,34 @@ auto thread_pool::teardown() -> fw::error
 	return fw::error();
 }
 
-auto thread_pool::initialize() -> fw::error
+auto thread_pool::initialize(const uint32_t thread_count) -> fw::error
 {
+	thread_count_ = thread_count;
+
 	fw::error error_code{};
 	error_code = pool_.AllocateChunk<worker>([](pool_t::TObject* p, size_t i) {
-												DWORD aRv = setup_worker();				// pInitfunc Ǯ�� ��ü���� �ʱ�ȭ�ϴ� �Լ�
+												DWORD aRv = setup_worker();
 												return aRv;
 												}
 											 , [](pool_t::TObject* p) {
-												 DWORD aRv = teardown_worker();			// pUnAcqFunc
+												 DWORD aRv = teardown_worker();
 												 return aRv;
-												}, thread_count, false);				// size_t pInitSize, bool pIsExpandable
-
-	is_setup_ = true;
+												}, thread_count_, false);				// size_t pInitSize, bool pIsExpandable
 
 	return error_code;
 }
 
-auto thread_pool::acquire(uint32_t thread_count) -> void
+auto thread_pool::acquire() -> fw::error
 {
-	for (uint32_t i = 0; i < thread_count; ++i)
+	for (uint32_t i = 0; i < thread_count_; ++i)
 	{
 		thread_pool::object_t thread = pool_.AcquireObject();
-		if (nullptr == thread)
-		{
-			//assert
-			break;
-		}
+		ASSERT_RETURN_VALUE(nullptr == thread, 111);
+
 		threads_.emplace_back(thread);
 	}
 
-	return;
+	return 0;
 }
 
 auto fw::thread_pool::setup_worker() -> fw::error
@@ -94,7 +90,9 @@ auto thread_manager::setup() -> fw::error
 {
 	fw::error error_code{};
 
-	error_code = thread_pool_.setup();
+	const auto thread_count_ = std::thread::hardware_concurrency();
+
+	error_code = thread_pool_.setup(thread_count_);
 	ASSERT_RETURN_VALUE(!(error_code), error_code);
 
 	return error_code;

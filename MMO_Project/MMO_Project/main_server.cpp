@@ -50,6 +50,12 @@ auto main_server::core_setup() -> fw::error
 {
     fw::error error_code{};
 
+    const auto thread_count = std::thread::hardware_concurrency();
+    for (uint32_t i = 0; i < thread_count; ++i)
+    {
+        strands_.push_back(std::make_shared<boost::asio::strand<boost::asio::io_context::executor_type>>(io_context_.get_executor()));
+    }
+
     error_code = fw::thread_manager::instance()->setup();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 

@@ -15,5 +15,4 @@ private:
 
 private:
 	std::thread thread_;
-	// jthread�� stop �� �����ϰ��Ѵ�?
 };

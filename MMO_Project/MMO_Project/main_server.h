@@ -6,6 +6,7 @@ class main_server : public singleton<main_server>
 public:
 	using feature_ptr_t = std::shared_ptr<feature>;
 	using feature_list_t = std::vector<feature_ptr_t>;
+	using strands_s_ptr_t = std::shared_ptr<boost::asio::strand<boost::asio::io_context::executor_type>>;
 
 public:
 	auto start_service() -> fw::error;
@@ -27,4 +28,7 @@ private:
 
 private:
 	feature_list_t feature_list{};
+
+	boost::asio::io_context io_context_;
+	std::vector<strands_s_ptr_t> strands_{};
 };
