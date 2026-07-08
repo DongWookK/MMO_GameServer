@@ -4,15 +4,17 @@
 class worker
 {
 public:
+	using io_context_t = boost::asio::io_context;
+
+public:
 	worker();
 
 public:
-	auto allocate_job() -> void;
-	auto join() -> void;
+	auto allocate_job(io_context_t& io_contex) -> void;
 
 private:
 	static auto job() -> void;
 
 private:
-	std::thread thread_;
+	std::jthread thread_;
 };

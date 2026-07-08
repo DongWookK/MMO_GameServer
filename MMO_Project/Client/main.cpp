@@ -11,10 +11,8 @@ void write_to_socket(asio::ip::tcp::socket& sock)
 {
 	flatbuffers::FlatBufferBuilder builder;
 
-	// 1. ���ڿ� �����͸� FlatBuffer ���ο� ����
 	auto str_data = builder.CreateString("hello");
 
-	// 2. TestEcho ��ü ���� �� ��� ���� (��Ű�� ������ �°� ȣ��)
 	auto echo_offset = Game::CreateTestEcho(builder, std::to_underlying(Game::tr_type::TestEcho), str_data);
 	builder.Finish(echo_offset);
 
@@ -22,9 +20,7 @@ void write_to_socket(asio::ip::tcp::socket& sock)
 	int level = builder.GetSize();
 
 	std::string buf = "hello";
-	//������ Ÿ���� �����ؾ�����?
 	
-	// ���� ����, ������ ���۵� ���Ŀ� �����Ѵ�.
 	asio::write(sock, asio::buffer(buf));
 }
 
@@ -47,16 +43,13 @@ int main()
 	
 #pragma region create active socket
 
-	// boost.asio�� �ٽ�
-	// �� Ŭ������ ��ü�� ���� �ü���� �����ϴ� ��Ʈ��ũ I/O ���񽺷� ������ �� �ִ�.
 	asio::io_context ioc;
 
-	// ���������� ǥ���ϴ� ������ ���� ������ ����ü����. ����� �������� �ʴ´�.
 	asio::ip::tcp protocol = asio::ip::tcp::v4();
 
 	// instantiate active tcp socket
 	asio::ip::tcp::socket sock(ioc);
-	sock.open(protocol, ec); // ���� �ü�� ������ �Ҵ�ȴ�.
+	sock.open(protocol, ec);
 
 	if (ec.value() != 0)
 	{
@@ -73,7 +66,7 @@ int main()
 
 	try
 	{
-		sock.connect(ep); // �������̴�. ����ɶ����� thread stop
+		sock.connect(ep);
 	}
 	catch (system::system_error& e)
 	{

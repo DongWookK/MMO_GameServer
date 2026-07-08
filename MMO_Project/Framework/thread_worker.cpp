@@ -9,9 +9,19 @@ worker::worker()
 	std::cout << "my id is %d" << std::this_thread::get_id() << std::endl;
 }
 
-auto worker::allocate_job() -> void
+auto worker::allocate_job(io_context_t& io_context) -> void
 {
-	thread_ = std::thread(job);
+	thread_ = std::jthread([&io_context]() {
+		try {
+			std::cout << "[Thread " << std::this_thread::get_id() << "] Started.\n";
+			io_context.run(); // 비동기 이벤트 루프 시작
+			std::cout << "[Thread " << std::this_thread::get_id() << "] Stopped.\n";
+		}
+		catch (const std::exception& e) {
+			std::cerr << "[Thread " << std::this_thread::get_id() << "] Exception: " << e.what() << "\n";
+		}
+		});
+
 	return;
 }
 
@@ -24,11 +34,5 @@ auto worker::job() -> void
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
 
-	return;
-}
-
-auto worker::join() -> void
-{
-	thread_.join();
 	return;
 }

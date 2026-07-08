@@ -46,6 +46,11 @@ auto main_server::stop_service() -> fw::error
     return error_code;
 }
 
+auto main_server::get_io_context() -> boost::asio::io_context&
+{
+    return io_context_;
+}
+
 auto main_server::core_setup() -> fw::error
 {
     fw::error error_code{};

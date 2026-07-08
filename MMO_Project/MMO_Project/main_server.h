@@ -12,6 +12,8 @@ public:
 	auto start_service() -> fw::error;
 	auto stop_service() -> fw::error;
 
+	auto get_io_context() -> boost::asio::io_context&;
+
 private:
 	auto core_setup() -> fw::error;
 	auto core_start() -> fw::error;
@@ -30,5 +32,6 @@ private:
 	feature_list_t feature_list{};
 
 	boost::asio::io_context io_context_;
+	boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work_guard_;
 	std::vector<strands_s_ptr_t> strands_{};
 };

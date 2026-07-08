@@ -7,6 +7,8 @@ namespace fw
 {
 class thread_pool
 {
+	using io_context_t = boost::asio::io_context;
+
 public:
 	using pool_t = fw::CObjectPool<worker>;
 	using object_t = pool_t::Object;
@@ -14,7 +16,7 @@ public:
 
 public:
 	auto setup(const uint32_t thread_count) -> fw::error;
-	auto start() -> fw::error;
+	auto start(io_context_t& io_context) -> fw::error;
 	auto stop() -> fw::error;
 	auto teardown() -> fw::error;
 
@@ -33,8 +35,10 @@ private:
 
 class thread_manager : public singleton<thread_manager>
 {
+	using io_context_t = boost::asio::io_context;
+
 public:
-	auto setup() -> fw::error;
+	auto setup(io_context_t& ioc, uint32_t thread_count) -> fw::error;
 	auto start() -> fw::error;
 	auto stop() -> fw::error;
 	auto teardown() -> fw::error;

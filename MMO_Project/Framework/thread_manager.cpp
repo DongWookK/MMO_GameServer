@@ -17,14 +17,11 @@ auto thread_pool::setup(const uint32_t thread_count) -> fw::error
 	return error_code;
 }
 
-auto thread_pool::start() -> fw::error
+auto thread_pool::start(io_context_t& io_context) -> fw::error
 {
-	// fatal :: iocp must set_up
-
-	// 20240127 temp test code
 	for (auto& thread : threads_)
 	{
-		thread->allocate_job();
+		thread->allocate_job(io_context);
 	}
 
 	return fw::error();
@@ -32,9 +29,11 @@ auto thread_pool::start() -> fw::error
 
 auto thread_pool::stop() -> fw::error
 {
+	/* jthread라서 풀에서 비우기만하면된다?
 	for (auto& thread : threads_) {
 		thread->join();
 	}
+	*/
 
 	return fw::error();
 }
@@ -86,13 +85,11 @@ auto fw::thread_pool::teardown_worker() -> fw::error
 	return fw::error();
 }
 
-auto thread_manager::setup() -> fw::error
+auto thread_manager::setup(boost::asio::io_context& ioc, uint32_t thread_count) -> fw::error
 {
 	fw::error error_code{};
 
-	const auto thread_count_ = std::thread::hardware_concurrency();
-
-	error_code = thread_pool_.setup(thread_count_);
+	error_code = thread_pool_.setup(thread_count);
 	ASSERT_RETURN_VALUE(!(error_code), error_code);
 
 	return error_code;
@@ -102,7 +99,7 @@ auto thread_manager::start() -> fw::error
 {
 	is_on_service_.store(true);
 
-	thread_pool_.start();
+	thread_pool_.start(main_server::instac);
 
 	return fw::error{};
 }
