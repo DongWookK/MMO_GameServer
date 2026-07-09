@@ -31,6 +31,7 @@ auto main_server::stop_service() -> fw::error
 {
     fw::error error_code{};
 
+
     error_code = feature_stop();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
@@ -55,14 +56,15 @@ auto main_server::core_setup() -> fw::error
 {
     fw::error error_code{};
 
+    _work_guard = std::make_unique<work_guard_t>(io_context_.get_executor());
+
     const auto thread_count = std::thread::hardware_concurrency();
+    thread_manager_ = std::make_unique<fw::thread_manager>(get_io_context(), thread_count);
+    
     for (uint32_t i = 0; i < thread_count; ++i)
     {
         strands_.push_back(std::make_shared<boost::asio::strand<boost::asio::io_context::executor_type>>(io_context_.get_executor()));
     }
-
-    error_code = fw::thread_manager::instance()->setup();
-    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = fw::network_manager::instance()->setup();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
@@ -74,7 +76,7 @@ auto main_server::core_start() -> fw::error
 {
     fw::error error_code{};
 
-    error_code = fw::thread_manager::instance()->start();
+    error_code = thread_manager_->start();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = fw::network_manager::instance()->start();
@@ -87,7 +89,9 @@ auto main_server::core_stop() -> fw::error
 {
     fw::error error_code{};
 
-    error_code = fw::thread_manager::instance()->stop();
+    work_guard_.reset();
+
+    error_code = thread_manager_->stop();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
