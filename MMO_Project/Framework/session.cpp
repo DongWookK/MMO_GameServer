@@ -2,6 +2,11 @@
 #include "session.h"
 #include "boost/asio.hpp"
 
+session::session(boost::asio::io_context* io_context)
+	: socket_(*io_context)
+{
+}
+
 auto session::on_accept() -> void
 {
 	std::cout << "client connected " << std::endl;

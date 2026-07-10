@@ -3,13 +3,14 @@
 #include "session.h"
 #include "boost/bind/bind.hpp"
 
-auto fw::network_manager::setup() -> fw::error
+auto fw::network_manager::setup(asio::io_context* worker_context) -> fw::error
 {
+	worker_context_ = worker_context;
+
 	boost::system::error_code ec;
 
-	//open acceptor socket
 	static const asio::ip::tcp protocol = asio::ip::tcp::v4();
-	acceptor_ = asio::ip::tcp::acceptor(context_);
+	acceptor_ = asio::ip::tcp::acceptor(accept_context_);
 	acceptor_.open(protocol, ec);
 
 	if (0 != ec.value())
@@ -18,11 +19,9 @@ auto fw::network_manager::setup() -> fw::error
 		return ec.value();
 	}
 
-	//make endpoint
 	asio::ip::address_v4 ip_address = asio::ip::address_v4::any();
 	end_point_ = asio::ip::tcp::endpoint(ip_address, port_no);
 
-	//bind
 	acceptor_.bind(end_point_, ec);
 	if (ec.value() != 0)
 	{
@@ -30,6 +29,7 @@ auto fw::network_manager::setup() -> fw::error
 		return ec.value();
 	}
 
+	// listen
 	acceptor_.listen(BACKLOG_SIZE);
 
 	try 
@@ -49,7 +49,7 @@ auto fw::network_manager::start() -> fw::error
 	try
 	{
 		std::cout << "context_ run" << std::endl;
-		context_.run(); // event loop start (ex. network_manager::start_accept())
+		accept_context_.run(); // event loop start (ex. network_manager::start_accept())
 	}
 	catch (system::system_error& e)
 	{
@@ -62,26 +62,26 @@ auto fw::network_manager::start() -> fw::error
 
 auto fw::network_manager::start_accept() -> void
 {
-	asio::ip::tcp::socket sock(context_);
-	auto new_session = std::make_shared<session>(std::move(sock));
+	auto new_session = std::make_shared<session>(worker_context_);
 
 	acceptor_.async_accept(new_session->get_socket()
-						   , boost::bind(&network_manager::handle_accept, this, new_session, boost::asio::placeholders::error));
+							, boost::bind(&network_manager::handle_accept, this, new_session, boost::asio::placeholders::error));
 }
 
 auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system::error_code error) -> void
 {
+	spdlog::info("network_manager::handel_accept....");
+
 	if (!error)
 	{
 		new_session->on_accept();
-		// todo session list에 넣기.
+		// TODO: session list에 넣기.
 	}
 	else
 	{
-		std::cout << "handle_accept fail." << std::endl;
-		std::cout << error.what() << error.message() << std::endl;
-
+		std::cout << "handle_accept fail. " << error.message() << std::endl;
 		new_session.reset();
-		start_accept();
 	}
+
+	start_accept();
 }

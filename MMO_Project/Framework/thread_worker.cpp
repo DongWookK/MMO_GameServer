@@ -24,15 +24,3 @@ auto worker::allocate_job(io_context_t& io_context) -> void
 
 	return;
 }
-
-auto worker::job() -> void
-{
-	while (fw::thread_manager::instance()->is_on_service_.load())
-	{
-		std::thread::id this_id = std::this_thread::get_id();
-		std::cout << "thread " << this_id << " sleeping...\n";
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
-
-	return;
-}

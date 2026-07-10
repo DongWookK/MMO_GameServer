@@ -10,12 +10,12 @@ class session : public std::enable_shared_from_this<session>
     static constexpr size_t message_size = 10;
 
 public:
-    session(tcp_t::socket socket) : socket_(std::move(socket)) {}
+    explicit session(boost::asio::io_context* worker_context);
 
 public:
     auto on_accept() -> void;
     auto read_from_socket() -> std::string;
-    
+
 public:
     auto get_socket() -> tcp_t::socket&;
 

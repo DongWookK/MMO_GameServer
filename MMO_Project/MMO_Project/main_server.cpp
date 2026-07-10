@@ -47,26 +47,27 @@ auto main_server::stop_service() -> fw::error
     return error_code;
 }
 
-auto main_server::get_io_context() -> boost::asio::io_context&
+auto main_server::get_io_context() -> boost::asio::io_context*
 {
-    return io_context_;
+    return io_context_.get();
 }
 
 auto main_server::core_setup() -> fw::error
 {
     fw::error error_code{};
 
-    _work_guard = std::make_unique<work_guard_t>(io_context_.get_executor());
+    io_context_ = std::make_unique<worker_context_t>();
+    work_guard_ = std::make_unique<work_guard_t>(io_context_->get_executor());
 
     const auto thread_count = std::thread::hardware_concurrency();
     thread_manager_ = std::make_unique<fw::thread_manager>(get_io_context(), thread_count);
     
     for (uint32_t i = 0; i < thread_count; ++i)
     {
-        strands_.push_back(std::make_shared<boost::asio::strand<boost::asio::io_context::executor_type>>(io_context_.get_executor()));
+        strands_.push_back(std::make_shared<boost::asio::strand<boost::asio::io_context::executor_type>>(io_context_->get_executor()));
     }
 
-    error_code = fw::network_manager::instance()->setup();
+    error_code = fw::network_manager::instance()->setup(io_context_.get());
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
@@ -89,7 +90,7 @@ auto main_server::core_stop() -> fw::error
 {
     fw::error error_code{};
 
-    work_guard_.reset();
+    work_guard_.reset(); // thread run 탈출하게 허용
 
     error_code = thread_manager_->stop();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
