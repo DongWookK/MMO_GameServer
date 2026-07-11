@@ -85,8 +85,8 @@ auto fw::thread_pool::teardown_worker() -> fw::error
 	return fw::error();
 }
 
-thread_manager::thread_manager(io_context_t& io_context, uint32_t thread_count)
-	: io_context_(io_context)
+thread_manager::thread_manager(io_context_t* io_context, uint32_t thread_count)
+	: io_context_(*io_context)
 	, thread_count_(thread_count)
 {
 }

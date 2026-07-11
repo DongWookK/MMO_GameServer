@@ -39,7 +39,7 @@ public:
 	using io_context_t = boost::asio::io_context;
 
 	thread_manager() = delete;
-	thread_manager(io_context_t& io_context, uint32_t thread_count);
+	thread_manager(io_context_t* io_context, uint32_t thread_count);
 
 public:
 	auto setup() -> fw::error;
