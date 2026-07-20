@@ -10,13 +10,14 @@ int main()
 	error_code = initialize_logger();
 	ASSERT_RETURN_VALUE(!(error_code), error_code);
 
-    spdlog::info("main server start_service()");
+	FLOG_INFO("main server::start_service");
 
     spdlog::shutdown();
 
 	main_server::instance()->start_service();
 	main_server::instance()->stop_service();
 
+	FLOG_INFO("main server::graceful shutdown");
 
     spdlog::shutdown();
 

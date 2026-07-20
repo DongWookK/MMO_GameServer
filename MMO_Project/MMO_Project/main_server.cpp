@@ -24,6 +24,8 @@ auto main_server::start_service() -> fw::error
 
     on_service();
 
+    FLOG_INFO("main server::start_service complete!");
+
     return error_code;
 }
 

@@ -35,7 +35,9 @@ int initialize_logger()
     combined_logger->set_level(spdlog::level::trace);
 
     spdlog::set_default_logger(combined_logger);
-    spdlog::debug("디버그 메시지");
+    spdlog::debug("create default logger");
+
+    fw::SetLogger(spdlog::default_logger());
 
     return 0;
 }
