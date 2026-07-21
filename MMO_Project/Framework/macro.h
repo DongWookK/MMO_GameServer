@@ -29,7 +29,7 @@ For Code
 #define ASSERT_RETURN_VALUE(expr, error_code)            \
 {                                                       \
     if (!(expr)) {                                      \
-        spdlog::default_logger_raw()->log(              \
+        spdlog::log(              \
             spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION}, \
             spdlog::level::err,                         \
             "ASSERT Failed: ({})", #expr                \
@@ -41,7 +41,7 @@ For Code
 #define ASSERT_RETURN_VALUE(expr, error_code)            \
 {                                                       \
     if (!(expr)) {                                      \
-        spdlog::default_logger_raw()->log(              \
+        spdlog::log(              \
             spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION}, \
             spdlog::level::err,                         \
             "ASSERT Failed: ({})", #expr                \

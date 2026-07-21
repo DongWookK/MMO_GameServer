@@ -46,15 +46,19 @@ auto fw::network_manager::setup(asio::io_context* worker_context) -> fw::error
 
 auto fw::network_manager::start() -> fw::error
 {
-	try
-	{
-		std::cout << "context_ run" << std::endl;
-		accept_context_.run(); // event loop start (ex. network_manager::start_accept())
-	}
-	catch (system::system_error& e)
-	{
-		std::cout << "context_ run fail.  Error code = << = " << e.code() << ". Message: " << e.what();
-	}
+	start_accept();
+
+	accept_thread_ = std::jthread([this]() {
+		try
+		{
+			std::cout << "context_ run" << std::endl;
+			accept_context_.run();
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << "context_ run fail. Message: " << e.what() << std::endl;
+		}
+		});
 
 	return fw::error{};
 }

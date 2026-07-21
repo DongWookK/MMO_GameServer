@@ -69,6 +69,9 @@ auto main_server::core_setup() -> fw::error
         strands_.push_back(std::make_shared<boost::asio::strand<boost::asio::io_context::executor_type>>(io_context_->get_executor()));
     }
 
+    error_code = thread_manager_->setup();
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
+
     error_code = fw::network_manager::instance()->setup(io_context_.get());
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 

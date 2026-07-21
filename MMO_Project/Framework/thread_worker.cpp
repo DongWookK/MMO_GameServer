@@ -6,7 +6,11 @@
 
 worker::worker()
 {
-	std::cout << "my id is %d" << std::this_thread::get_id() << std::endl;
+}
+
+auto worker::set_index(uint32_t index) -> void
+{
+	index_ = index;
 }
 
 auto worker::allocate_job(io_context_t& io_context) -> void

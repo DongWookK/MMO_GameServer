@@ -31,5 +31,6 @@ private:
 	asio::io_context accept_context_{};
 	boost::asio::io_context* worker_context_ = nullptr;
 	asio::ip::tcp::acceptor acceptor_{ accept_context_ };
+	std::jthread accept_thread_;
 };
 }
