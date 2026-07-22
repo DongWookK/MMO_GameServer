@@ -43,6 +43,14 @@ namespace fw
 		template<typename TDerived, typename TInitializeFunction>
 		DWORD	AllocateChunk(TInitializeFunction&& pInitfunc, TUnAcquire&& pUnAcqFunc, size_t pInitSize = DEFAULT_CHUNK_SIZE, bool pIsExpandable = false);
 
+		// 2) 커스텀 생성 람다(TCreateFunc)를 받는 AllocateChunk (session pool 지원)
+		template <typename TDerived, typename TCreateFunction, typename TInitializeFunction, typename TUnAcquireFunction>
+		DWORD AllocateChunk(
+			TCreateFunction&& pCreateFunc,
+			TInitializeFunction&& pInitfunc,
+			TUnAcquireFunction&& pUnAcqFunc,
+			size_t pInitSize,
+			bool pIsExpandable = true);
 
 		//acquireObject()가 리턴할 스마트 포인터이다.
 		using Object = std::shared_ptr<T>;

@@ -5,6 +5,38 @@
 
 auto fw::network_manager::setup(asio::io_context* worker_context) -> fw::error
 {
+	auto error_code = fw::error{};
+
+	error_code = initialize_acceptor(worker_context);
+	ASSERT_RETURN_VALUE(!(error_code), error_code);
+	
+	error_code = initialize_session_pool();
+	ASSERT_RETURN_VALUE(!(error_code), error_code);
+
+	return error_code;
+}
+
+auto fw::network_manager::start() -> fw::error
+{
+	start_accept();
+
+	accept_thread_ = std::jthread([this]() {
+		try
+		{
+			std::cout << "context_ run" << std::endl;
+			accept_context_.run();
+		}
+		catch (const std::exception& e)
+		{
+			std::cout << "context_ run fail. Message: " << e.what() << std::endl;
+		}
+		});
+
+	return fw::error{};
+}
+
+auto fw::network_manager::initialize_acceptor(asio::io_context* worker_context) -> fw::error
+{
 	worker_context_ = worker_context;
 
 	boost::system::error_code ec;
@@ -32,11 +64,11 @@ auto fw::network_manager::setup(asio::io_context* worker_context) -> fw::error
 	// listen
 	acceptor_.listen(BACKLOG_SIZE);
 
-	try 
+	try
 	{
 		start_accept();
 	}
-	catch(system::system_error &e)
+	catch (system::system_error& e)
 	{
 		std::cout << "server accept fail! Error code = << = " << e.code() << ". Message: " << e.what();
 	}
@@ -44,32 +76,28 @@ auto fw::network_manager::setup(asio::io_context* worker_context) -> fw::error
 	return fw::error{};
 }
 
-auto fw::network_manager::start() -> fw::error
+auto fw::network_manager::initialize_session_pool() -> fw::error
 {
-	start_accept();
+	auto error_code = fw::error{};
 
-	accept_thread_ = std::jthread([this]() {
-		try
-		{
-			std::cout << "context_ run" << std::endl;
-			accept_context_.run();
-		}
-		catch (const std::exception& e)
-		{
-			std::cout << "context_ run fail. Message: " << e.what() << std::endl;
-		}
-		});
+	session_pool_.AllocateChunk<session>(
+		[this]() { return std::make_unique<session>(*worker_context_); },
+		[](session* s, size_t idx) { s->set_index(idx); return 0; },
+		[](session* s) { s->reset(); return 0; },
+		1000, true
+	);
 
-	return fw::error{};
+	return fw::error();
 }
-
 
 auto fw::network_manager::start_accept() -> void
 {
-	auto new_session = std::make_shared<session>(worker_context_);
+	/*
+	auto new_session = std::make_shared<session>(worker_context_); // accept 이후는 워커에서 처리하기 때문에 worker_context로 추가
 
 	acceptor_.async_accept(new_session->get_socket()
 							, boost::bind(&network_manager::handle_accept, this, new_session, boost::asio::placeholders::error));
+	*/
 }
 
 auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system::error_code error) -> void

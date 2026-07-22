@@ -48,14 +48,13 @@ auto thread_pool::initialize(const uint32_t thread_count) -> fw::error
 	thread_count_ = thread_count;
 
 	fw::error error_code{};
-	error_code = pool_.AllocateChunk<worker>([](pool_t::TObject* p, size_t i) {
-												DWORD aRv = setup_worker();
-												return aRv;
-												}
-											 , [](pool_t::TObject* p) {
-												 DWORD aRv = teardown_worker();
-												 return aRv;
-												}, thread_count_, false);				// size_t pInitSize, bool pIsExpandable
+	error_code = pool_.AllocateChunk<worker>(
+		[this]() { return std::make_unique<worker>(); },		// 1. Create
+		[](worker* p, size_t i) { p->set_index(i); return 0; }, // 2. Init
+		[](worker* p) { /* UnAcquire 처리 */ },					// 3. UnAcquire 람다
+		thread_count_,											// 4. pInitSize
+		false													// 5. pIsExpandable
+	);
 
 	return error_code;
 }
@@ -67,7 +66,6 @@ auto thread_pool::acquire() -> fw::error
 		thread_pool::object_t worker = pool_.AcquireObject();
 		ASSERT_RETURN_VALUE(nullptr != worker, 111);
 
-		worker->set_index(i);
 		threads_.emplace_back(worker);
 	}
 

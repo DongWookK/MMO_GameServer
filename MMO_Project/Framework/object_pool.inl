@@ -1,18 +1,41 @@
 ﻿#pragma once
 #include "pch.h"
 #include "object_pool.hpp"
+
 namespace fw
 {
 	template<typename T>
 	template<typename TDerived, typename TInitializeFunction>
 	DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitfunc, size_t pInitSize, bool pIsExpandable)
 	{
-		return AllocateChunk<TDerived>(std::forward<TInitializeFunction>(pInitfunc), nullptr, pInitSize, pIsExpandable);
+		return AllocateChunk<TDerived>(
+			[]() { return std::make_unique<TDerived>(); },
+			std::forward<TInitializeFunction>(pInitfunc),
+			[](T*) {},
+			pInitSize, pIsExpandable
+		);
 	}
 
 	template <typename T>
 	template<typename TDerived, typename TInitializeFunction>
 	inline DWORD CObjectPool<T>::AllocateChunk(TInitializeFunction&& pInitfunc, TUnAcquire&& pUnAcqFunc, size_t pInitSize, bool pIsExpandable)
+	{
+		return AllocateChunk<TDerived>(
+			[]() { return std::make_unique<TDerived>(); },
+			std::forward<TInitializeFunction>(pInitfunc),
+			std::forward<TUnAcquire>(pUnAcqFunc),
+			pInitSize, pIsExpandable
+		);
+	}
+
+	template <typename T>
+	template <typename TDerived, typename TCreateFunction, typename TInitializeFunction, typename TUnAcquireFunction>
+	inline DWORD CObjectPool<T>::AllocateChunk(
+		TCreateFunction&& pCreateFunc,
+		TInitializeFunction&& pInitfunc,
+		TUnAcquireFunction&& pUnAcqFunc,
+		size_t pInitSize,
+		bool pIsExpandable)
 	{
 		static_assert(std::is_base_of_v<T, TDerived>);
 		ASSERT_CRASH(0 == __mAllocateSize);
@@ -28,7 +51,9 @@ namespace fw
 
 		__mUnAcquire = std::forward<TUnAcquire>(pUnAcqFunc);
 
-		__mAllocateChunk = [this, aInitFunc = std::forward<TInitializeFunction>(pInitfunc)]() {
+		__mAllocateChunk = [this,
+			aCreateFunc = std::forward<TCreateFunction>(pCreateFunc),
+			aInitFunc = std::forward<TInitializeFunction>(pInitfunc)]() {
 			const size_t aBegin = 0;
 			const size_t aSize = (0 == __mFreeList.size()) ? __mInitSize : __mChunkSize;
 
@@ -54,7 +79,7 @@ namespace fw
 
 			for (size_t i = 0; i < aSize; ++i)
 			{
-				__mFreeList[aKey].emplace_back(std::make_unique<TDerived>());
+				__mFreeList[aKey].emplace_back(aCreateFunc());
 				__mUsedCount++;
 			}
 
@@ -72,8 +97,9 @@ namespace fw
 						aErrorCode = aError;
 						cts.cancel();
 					}
-											   });
-													 }, cts.get_token());
+					});
+				}, cts.get_token());
+
 			ASSERT_CRASH((aKey + aSize) == aIndex);
 
 			__mAllocateSize = std::max(__mAllocateSize, (aKey + aSize));
@@ -84,8 +110,6 @@ namespace fw
 		std::lock_guard aLock(__mLocker);
 		return __mAllocateChunk();
 	}
-
-
 
 	template <typename T>
 	typename CObjectPool<T>::Object CObjectPool<T>::AcquireObject()
@@ -102,18 +126,16 @@ namespace fw
 			}
 			else
 			{
-				//TODO - ErrorMsg 출력
 				return nullptr;
 			}
 		}
 
-		//큐의 제일 위에 있는 가용 객체를 로컬 unique_ptr로 옮긴다.
 		const size_t aKey = GetUsableKey();
+		if (aKey == static_cast<size_t>(-1)) return nullptr; // 예외 안전성 추가
 
 		TUObject aUniqueObject(std::move(__mFreeList[aKey].front()));
 		__mFreeList[aKey].pop_front();
 
-		//객체 포인터를 Object 타입 으로 변환한다.
 		Object aSmartObject(aUniqueObject.release(), [this, aKey](T* t) {
 
 			if (__mUnAcquire)
@@ -130,33 +152,28 @@ namespace fw
 				Organize(aKey);
 			}
 
-							});
+			});
 		return aSmartObject;
 	}
 
 	template <typename T>
 	inline const bool CObjectPool<T>::IsFull() const
 	{
-		auto alt = std::find_if(__mFreeList.cbegin(), __mFreeList.cend(), [](auto& pPartition)
-								{
-									return false == pPartition.second.empty();
-								});
-		return(__mFreeList.cend() == alt) ? true : false;
+		auto alt = std::find_if(__mFreeList.cbegin(), __mFreeList.cend(), [](const auto& pPartition)
+			{
+				return false == pPartition.second.empty();
+			});
+		return (__mFreeList.cend() == alt);
 	}
 
 	template <typename T>
 	inline const size_t CObjectPool<T>::GetUsableKey() const
 	{
-		if (false == __mIsExpandable)
-		{
-			return 0;
-		}
-
-		auto alt = std::find_if(__mFreeList.cbegin(), __mFreeList.cend(), [](auto& pPartition)
-								{
-									return false == pPartition.second.empty();
-								});
-		return(__mFreeList.cend() != alt) ? alt->first : -1;
+		auto alt = std::find_if(__mFreeList.cbegin(), __mFreeList.cend(), [](const auto& pPartition)
+			{
+				return false == pPartition.second.empty();
+			});
+		return (__mFreeList.cend() != alt) ? alt->first : static_cast<size_t>(-1);
 	}
 
 	template<typename T>
@@ -179,12 +196,7 @@ namespace fw
 
 		if (aIt->second.size() == __mChunkSize)
 		{
-			while (aIt->second.size())
-			{
-				aIt->second.pop_front();
-			}
 			aIt->second.clear();
-
 			__mUsedCount -= __mChunkSize;
 			__mFreeList.erase(pKey);
 		}

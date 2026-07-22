@@ -8,7 +8,7 @@ worker::worker()
 {
 }
 
-auto worker::set_index(uint32_t index) -> void
+auto worker::set_index(size_t index) -> void
 {
 	index_ = index;
 }
