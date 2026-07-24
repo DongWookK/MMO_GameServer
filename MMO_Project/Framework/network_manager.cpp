@@ -18,7 +18,17 @@ auto fw::network_manager::setup(asio::io_context* worker_context) -> fw::error
 
 auto fw::network_manager::start() -> fw::error
 {
-	start_accept();
+	auto error_code = fw::error{};
+
+	try
+	{
+		start_accept();
+	}
+	catch (system::system_error& e)
+	{
+		FLOG_ERROR("server accept fail! Error code({}), Msg({})", e.code().value(), e.what());
+		error_code.assign(111);
+	}
 
 	accept_thread_ = std::jthread([this]() {
 		try
@@ -28,9 +38,9 @@ auto fw::network_manager::start() -> fw::error
 		}
 		catch (const std::exception& e)
 		{
-			std::cout << "context_ run fail. Message: " << e.what() << std::endl;
+			FLOG_ERROR("accept_context run fail. Error ({})", e.what());
 		}
-		});
+	});
 
 	return fw::error{};
 }
@@ -48,7 +58,7 @@ auto fw::network_manager::initialize_acceptor(asio::io_context* worker_context) 
 	if (0 != ec.value())
 	{
 		std::cout << "failed to open the acceptor socket Error Code = " << ec.value();
-		return ec.value();
+		return fw::error{1};
 	}
 
 	asio::ip::address_v4 ip_address = asio::ip::address_v4::any();
@@ -58,20 +68,11 @@ auto fw::network_manager::initialize_acceptor(asio::io_context* worker_context) 
 	if (ec.value() != 0)
 	{
 		std::cout << "Failed to abind the acceptor socket. Error_code = " << ec.value() << std::endl;
-		return ec.value();
+		return fw::error{ 1 };
 	}
 
 	// listen
 	acceptor_.listen(BACKLOG_SIZE);
-
-	try
-	{
-		start_accept();
-	}
-	catch (system::system_error& e)
-	{
-		std::cout << "server accept fail! Error code = << = " << e.code() << ". Message: " << e.what();
-	}
 
 	return fw::error{};
 }
@@ -92,12 +93,11 @@ auto fw::network_manager::initialize_session_pool() -> fw::error
 
 auto fw::network_manager::start_accept() -> void
 {
-	/*
-	auto new_session = std::make_shared<session>(worker_context_); // accept 이후는 워커에서 처리하기 때문에 worker_context로 추가
+	auto new_session = session_pool_.AcquireObject();
+	ASSERT_RETURN(nullptr != new_session);
 
 	acceptor_.async_accept(new_session->get_socket()
 							, boost::bind(&network_manager::handle_accept, this, new_session, boost::asio::placeholders::error));
-	*/
 }
 
 auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system::error_code error) -> void

@@ -15,7 +15,7 @@ public:
 	using object_t = pool_t::Object;
 	
 	static constexpr uint16_t port_no = 0221;
-	static constexpr uint16_t BACKLOG_SIZE = 30;
+	static constexpr uint16_t BACKLOG_SIZE = 30; // syn 대기열 크기
 
 	using session_ptr_t = std::shared_ptr<session>;
 
