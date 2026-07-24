@@ -52,6 +52,33 @@ For Code
 }
 #endif
 
+#ifdef NDEBUG
+#define ASSERT_RETURN(expr)            \
+{                                                       \
+    if (!(expr)) {                                      \
+        spdlog::log(              \
+            spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION}, \
+            spdlog::level::err,                         \
+            "ASSERT Failed: ({})", #expr                \
+        );                                              \
+        return;                                         \
+    }                                                   \
+}
+#else
+#define ASSERT_RETURN(expr)            \
+{                                                       \
+    if (!(expr)) {                                      \
+        spdlog::log(              \
+            spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION}, \
+            spdlog::level::err,                         \
+            "ASSERT Failed: ({})", #expr                \
+        );                                              \
+        ASSERT_CRASH(expr);                             \
+        return;                                         \
+    }                                                   \
+}
+#endif
+
 /*---------------------------------------------
 For Log
 ---------------------------------------------*/
@@ -91,9 +118,4 @@ namespace fw {
             spdlog::set_default_logger(logger);
         }
     }
-}
-
-namespace fw
-{
-	using error = int32_t;
 }

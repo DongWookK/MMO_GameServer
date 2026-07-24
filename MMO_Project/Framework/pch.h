@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "macro.h"
+#include "error.hpp"
 #include "singleton.h"
 
 #include <deque>

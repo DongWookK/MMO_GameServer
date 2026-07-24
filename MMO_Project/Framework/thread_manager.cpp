@@ -64,12 +64,12 @@ auto thread_pool::acquire() -> fw::error
 	for (uint32_t i = 0; i < thread_count_; ++i)
 	{
 		thread_pool::object_t worker = pool_.AcquireObject();
-		ASSERT_RETURN_VALUE(nullptr != worker, 111);
+		ASSERT_RETURN_VALUE(nullptr != worker, fw::error{});
 
 		threads_.emplace_back(worker);
 	}
 
-	return 0;
+	return fw::error{};
 }
 
 auto fw::thread_pool::setup_worker() -> fw::error

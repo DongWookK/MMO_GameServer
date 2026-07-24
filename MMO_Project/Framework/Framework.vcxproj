@@ -151,6 +151,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="error.hpp" />
     <ClInclude Include="session.h" />
     <ClInclude Include="feature.h" />
     <ClInclude Include="macro.h" />

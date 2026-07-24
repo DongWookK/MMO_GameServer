@@ -50,6 +50,9 @@
     <ClInclude Include="session.h">
       <Filter>Network</Filter>
     </ClInclude>
+    <ClInclude Include="error.hpp">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
