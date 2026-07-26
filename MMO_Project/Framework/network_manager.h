@@ -16,6 +16,7 @@ public:
 	
 	static constexpr uint16_t port_no = 0221;
 	static constexpr uint16_t BACKLOG_SIZE = 30; // syn 대기열 크기
+	static constexpr uint16_t SESSION_POOL_SIZE = 1000;
 
 	using session_ptr_t = std::shared_ptr<session>;
 
@@ -40,5 +41,6 @@ private:
 	pool_t session_pool_;
 
 	boost::asio::io_context* worker_context_ = nullptr;
+	
 };
 }

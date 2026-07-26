@@ -85,7 +85,7 @@ auto fw::network_manager::initialize_session_pool() -> fw::error
 		[this]() { return std::make_unique<session>(*worker_context_); },
 		[](session* s, size_t idx) { s->set_index(idx); return 0; },
 		[](session* s) { s->reset(); return 0; },
-		1000, true
+		SESSION_POOL_SIZE, false
 	);
 
 	return fw::error();

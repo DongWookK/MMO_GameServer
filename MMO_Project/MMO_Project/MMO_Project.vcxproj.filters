@@ -14,6 +14,9 @@
     <Filter Include="Source Files\logger">
       <UniqueIdentifier>{7ebbfb62-66a1-4d65-85b5-56db10ce724d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\user">
+      <UniqueIdentifier>{c38f84a0-3cef-4f6a-8aff-5fdf17594af9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -21,6 +24,12 @@
     </ClCompile>
     <ClCompile Include="main_server.cpp">
       <Filter>Source Files\server</Filter>
+    </ClCompile>
+    <ClCompile Include="user_manager.cpp">
+      <Filter>Source Files\user</Filter>
+    </ClCompile>
+    <ClCompile Include="user.cpp">
+      <Filter>Source Files\user</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +41,12 @@
     </ClInclude>
     <ClInclude Include="logger.h">
       <Filter>Source Files\logger</Filter>
+    </ClInclude>
+    <ClInclude Include="user_manager.h">
+      <Filter>Source Files\user</Filter>
+    </ClInclude>
+    <ClInclude Include="user.h">
+      <Filter>Source Files\user</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

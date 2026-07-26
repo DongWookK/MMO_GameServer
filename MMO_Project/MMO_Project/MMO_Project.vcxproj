@@ -173,11 +173,15 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_server.cpp" />
+    <ClCompile Include="user.cpp" />
+    <ClCompile Include="user_manager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.h" />
     <ClInclude Include="main_server.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="user.h" />
+    <ClInclude Include="user_manager.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
