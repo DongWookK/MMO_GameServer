@@ -81,14 +81,19 @@ auto fw::network_manager::initialize_session_pool() -> fw::error
 {
 	auto error_code = fw::error{};
 
-	session_pool_.AllocateChunk<session>(
+	error_code = session_pool_.AllocateChunk<session>(
 		[this]() { return std::make_unique<session>(*worker_context_); },
 		[](session* s, size_t idx) { s->set_index(idx); return 0; },
 		[](session* s) { s->reset(); return 0; },
 		SESSION_POOL_SIZE, false
 	);
 
-	return fw::error();
+	return error_code;
+}
+
+auto fw::network_manager::set_accept_handler(accept_handler_t handler) -> void
+{
+	accept_handler_ = handler;
 }
 
 auto fw::network_manager::start_accept() -> void
@@ -107,7 +112,14 @@ auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system
 	if (!error)
 	{
 		new_session->on_accept();
-		// TODO: session list에 넣기.
+
+		if (accept_handler_) {
+			accept_handler_(new_session);
+		}
+		else
+		{
+			ASSERT_RETURN(false);
+		}
 	}
 	else
 	{

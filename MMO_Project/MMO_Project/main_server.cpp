@@ -3,6 +3,7 @@
 #include "main_server.h"
 #include "thread_manager.h"
 #include "network_manager.h"
+#include "user_manager.h"
 
 auto main_server::start_service() -> fw::error
 {
@@ -11,6 +12,7 @@ auto main_server::start_service() -> fw::error
     error_code = core_setup();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
+    // network manager는 제일 마지막에 start해야하지않나?
     error_code = core_start();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
@@ -74,6 +76,17 @@ auto main_server::core_setup() -> fw::error
 
     error_code = fw::network_manager::instance()->setup(io_context_.get());
     ASSERT_RETURN_VALUE(!(error_code), error_code);
+
+    fw::network_manager::instance()->set_accept_handler([](fw::network_manager::session_ptr_t session) {
+        
+        // 세션을 소유하는 player 객체 생성
+        user_manager::instance()->allocate_user(session);
+
+        // session 내부에서도 필요시 player reference를 가질 수 있도록 바인딩 (선택)
+        // session->set_owner(new_player); 
+
+        spdlog::info("New player connected and assigned to user_manager!");
+        });
 
     return error_code;
 }

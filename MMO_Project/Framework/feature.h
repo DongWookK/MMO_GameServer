@@ -4,8 +4,9 @@
 class feature
 {
 public:
-	feature() = delete;
+	feature();
 	feature(std::string_view key);
+
 public:
 	virtual auto setup() -> fw::error = 0;
 	virtual auto start() -> fw::error = 0;
