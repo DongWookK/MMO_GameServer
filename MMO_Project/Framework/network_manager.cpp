@@ -71,7 +71,6 @@ auto fw::network_manager::initialize_acceptor(asio::io_context* worker_context) 
 		return fw::error{ 1 };
 	}
 
-	// listen
 	acceptor_.listen(BACKLOG_SIZE);
 
 	return fw::error{};

@@ -7,6 +7,12 @@ using namespace std;
 static const std::string raw_ip_address = "127.0.0.1";
 static constexpr uint16_t port_no = 0221;
 
+/* 
+------------------------------------------------
+	Read , Write
+------------------------------------------------
+*/
+
 void write_to_socket(asio::ip::tcp::socket& sock)
 {
 	flatbuffers::FlatBufferBuilder builder;
@@ -24,6 +30,11 @@ void write_to_socket(asio::ip::tcp::socket& sock)
 	asio::write(sock, asio::buffer(buf));
 }
 
+/*
+------------------------------------------------
+	Main
+------------------------------------------------
+*/
 int main()
 {
 #pragma region get_endpoint
@@ -61,27 +72,28 @@ int main()
 	std::string message{};
 	bool out = true;
 	cout << "client ready" << endl;
-	
-	cin >> message;
-
-	try
-	{
-		sock.connect(ep);
-	}
-	catch (system::system_error& e)
-	{
-		std::cout << "Error occured! Error Code =" << e.code() << ". Message: " << e.what() << endl;
-	}
 
 	while (out)
 	{
 		cin >> message;
 
-	if ("disconnect" == message)
+	if ("connect" == message)
+	{
+		try
+		{
+			sock.connect(ep);
+			std::cout << "Client Connected" << endl;
+		}
+		catch (system::system_error& e)
+		{
+			std::cout << "Error occured! Error Code =" << e.code() << ". Message: " << e.what() << endl;
+		}
+	}
+	else if ("disconnect" == message)
 	{
 		out = false;
 	}
-	if ("send" == message)
+	else if ("send" == message)
 	{
 		write_to_socket(sock);
 	}
@@ -89,11 +101,8 @@ int main()
 	{
 		std::cout << "invalid command" << endl;
 	}
-
 	}
 
-
-	
 	std::cout << "~client terminated" << endl;
 	
 	return 0;
