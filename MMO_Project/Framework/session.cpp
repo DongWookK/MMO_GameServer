@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "session.h"
 #include "boost/asio.hpp"
+#include "packet_dispatcher.h"
 
 ring_buffer::ring_buffer(size_t capacity)
 	: buffer_(capacity), capacity_(capacity), head_(0), tail_(0), size_(0) 
@@ -147,6 +148,11 @@ auto session::process_packet() -> void
 
         ring_buffer_.consume(total_packet_size);
     }
+}
+
+auto session::on_packet_received(const packet_header& header, const uint8_t* body_ptr, size_t body_size) -> void
+{
+	packet_dispatcher::instance()->dispatch(shared_from_this(), header.packet_id, body_ptr, body_size);
 }
 
 auto session::get_socket() -> tcp_t::socket&
