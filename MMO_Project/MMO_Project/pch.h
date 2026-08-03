@@ -34,4 +34,3 @@
 #include "feature.h"
 
 #include <flatbuffers/flatbuffers.h>
-#include "enum_game_generated.h"
