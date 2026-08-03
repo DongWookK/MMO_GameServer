@@ -5,12 +5,12 @@
 class user
 {
 public:
-	using session_ptr_t = std::shared_ptr<session>;
+	using session_s_ptr_t = std::shared_ptr<session>;
 
 public:
-	user() = delete;
-	user(session_ptr_t session_s_ptr);
-
+	auto set_index(size_t i) -> void;
+	auto set_session(session_s_ptr_t session) -> void;
 private:
-	session_ptr_t session_{};
+	size_t index_{};
+	session_s_ptr_t session_{};
 };

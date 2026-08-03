@@ -4,7 +4,16 @@
 
 auto user_manager::setup() -> fw::error
 {
-	return fw::error{};
+	fw::error error_code{};
+	error_code = user_pool_.AllocateChunk<user>(
+		[this]() { return std::make_unique<user>(); },			// 1. Create
+		[](user* p, size_t i) { p->set_index(i); return 0; },	// 2. Init
+		[](user* p) { /* UnAcquire 처리 */ },					// 3. UnAcquire 람다
+		1000,													// 4. pInitSize
+		false													// 5. pIsExpandable
+	);
+
+	return error_code;
 }
 
 auto user_manager::start() -> fw::error
@@ -24,4 +33,10 @@ auto user_manager::teardown() -> fw::error
 
 auto user_manager::allocate_user(session_s_ptr_t session) -> void
 {
+	auto user = user_pool_.AcquireObject();
+	ASSERT_RETURN(nullptr != user);
+	
+	user->set_session(session);
+	
+	return;
 }
