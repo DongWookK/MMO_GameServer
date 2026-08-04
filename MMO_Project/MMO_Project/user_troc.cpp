@@ -3,7 +3,7 @@
 #include "user_troc.h"
 #include "packet_dispatcher.h"
 
-auto troc_user::declare_tr_user_login_req(uint16_t tr_type)
+auto troc_user::handler_user_login_req(const std::shared_ptr<session>& sess, const game::TestEcho* pkt) -> void
 {
-	packet_dispatcher::instance()->register_handler(tr_type);
+	// todo
 }

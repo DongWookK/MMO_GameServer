@@ -5,5 +5,17 @@
 
 class troc_user
 {
-	auto declare_tr_user_login_req(uint16_t tr_type);
+    void declare_tr_user_login_req()
+    {
+        packet_dispatcher::instance()->register_handler<game::TestEcho>(
+            std::to_underlying(game::tr_type::TestEcho),
+            [this](const std::shared_ptr<session>& sess, const game::TestEcho* pkt) {
+                this->handler_user_login_req(sess, pkt);
+            }
+        );
+    }
+
+private:
+    auto handler_user_login_req(const std::shared_ptr<session>& sess, const game::TestEcho* pkt) -> void;
+
 };
