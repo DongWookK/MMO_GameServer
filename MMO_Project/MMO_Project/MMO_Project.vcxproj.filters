@@ -57,5 +57,8 @@
     <ClInclude Include="user_troc.h">
       <Filter>Source Files\user\troc</Filter>
     </ClInclude>
+    <ClInclude Include="macro_server.h">
+      <Filter>Source Files\header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

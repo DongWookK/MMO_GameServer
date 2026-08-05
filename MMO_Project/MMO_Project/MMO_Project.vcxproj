@@ -179,6 +179,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.h" />
+    <ClInclude Include="macro_server.h" />
     <ClInclude Include="main_server.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="user.h" />

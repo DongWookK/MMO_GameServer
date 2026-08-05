@@ -17,13 +17,8 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/sinks/basic_file_sink.h"
-
 #include <iostream>
 #include <utility>
-
-#include "macro.h"
-#include "singleton.h"
-
 #include <deque>
 #include <map>
 #include <ppl.h>
@@ -32,5 +27,8 @@
 
 #include "object_pool.hpp"
 #include "feature.h"
+#include "macro.h"
+#include "macro_server.h"
+#include "singleton.h"
 
 #include <flatbuffers/flatbuffers.h>

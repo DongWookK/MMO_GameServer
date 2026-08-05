@@ -1,9 +1,16 @@
 #pragma once
 #include "pch.h"
 #include "user_troc.h"
-#include "packet_dispatcher.h"
+#include "session.h"
 
-auto troc_user::handler_user_login_req(const std::shared_ptr<session>& sess, const game::TestEcho* pkt) -> void
+HANDLER_TR_DEFINE(troc_user, TestEcho)
 {
-	// todo
+    // 핸들러 로직 작성
+    if (!sess) {
+        return fw::error{ 111 };
+    }
+
+    // pkt 처리...
+
+    return fw::error{ 111 };
 }
