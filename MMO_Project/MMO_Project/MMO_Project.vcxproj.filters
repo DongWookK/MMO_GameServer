@@ -34,8 +34,8 @@
     <ClCompile Include="user.cpp">
       <Filter>Source Files\user</Filter>
     </ClCompile>
-    <ClCompile Include="user_troc.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="troc_user.cpp">
+      <Filter>Source Files\user\troc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -54,7 +54,7 @@
     <ClInclude Include="user.h">
       <Filter>Source Files\user</Filter>
     </ClInclude>
-    <ClInclude Include="user_troc.h">
+    <ClInclude Include="troc_user.h">
       <Filter>Source Files\user\troc</Filter>
     </ClInclude>
     <ClInclude Include="macro_server.h">

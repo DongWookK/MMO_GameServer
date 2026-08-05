@@ -41,6 +41,8 @@ public:
                 const T* packet_obj = flatbuffers::GetRoot<T>(body_data);
                 handler(sess, packet_obj);
             };
+
+        FLOG_INFO("packet({}) Handler registred");
     }
 
     auto dispatch(const std::shared_ptr<session>& sess, uint16_t packet_id, const uint8_t* body_data, size_t body_size) -> void;

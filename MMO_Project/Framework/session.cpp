@@ -120,39 +120,41 @@ auto session::read_from_socket() -> void
 
 auto session::process_packet() -> void
 {
-    while (true) {
-        packet_header header;
-        if (!ring_buffer_.peek(&header, sizeof(packet_header))) {
-            return;
-        }
+	while (true) {
+		packet_header header;
+		if (!ring_buffer_.peek(&header, sizeof(packet_header))) {
+			return;
+		}
 
-        size_t total_packet_size = sizeof(packet_header) + header.body_size;
+		// 클라이언트에서 header.size에 (헤더 + 바디) 전체 크기를 넣어 보내줌
+		size_t total_packet_size = header.size;
 
-        if (total_packet_size > 8192) {
-            std::cout << "Packet size overflow attack! Disconnecting..." << std::endl;
-            socket_.close();
-            return;
-        }
+		if (total_packet_size < sizeof(packet_header) || total_packet_size > 8192) {
+			std::cout << "Invalid packet size or overflow attack! Disconnecting..." << std::endl;
+			socket_.close();
+			return;
+		}
 
-        if (ring_buffer_.get_size() < total_packet_size) {
-            return;
-        }
+		if (ring_buffer_.get_size() < total_packet_size) {
+			return;
+		}
 
-        // note : FlatBuffers는 메모리가 연속적이어야 하므로 contiguose read
-        std::vector<uint8_t> body_buffer(header.body_size);
-        ring_buffer_.read_contiguose(body_buffer.data(), sizeof(packet_header), header.body_size);
+		size_t body_size = total_packet_size - sizeof(packet_header);
 
-        // todo : received 핸들러 main_server에서 설정
-        on_packet_received(header, body_buffer.data(), header.body_size);
+		// (링버퍼에서 헤더 다음 위치부터 읽음)
+		std::vector<uint8_t> body_buffer(body_size);
+		if (body_size > 0) {
+			ring_buffer_.read_contiguose(body_buffer.data(), sizeof(packet_header), body_size);
+		}
 
-
-        ring_buffer_.consume(total_packet_size);
-    }
+		on_packet_received(header, body_buffer.data(), body_size);
+		ring_buffer_.consume(total_packet_size);
+	}
 }
 
 auto session::on_packet_received(const packet_header& header, const uint8_t* body_ptr, size_t body_size) -> void
 {
-	packet_dispatcher::instance()->dispatch(shared_from_this(), header.packet_id, body_ptr, body_size);
+	packet_dispatcher::instance()->dispatch(shared_from_this(), header.type, body_ptr, body_size);
 }
 
 auto session::get_socket() -> tcp_t::socket&

@@ -4,6 +4,7 @@
 #include "thread_manager.h"
 #include "network_manager.h"
 #include "user_manager.h"
+#include "troc_user.h"
 
 auto main_server::start_service() -> fw::error
 {
@@ -117,33 +118,60 @@ auto main_server::core_teardown() -> fw::error
 
 auto main_server::load_feature() -> void
 {
-    // todo - feature make_unique + feature_list_t;
-    // todo - replace load feature by sql
+    feature_list_.push_back(std::make_shared<troc_user>());
+
     return;
 }
 
 auto main_server::feature_setup() -> fw::error
 {
-    return fw::error();
+    fw::error error{};
+    for (const auto feature : feature_list_)
+    {
+        error = feature->setup();
+        ASSERT_RETURN_VALUE(!error, error);
+    }
+
+    return error;
 }
 
 auto main_server::feature_start() -> fw::error
 {
-    return fw::error();
+    fw::error error{};
+    for (const auto feature : feature_list_)
+    {
+        error = feature->start();
+        ASSERT_RETURN_VALUE(!error, error);
+    }
+
+    return error;
 }
 
 auto main_server::feature_stop() -> fw::error
 {
-    return fw::error();
+    fw::error error{};
+    for (const auto feature : feature_list_)
+    {
+        error = feature->stop();
+        ASSERT_RETURN_VALUE(!error, error);
+    }
+
+    return error;
 }
 
 auto main_server::feature_teardown() -> fw::error
 {
-    return fw::error();
+    fw::error error{};
+    for (const auto feature : feature_list_)
+    {
+        error = feature->teardown();
+        ASSERT_RETURN_VALUE(!error, error);
+    }
+
+    return error;
 }
 
 auto main_server::on_service() -> fw::error
 {
-
     return fw::error();
 }

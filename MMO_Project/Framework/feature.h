@@ -8,10 +8,10 @@ public:
 	feature(std::string_view key);
 
 public:
-	virtual auto setup() -> fw::error = 0;
-	virtual auto start() -> fw::error = 0;
-	virtual auto stop() -> fw::error = 0;
-	virtual auto teardown() -> fw::error = 0;
+	virtual auto setup() -> fw::error { return fw::error{}; };
+	virtual auto start() -> fw::error { return fw::error{}; };
+	virtual auto stop() -> fw::error { return fw::error{}; };
+	virtual auto teardown() -> fw::error { return fw::error{}; };
 public:
 	std::string key_{};
 };

@@ -175,7 +175,7 @@
     <ClCompile Include="main_server.cpp" />
     <ClCompile Include="user.cpp" />
     <ClCompile Include="user_manager.cpp" />
-    <ClCompile Include="user_troc.cpp" />
+    <ClCompile Include="troc_user.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.h" />
@@ -184,7 +184,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="user.h" />
     <ClInclude Include="user_manager.h" />
-    <ClInclude Include="user_troc.h" />
+    <ClInclude Include="troc_user.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -7,8 +7,8 @@ using tcp_t = boost::asio::ip::tcp;
 
 #pragma pack(push, 1)
 struct packet_header {
-    uint32_t body_size; // 바디 크기(FlatBuffers 바이너리 크기)
-    uint16_t packet_id;
+    uint16_t size; // 패킷 전체 크기 (헤더 + 바디)
+    uint16_t type; // game::tr_type
 };
 #pragma pack(pop)
 
