@@ -157,6 +157,46 @@ auto session::on_packet_received(const packet_header& header, const uint8_t* bod
 	packet_dispatcher::instance()->dispatch(shared_from_this(), header.type, body_ptr, body_size);
 }
 
+void session::send(const flatbuffers::FlatBufferBuilder& builder) {
+	send(builder.GetBufferPointer(), builder.GetSize());
+}
+
+void session::send(const uint8_t* data, size_t size) {
+	if (!data || size == 0) return;
+
+	std::vector<uint8_t> buffer(data, data + size);
+
+	// send_queue 스레드세이프?? 검토해볼것
+	send_queue_.push(std::move(buffer));
+
+	if (!is_writing_) {
+		is_writing_ = true;
+		do_write();
+	}
+}
+
+void session::do_write() {
+	asio::async_write(
+		socket_,
+		asio::buffer(send_queue_.front()),
+		[this, self = shared_from_this()](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+			if (!ec) {
+				send_queue_.pop();
+
+				if (!send_queue_.empty()) {
+					do_write();
+				}
+				else {
+					is_writing_ = false;
+				}
+			}
+			else {
+				socket_.close();
+			}
+		}
+	);
+}
+
 auto session::get_socket() -> tcp_t::socket&
 {
 	return socket_;

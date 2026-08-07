@@ -18,6 +18,7 @@
 #include "singleton.h"
 
 #include <deque>
+#include <queue>
 #include <map>
 #include <ppl.h>
 #include <atomic>
