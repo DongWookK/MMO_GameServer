@@ -9,7 +9,6 @@ public:
 	using feature_list_t = std::vector<feature_s_ptr_t>;
 	using worker_context_t = boost::asio::io_context;
 	using work_guard_t = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-	using strands_s_ptr_t = std::shared_ptr<boost::asio::strand<boost::asio::io_context::executor_type>>;
 
 public:
 	auto start_service() -> fw::error;
@@ -37,5 +36,4 @@ private:
 	std::unique_ptr<worker_context_t> io_context_;
 	std::unique_ptr<work_guard_t> work_guard_;
 	std::unique_ptr<fw::thread_manager> thread_manager_{};
-	std::vector<strands_s_ptr_t> strands_{};
 };

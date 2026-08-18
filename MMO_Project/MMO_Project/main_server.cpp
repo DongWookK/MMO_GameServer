@@ -66,12 +66,8 @@ auto main_server::core_setup() -> fw::error
 
     const auto thread_count = std::thread::hardware_concurrency();
     thread_manager_ = std::make_unique<fw::thread_manager>(get_io_context(), thread_count);
-    
-    for (uint32_t i = 0; i < thread_count; ++i)
-    {
-        strands_.push_back(std::make_shared<boost::asio::strand<boost::asio::io_context::executor_type>>(io_context_->get_executor()));
-    }
 
+    packet_dispatcher::instance()->set_strands(io_context_.get(), thread_count);
     error_code = thread_manager_->setup();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 

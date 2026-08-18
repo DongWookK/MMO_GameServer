@@ -16,6 +16,7 @@ public:
     template <typename T>
     using packet_handler_t = std::function<void(const std::shared_ptr<session>&, const T*)>;
     using raw_handler_t = std::function<void(const std::shared_ptr<session>&, const uint8_t*, size_t)>;
+    using strands_s_ptr_t = std::shared_ptr<boost::asio::strand<boost::asio::io_context::executor_type>>;
 
 public:
     template <typename T>
@@ -45,8 +46,10 @@ public:
         FLOG_INFO("packet({}) Handler registred");
     }
 
+    auto set_strands(boost::asio::io_context* io_context, size_t strand_count) -> void;
     auto dispatch(const std::shared_ptr<session>& sess, uint16_t packet_id, const uint8_t* body_data, size_t body_size) -> void;
 
 private:
+    std::vector<strands_s_ptr_t> strands_{};
     std::vector<raw_handler_t> handlers_;
 };
