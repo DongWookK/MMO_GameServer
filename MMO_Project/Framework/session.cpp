@@ -87,7 +87,7 @@ auto session::get_index() const -> size_t
 
 auto session::on_accept() -> void
 {
-	std::cout << "Client connected (Session index: " << index_ << ")" << std::endl;
+	FLOG_INFO("client connected :: session index ({})", index_);
 
 	read_from_socket(); // 비동기 수신 루프 시작
 }

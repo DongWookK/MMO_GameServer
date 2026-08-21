@@ -17,12 +17,13 @@ auto worker::allocate_job(io_context_t& io_context) -> void
 {
 	thread_ = std::jthread([&io_context]() {
 		try {
-			std::cout << "[Thread " << std::this_thread::get_id() << "] Started.\n";
+			FLOG_INFO("Thread {} Started", std::this_thread::get_id()._Get_underlying_id());
 			io_context.run(); // 비동기 이벤트 루프 시작
-			std::cout << "[Thread " << std::this_thread::get_id() << "] Stopped.\n";
+			FLOG_INFO("Thread {} Stopped", std::this_thread::get_id()._Get_underlying_id());
 		}
 		catch (const std::exception& e) {
-			std::cerr << "[Thread " << std::this_thread::get_id() << "] Exception: " << e.what() << "\n";
+			FLOG_CRITICAL("Thread {} Error - {}", std::this_thread::get_id()._Get_underlying_id(), e.what());
+			//std::cerr << "[Thread " << std::this_thread::get_id() << "] Exception: " << e.what() << "\n";
 		}
 		});
 

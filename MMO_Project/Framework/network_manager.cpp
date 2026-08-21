@@ -33,8 +33,8 @@ auto fw::network_manager::start() -> fw::error
 	accept_thread_ = std::jthread([this]() {
 		try
 		{
-			std::cout << "context_ run" << std::endl;
 			accept_context_.run();
+			FLOG_INFO("Accept Context Run");
 		}
 		catch (const std::exception& e)
 		{

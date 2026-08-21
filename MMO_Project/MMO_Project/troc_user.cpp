@@ -5,12 +5,11 @@
 
 HANDLER_TR_DEFINE(troc_user, TestEcho)
 {
-    // 핸들러 로직 작성
     if (!sess) {
         return fw::error{ 111 };
     }
 
-    // pkt 처리...
-
+    // 핸들러 로직
+    
     return fw::error{ 111 };
 }
