@@ -22,6 +22,20 @@ Crash Define
 	}								\
 }
 
+#if defined(_MSC_VER)
+#define DEBUG_BREAK() __debugbreak()
+#endif
+
+#define ASSERT_DEBUG_BREAK(expr)			\
+{											\
+	if (!(expr))							\
+	{										\
+		DEBUG_BREAK();						\
+		__analysis_assume(expr);			\
+	}										\
+}
+
+
 /*---------------------------------------------
 For Code
 ---------------------------------------------*/
@@ -46,7 +60,7 @@ For Code
             spdlog::level::err,                         \
             "ASSERT Failed: ({})", #expr                \
         );                                              \
-        ASSERT_CRASH(expr);                             \
+        ASSERT_DEBUG_BREAK(expr);                             \
         return error_code;                              \
     }                                                   \
 }
@@ -73,7 +87,7 @@ For Code
             spdlog::level::err,                         \
             "ASSERT Failed: ({})", #expr                \
         );                                              \
-        ASSERT_CRASH(expr);                             \
+        ASSERT_DEBUG_BREAK(expr);                             \
         return;                                         \
     }                                                   \
 }
