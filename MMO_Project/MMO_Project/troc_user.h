@@ -10,11 +10,12 @@ public:
     auto setup() -> fw::error override
     {
         REGISTER_TR(game::tr_type::TestEcho, TestEcho);
+        REGISTER_TR(game::tr_type::UserLoginReq, LoginReq);
 
         return fw::error{};
     }
 
 public:
     HANDLER_TR(TestEcho);
-
+    HANDLER_TR(LoginReq);
 };

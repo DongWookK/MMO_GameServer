@@ -49,9 +49,11 @@ private:
 	auto process_packet() -> void;
 	auto on_packet_received(const packet_header& header, const uint8_t* body_ptr, size_t body_size) -> void;
 
+public:
     auto send(const flatbuffers::FlatBufferBuilder& builder) -> void;
     auto send(const uint8_t* data, size_t size) -> void;
     auto do_write() -> void;
+
 private:
 	tcp_t::socket socket_;
 	size_t index_{ 0 };

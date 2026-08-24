@@ -2,14 +2,36 @@
 #include "pch.h"
 #include "troc_user.h"
 #include "session.h"
+#include "user_manager.h"
 
 HANDLER_TR_DEFINE(troc_user, TestEcho)
 {
+    fw::error error{};
+
     if (!sess) {
         return fw::error{ 111 };
     }
 
     // 핸들러 로직
+    flatbuffers::FlatBufferBuilder builder;
+    auto offset = game::CreateTestEcho(builder, std::to_underlying(game::tr_type::TestEcho), builder.CreateString(pkt->data()));
+    builder.Finish(offset);
+
+    sess->send(builder);
     
-    return fw::error{ 111 };
+    return error;
+}
+
+HANDLER_TR_DEFINE(troc_user, LoginReq)
+{
+    fw::error error{};
+    
+    if (!sess) {
+        return fw::error{ 111 };
+    }
+
+    //sess->send()
+    
+
+    return error;
 }
