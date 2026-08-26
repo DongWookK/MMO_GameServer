@@ -17,7 +17,7 @@ HANDLER_TR_DEFINE(troc_user, TestEcho)
     auto offset = game::CreateTestEcho(builder, std::to_underlying(game::tr_type::TestEcho), builder.CreateString(pkt->data()));
     builder.Finish(offset);
 
-    sess->send(builder);
+    sess->send(std::to_underlying(game::tr_type::TestEcho), builder);
     
     return error;
 }
@@ -35,3 +35,4 @@ HANDLER_TR_DEFINE(troc_user, LoginReq)
 
     return error;
 }
+ 

@@ -50,8 +50,8 @@ private:
 	auto on_packet_received(const packet_header& header, const uint8_t* body_ptr, size_t body_size) -> void;
 
 public:
-    auto send(const flatbuffers::FlatBufferBuilder& builder) -> void;
-    auto send(const uint8_t* data, size_t size) -> void;
+    void send(uint16_t packet_type, const flatbuffers::FlatBufferBuilder& builder);
+    void send(uint16_t packet_type, const uint8_t* data, size_t size);
     auto do_write() -> void;
 
 private:

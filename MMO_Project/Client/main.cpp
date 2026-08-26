@@ -55,8 +55,7 @@ void send_packet(asio::ip::tcp::socket& sock, game::tr_type packet_type, PacketB
         std::cout << "\n[Send Success] Sent " << header.size << " bytes (Type: " << header.type << ")" << endl;
     }
 }
-
-// 1회 수신 함수 (에러 반환형으로 변경하여 연결 끊김 감지)
+// 1회 수신 함수
 bool read_from_socket(asio::ip::tcp::socket& sock)
 {
     boost::system::error_code ec;
@@ -71,7 +70,13 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
         else {
             std::cout << "\n[Read Header Failed] Error: " << ec.message() << endl;
         }
-        return false; // 수신 실패 또는 연결 종료
+        return false;
+    }
+
+    // header.size가 PacketHeader보다 작을 경우 발생할 Underflow 방지
+    if (header.size < sizeof(PacketHeader)) {
+        std::cout << "\n[Invalid Header] Packet size is smaller than header size." << endl;
+        return false;
     }
 
     size_t body_size = header.size - sizeof(PacketHeader);
@@ -87,29 +92,44 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
 
     std::cout << "\n[Recv Success] Type: " << header.type << ", Total Size: " << header.size << " bytes" << endl;
 
+    // FlatBuffers Verifier 생성 (수신된 body_buf의 안전성 검사)
+    flatbuffers::Verifier verifier(body_buf.data(), body_buf.size());
+
     switch (static_cast<game::tr_type>(header.type))
     {
     case game::tr_type::TestEcho:
     {
+        if (!verifier.VerifyBuffer<game::TestEcho>(nullptr)) {
+            std::cout << " > [Error] Invalid TestEcho FlatBuffer payload!" << endl;
+            return false;
+        }
+
         auto echo_pkt = flatbuffers::GetRoot<game::TestEcho>(body_buf.data());
         if (echo_pkt && echo_pkt->data()) {
             std::cout << " > TestEcho Response Data: " << echo_pkt->data()->str() << endl;
         }
     } break;
+
     case game::tr_type::UserLoginAck:
     {
-        auto echo_pkt = flatbuffers::GetRoot<game::LoginAck>(body_buf.data());
-        if (echo_pkt && echo_pkt->user_no()) {
-            std::cout << " > LoginAck User No: " << echo_pkt->user_no() << endl;
+        if (!verifier.VerifyBuffer<game::LoginAck>(nullptr)) {
+            std::cout << " > [Error] Invalid LoginAck FlatBuffer payload!" << endl;
+            return false;
+        }
+
+        auto login_pkt = flatbuffers::GetRoot<game::LoginAck>(body_buf.data());
+        if (login_pkt) {
+            std::cout << " > LoginAck User No: " << login_pkt->user_no() << endl;
         }
     } break;
+
     default:
     {
         std::cout << " > Unknown Packet Type: " << header.type << endl;
     } break;
     }
 
-    return true; // 정상 수신 성공
+    return true;
 }
 
 // 백그라운드 수신 루프 스레드 함수

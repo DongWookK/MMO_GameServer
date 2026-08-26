@@ -157,20 +157,41 @@ auto session::on_packet_received(const packet_header& header, const uint8_t* bod
 	packet_dispatcher::instance()->dispatch(shared_from_this(), header.type, body_ptr, body_size);
 }
 
-void session::send(const flatbuffers::FlatBufferBuilder& builder) {
-	send(builder.GetBufferPointer(), builder.GetSize());
+void session::send(uint16_t packet_type, const flatbuffers::FlatBufferBuilder& builder) {
+	send(packet_type, builder.GetBufferPointer(), builder.GetSize());
 }
 
-void session::send(const uint8_t* data, size_t size) {
+void session::send(uint16_t packet_type, const uint8_t* data, size_t size) {
 	if (!data || size == 0) return;
 
-	std::vector<uint8_t> buffer(data, data + size);
+	// 1. [Header + Body] 버퍼 생성 (송신 스레드에서 즉시 수행)
+	uint32_t total_size = static_cast<uint32_t>(sizeof(packet_header) + size);
 
-	// send_queue 스레드세이프?? 검토해볼것
-	send_queue_.push(std::move(buffer));
+	packet_header header{};
+	header.size = total_size;
+	header.type = packet_type;
 
-	if (!is_writing_) {
-		is_writing_ = true;
+	std::vector<uint8_t> buffer;
+	buffer.reserve(total_size);
+
+	const uint8_t* header_ptr = reinterpret_cast<const uint8_t*>(&header);
+	buffer.insert(buffer.end(), header_ptr, header_ptr + sizeof(packet_header));
+	buffer.insert(buffer.end(), data, data + size);
+
+	bool write_in_progress = false;
+	{
+		send_queue_.push(std::move(buffer));
+
+		if (!is_writing_) {
+			is_writing_ = true;
+			write_in_progress = false;
+		}
+		else {
+			write_in_progress = true;
+		}
+	}
+
+	if (!write_in_progress) {
 		do_write();
 	}
 }
