@@ -112,12 +112,12 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
 
     case game::tr_type::UserLoginAck:
     {
-        if (!verifier.VerifyBuffer<game::LoginAck>(nullptr)) {
+        if (!verifier.VerifyBuffer<game::UserLoginAck>(nullptr)) {
             std::cout << " > [Error] Invalid LoginAck FlatBuffer payload!" << endl;
             return false;
         }
 
-        auto login_pkt = flatbuffers::GetRoot<game::LoginAck>(body_buf.data());
+        auto login_pkt = flatbuffers::GetRoot<game::UserLoginAck>(body_buf.data());
         if (login_pkt) {
             std::cout << " > LoginAck User No: " << login_pkt->user_no() << endl;
         }
@@ -231,7 +231,7 @@ int main()
         {
             send_packet(sock, game::tr_type::UserLoginReq, [](flatbuffers::FlatBufferBuilder& builder) {
                 uint32_t user_no = 12345;
-                return game::CreateLoginReq(builder, std::to_underlying(game::tr_type::UserLoginReq), user_no);
+                return game::CreateUserLoginReq(builder, std::to_underlying(game::tr_type::UserLoginReq), user_no);
                 });
         }
         else

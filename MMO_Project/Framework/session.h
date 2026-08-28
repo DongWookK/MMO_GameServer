@@ -33,6 +33,9 @@ private:
     size_t size_;
 };
 
+template <typename T>
+struct PacketTraits;
+
 class session : public std::enable_shared_from_this<session>
 {
 public:
@@ -50,6 +53,12 @@ private:
 	auto on_packet_received(const packet_header& header, const uint8_t* body_ptr, size_t body_size) -> void;
 
 public:
+    template <typename T>
+    void send_packet(flatbuffers::FlatBufferBuilder& builder, flatbuffers::Offset<T> offset) {
+        builder.Finish(offset);
+        send(std::to_underlying(PacketTraits<T>::type), builder);
+    }
+
     void send(uint16_t packet_type, const flatbuffers::FlatBufferBuilder& builder);
     void send(uint16_t packet_type, const uint8_t* data, size_t size);
     auto do_write() -> void;
