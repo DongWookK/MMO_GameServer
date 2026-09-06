@@ -29,6 +29,7 @@
 
 #include <flatbuffers/flatbuffers.h>
 #include "enum_game_generated.h"
+#include "enum_error_generated.h"
 
 namespace fw
 {

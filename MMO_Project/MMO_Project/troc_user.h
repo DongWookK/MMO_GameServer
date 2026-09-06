@@ -7,6 +7,7 @@
 // game::TestEcho 타입이 정의된 헤더(game_generated.h) 뒤에 배치
 DECLARE_PACKET_TRAITS(game::tr_type::TestEcho, TestEcho);
 DECLARE_PACKET_TRAITS(game::tr_type::UserLoginReq, UserLoginReq);
+DECLARE_PACKET_TRAITS(game::tr_type::UserLoginAck, UserLoginAck);
 
 class troc_user : public feature
 {

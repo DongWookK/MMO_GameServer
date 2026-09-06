@@ -31,12 +31,20 @@ auto user_manager::teardown() -> fw::error
 	return fw::error{};
 }
 
-auto user_manager::allocate_user(session_s_ptr_t session) -> void
+auto user_manager::user_login(session_s_ptr_t session) -> fw::error
+{
+	return fw::error();
+}
+
+auto user_manager::find_user(session_s_ptr_t session) const -> user_s_ptr_t
+{
+	return user_s_ptr_t();
+}
+
+auto user_manager::allocate_user() -> user_s_ptr_t
 {
 	auto user = user_pool_.AcquireObject();
-	ASSERT_RETURN(nullptr != user);
-	
-	user->set_session(session);
-	
-	return;
+	ASSERT_RETURN_VALUE(nullptr != user, nullptr);
+
+	return user;
 }
