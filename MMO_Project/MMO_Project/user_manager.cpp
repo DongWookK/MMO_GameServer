@@ -33,18 +33,38 @@ auto user_manager::teardown() -> fw::error
 
 auto user_manager::user_login(session_s_ptr_t session) -> fw::error
 {
-	return fw::error();
+	auto error = fw::error{};
+
+	auto user = user_pool_.AcquireObject();
+	ASSERT_RETURN_VALUE(nullptr != user, common::error_code::MAX); // 에러코드 추가 필요
+
+	user->set_session(session);
+	
+	return error;
+}
+
+auto user_manager::user_logout(session_s_ptr_t session) -> fw::error
+{
+	auto error = fw::error{};
+	
+	auto user = find_user(session);
+	ASSERT_RETURN_VALUE(user != nullptr, common::error_code::MAX); // 에러코드 추가 필요
+
+	auto& key_index = user_list_.get<tag_key>();
+	auto it = key_index.find(user->get_index());
+	if (it != key_index.end())
+	{
+		key_index.erase(it);
+	}
+
+	return error;
 }
 
 auto user_manager::find_user(session_s_ptr_t session) const -> user_s_ptr_t
 {
-	return user_s_ptr_t();
-}
-
-auto user_manager::allocate_user() -> user_s_ptr_t
-{
-	auto user = user_pool_.AcquireObject();
-	ASSERT_RETURN_VALUE(nullptr != user, nullptr);
-
-	return user;
+	auto& index = user_list_.get<tag_key>();
+	auto it = index.find(session->get_index());
+	ASSERT_RETURN_VALUE(it != index.end(), nullptr);
+	
+	return *it;
 }

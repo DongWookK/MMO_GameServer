@@ -35,11 +35,10 @@ public:
 
 public:
 	auto user_login(session_s_ptr_t session) -> fw::error;
-
+	auto user_logout(session_s_ptr_t session) -> fw::error;
 	auto find_user(session_s_ptr_t session) const -> user_s_ptr_t;
 
 private:
-	auto allocate_user() -> user_s_ptr_t;
 
 private:
 	pool_t user_pool_{};
