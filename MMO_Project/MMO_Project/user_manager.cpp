@@ -31,16 +31,20 @@ auto user_manager::teardown() -> fw::error
 	return fw::error{};
 }
 
-auto user_manager::user_login(session_s_ptr_t session) -> fw::error
+auto user_manager::user_login(session_s_ptr_t session) -> user_s_ptr_t
 {
 	auto error = fw::error{};
 
 	auto user = user_pool_.AcquireObject();
-	ASSERT_RETURN_VALUE(nullptr != user, common::error_code::MAX); // 에러코드 추가 필요
+	ASSERT_RETURN_VALUE(nullptr != user, nullptr);
 
 	user->set_session(session);
+	ASSERT_RETURN_VALUE(user_list_.insert(user).second, nullptr);
+
+	auto it = user_list_.insert(user).first;
+	ASSERT_RETURN_VALUE(user_list_.end() != it, nullptr);
 	
-	return error;
+	return *it;
 }
 
 auto user_manager::user_logout(session_s_ptr_t session) -> fw::error
@@ -48,7 +52,7 @@ auto user_manager::user_logout(session_s_ptr_t session) -> fw::error
 	auto error = fw::error{};
 	
 	auto user = find_user(session);
-	ASSERT_RETURN_VALUE(user != nullptr, common::error_code::MAX); // 에러코드 추가 필요
+	ASSERT_RETURN_VALUE(user != nullptr, error::code::UserNotExist);
 
 	auto& key_index = user_list_.get<tag_key>();
 	auto it = key_index.find(user->get_index());

@@ -114,6 +114,7 @@ auto main_server::core_teardown() -> fw::error
 
 auto main_server::load_feature() -> void
 {
+    feature_list_.push_back(user_manager::instance());
     feature_list_.push_back(std::make_shared<troc_user>());
 
     return;
