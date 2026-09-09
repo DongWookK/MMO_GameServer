@@ -13,8 +13,7 @@ class user_manager : public feature, public singleton<user_manager>
 {
 	friend class singleton<user_manager>;
 
-private:
-	// feature("user_manager") 매개변수 생성자 호출
+public:
 	user_manager()
 		: feature("user_manager")
 	{}

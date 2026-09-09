@@ -9,8 +9,11 @@ DECLARE_PACKET_TRAITS(game::tr_type::TestEcho, TestEcho);
 DECLARE_PACKET_TRAITS(game::tr_type::UserLoginReq, UserLoginReq);
 DECLARE_PACKET_TRAITS(game::tr_type::UserLoginAck, UserLoginAck);
 
-class troc_user : public feature
+class troc_user : public feature, singleton<troc_user>
 {
+public:
+    troc_user() : feature("troc_user") {}
+
 public:
     auto setup() -> fw::error override
     {

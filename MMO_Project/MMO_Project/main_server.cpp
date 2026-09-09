@@ -1,10 +1,14 @@
 #pragma once
 #include "pch.h"
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/executor_work_guard.hpp>
 #include "main_server.h"
 #include "thread_manager.h"
 #include "network_manager.h"
 #include "user_manager.h"
 #include "troc_user.h"
+
+main_server::~main_server() = default;
 
 auto main_server::start_service() -> fw::error
 {
@@ -13,7 +17,6 @@ auto main_server::start_service() -> fw::error
     error_code = core_setup();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
-    // network manager는 제일 마지막에 start해야하지않나?
     error_code = core_start();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 

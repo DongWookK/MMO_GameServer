@@ -4,6 +4,10 @@
 
 class main_server : public singleton<main_server>
 {
+	friend class singleton<main_server>;
+public:
+	main_server() = default;
+	~main_server();
 public:
 	using feature_s_ptr_t = std::shared_ptr<feature>;
 	using feature_list_t = std::vector<feature_s_ptr_t>;

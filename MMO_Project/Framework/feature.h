@@ -4,7 +4,6 @@
 class feature
 {
 public:
-	feature();
 	feature(std::string_view key);
 
 public:
