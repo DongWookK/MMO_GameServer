@@ -38,6 +38,8 @@ struct PacketTraits;
 
 class session : public std::enable_shared_from_this<session>
 {
+    using disconnect_handler_t = std::function<void(std::shared_ptr<session>)>;
+
 public:
 	explicit session(asio::io_context& io_context) : socket_(io_context) {}
 
@@ -46,6 +48,9 @@ public:
 	auto on_accept() -> void;
 	auto reset() -> void;
 	auto get_socket() -> tcp_t::socket&;
+
+    void set_disconnect_handler(disconnect_handler_t handler);
+    void disconnect(const boost::system::error_code& ec = {});
 
 private:
 	auto read_from_socket() -> void;
@@ -72,4 +77,8 @@ private:
     // todo - thread safe? atomic, concurrent queue,vector 활용 고민해볼것
     std::queue<std::vector<uint8_t>> send_queue_;
     bool is_writing_{};
+
+private:
+    disconnect_handler_t disconnect_handler_;
+    std::atomic_bool disconnected_{ false };
 };

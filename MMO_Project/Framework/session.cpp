@@ -111,8 +111,9 @@ auto session::read_from_socket() -> void
                 process_packet();
                 read_from_socket();
             }
-            else {
-                socket_.close();
+            else 
+			{
+					disconnect(error);
             }
         }
     );
@@ -130,8 +131,8 @@ auto session::process_packet() -> void
 		size_t total_packet_size = header.size;
 
 		if (total_packet_size < sizeof(packet_header) || total_packet_size > 8192) {
-			std::cout << "Invalid packet size or overflow attack! Disconnecting..." << std::endl;
-			socket_.close();
+			// std::cout << "Invalid packet size or overflow attack! Disconnecting..." << std::endl;
+			disconnect();
 			return;
 		}
 
@@ -200,8 +201,10 @@ void session::do_write() {
 	asio::async_write(
 		socket_,
 		asio::buffer(send_queue_.front()),
-		[this, self = shared_from_this()](const boost::system::error_code& ec, std::size_t bytes_transferred) {
-			if (!ec) {
+		[this, self = shared_from_this()](const boost::system::error_code& ec, std::size_t bytes_transferred) 
+		{
+			if (!ec) 
+			{
 				send_queue_.pop();
 
 				if (!send_queue_.empty()) {
@@ -211,8 +214,9 @@ void session::do_write() {
 					is_writing_ = false;
 				}
 			}
-			else {
-				socket_.close();
+			else 
+			{
+				disconnect(ec);
 			}
 		}
 	);
@@ -221,4 +225,44 @@ void session::do_write() {
 auto session::get_socket() -> tcp_t::socket&
 {
 	return socket_;
+}
+
+auto session::set_disconnect_handler(disconnect_handler_t handler) -> void
+{
+	disconnect_handler_ = std::move(handler);
+}
+
+auto session::disconnect(const boost::system::error_code& ec) -> void
+{
+	bool expected = false;
+
+	if (!disconnected_.compare_exchange_strong(expected, true))
+	{
+		return; // 이미 disconnect 처리됨
+	}
+
+	if (ec)
+	{
+		FLOG_INFO(
+			"session disconnected. index={}, ec={}, msg={}",
+			index_,
+			ec.value(),
+			ec.message());
+	}
+	else
+	{
+		FLOG_INFO(
+			"session disconnected. index={}",
+			index_);
+	}
+
+	boost::system::error_code ignore_ec;
+
+	socket_.shutdown(tcp_t::socket::shutdown_both, ignore_ec);
+	socket_.close(ignore_ec);
+
+	if (disconnect_handler_)
+	{
+		disconnect_handler_(shared_from_this());
+	}
 }

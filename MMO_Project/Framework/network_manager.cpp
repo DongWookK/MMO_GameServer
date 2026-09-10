@@ -108,6 +108,20 @@ auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system
 {
 	spdlog::info("network_manager::handel_accept....");
 
+	new_session->set_disconnect_handler(
+		[this](session_ptr_t session)
+		{
+			FLOG_INFO(
+				"client disconnected. session={}",
+				session->get_index());
+
+			/* todo :
+				세션 목록 제거
+				플레이어 로그아웃
+				기타 정리
+			*/
+		});
+
 	if (!error)
 	{
 		new_session->on_accept();
