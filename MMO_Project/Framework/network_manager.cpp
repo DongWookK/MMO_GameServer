@@ -95,6 +95,11 @@ auto fw::network_manager::set_accept_handler(accept_handler_t handler) -> void
 	accept_handler_ = handler;
 }
 
+auto fw::network_manager::set_disconnect_handler(disconnect_handler_t handler) -> void
+{
+	disconnect_handler_ = handler;
+}
+
 auto fw::network_manager::start_accept() -> void
 {
 	auto new_session = session_pool_.AcquireObject();
@@ -108,19 +113,7 @@ auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system
 {
 	spdlog::info("network_manager::handel_accept....");
 
-	new_session->set_disconnect_handler(
-		[this](session_ptr_t session)
-		{
-			FLOG_INFO(
-				"client disconnected. session={}",
-				session->get_index());
-
-			/* todo :
-				세션 목록 제거
-				플레이어 로그아웃
-				기타 정리
-			*/
-		});
+	new_session->set_disconnect_handler(disconnect_handler_);
 
 	if (!error)
 	{

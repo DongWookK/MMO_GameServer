@@ -20,6 +20,7 @@ public:
 
 	using session_ptr_t = std::shared_ptr<session>;
 	using accept_handler_t = std::function<void(session_ptr_t)>;
+	using disconnect_handler_t = std::function<fw::error(session_ptr_t)>;
 
 public:
 	auto setup(asio::io_context* worker_context) -> fw::error;
@@ -29,6 +30,7 @@ public:
 
 public:
 	auto set_accept_handler(accept_handler_t handler) -> void;
+	auto set_disconnect_handler(disconnect_handler_t handler) -> void;
 
 private:
 	auto initialize_acceptor(asio::io_context* worker_context) -> fw::error;
@@ -46,5 +48,6 @@ private:
 
 	boost::asio::io_context* worker_context_ = nullptr;
 	accept_handler_t accept_handler_{};
+	disconnect_handler_t disconnect_handler_{};
 };
 }

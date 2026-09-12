@@ -113,7 +113,7 @@ auto session::read_from_socket() -> void
             }
             else 
 			{
-					disconnect(error);
+				disconnect(error);
             }
         }
     );

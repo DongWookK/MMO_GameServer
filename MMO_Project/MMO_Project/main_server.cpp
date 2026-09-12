@@ -82,6 +82,16 @@ auto main_server::core_setup() -> fw::error
         spdlog::info("New player connected and assigned to user_manager!");
         });
 
+    fw::network_manager::instance()->set_disconnect_handler([](fw::network_manager::session_ptr_t session) 
+        {
+            spdlog::info("user disconnected session({})",session->get_index());
+            
+            auto error = user_manager::instance()->user_logout(session);
+            ASSERT_RETURN_VALUE(!error, error);
+
+            return error;
+        });
+
     return error_code;
 }
 
