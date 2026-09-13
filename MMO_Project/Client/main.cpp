@@ -123,6 +123,19 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
         }
     } break;
 
+    case game::tr_type::UserLogoutAck:
+    {
+        if (!verifier.VerifyBuffer<game::UserLogoutAck>(nullptr)) {
+            std::cout << " > [Error] Invalid LoginAck FlatBuffer payload!" << endl;
+            return false;
+        }
+
+        auto login_pkt = flatbuffers::GetRoot<game::UserLogoutAck>(body_buf.data());
+        if (login_pkt) {
+            std::cout << " > LoginAck User No: " << login_pkt->user_no() << endl;
+        }
+    } break;
+
     default:
     {
         std::cout << " > Unknown Packet Type: " << header.type << endl;
@@ -188,7 +201,7 @@ int main()
 
     std::string message{};
     bool out = true;
-    cout << "client ready (commands: connect, send_echo, send_login, disconnect)" << endl;
+    cout << "client ready (commands: connect, send_echo, send_login, send_logout, disconnect)" << endl;
 
     while (out)
     {
@@ -232,6 +245,13 @@ int main()
             send_packet(sock, game::tr_type::UserLoginReq, [](flatbuffers::FlatBufferBuilder& builder) {
                 uint32_t user_no = 12345;
                 return game::CreateUserLoginReq(builder, std::to_underlying(game::tr_type::UserLoginReq), user_no);
+                });
+        }
+        else if ("send_logout" == message)
+        {
+            send_packet(sock, game::tr_type::UserLogoutReq, [](flatbuffers::FlatBufferBuilder& builder) {
+                uint32_t user_no = 12345;
+                return game::CreateUserLogoutReq(builder, std::to_underlying(game::tr_type::UserLogoutReq), user_no);
                 });
         }
         else

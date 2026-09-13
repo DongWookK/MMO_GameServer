@@ -37,3 +37,21 @@ HANDLER_TR_DEFINE(troc_user, UserLoginReq)
 
     return error;
 }
+
+HANDLER_TR_DEFINE(troc_user, UserLogoutReq)
+{
+    fw::error error{};
+
+    if (!sess) {
+        return fw::error{ 111 };
+    }
+
+    error = user_manager::instance()->user_logout(sess);
+    ASSERT_RETURN_VALUE(!(error), error::code::UserLoginFail);
+
+    flatbuffers::FlatBufferBuilder builder;
+    auto offset = game::CreateUserLoginAck(builder, std::to_underlying(PacketTraits<game::UserLogoutAck>::type), 123);
+    sess->send_packet(builder, offset);
+
+    return error;
+}

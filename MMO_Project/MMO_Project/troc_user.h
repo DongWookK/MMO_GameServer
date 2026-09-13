@@ -8,6 +8,8 @@
 DECLARE_PACKET_TRAITS(game::tr_type::TestEcho, TestEcho);
 DECLARE_PACKET_TRAITS(game::tr_type::UserLoginReq, UserLoginReq);
 DECLARE_PACKET_TRAITS(game::tr_type::UserLoginAck, UserLoginAck);
+DECLARE_PACKET_TRAITS(game::tr_type::UserLogoutReq, UserLogoutReq);
+DECLARE_PACKET_TRAITS(game::tr_type::UserLogoutAck, UserLogoutAck);
 
 class troc_user : public feature, singleton<troc_user>
 {
@@ -19,6 +21,7 @@ public:
     {
         [this]() { packet_dispatcher::instance()->register_handler<game::TestEcho>(std::to_underlying(game::tr_type::TestEcho), [this](const std::shared_ptr<session>& sess, const game::TestEcho* pkt) { this->handler_tr_TestEcho(sess, pkt); }); }();;
         [this]() { packet_dispatcher::instance()->register_handler<game::UserLoginReq>(std::to_underlying(game::tr_type::UserLoginReq), [this](const std::shared_ptr<session>& sess, const game::UserLoginReq* pkt) { this->handler_tr_UserLoginReq(sess, pkt); }); }();;
+        [this]() { packet_dispatcher::instance()->register_handler<game::UserLogoutReq>(std::to_underlying(game::tr_type::UserLogoutReq), [this](const std::shared_ptr<session>& sess, const game::UserLogoutReq* pkt) { this->handler_tr_UserLogoutReq(sess, pkt); }); }();;
 
         return fw::error{};
     }
@@ -26,4 +29,5 @@ public:
 public:
     HANDLER_TR(TestEcho);
     HANDLER_TR(UserLoginReq);
+    HANDLER_TR(UserLogoutReq);
 };
