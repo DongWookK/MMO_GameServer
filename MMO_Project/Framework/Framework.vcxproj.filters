@@ -18,6 +18,9 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="Database">
+      <UniqueIdentifier>{7e864800-04fa-4261-a88f-23d1f116145b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="thread_local.h">
@@ -56,6 +59,9 @@
     <ClInclude Include="packet_dispatcher.h">
       <Filter>Network</Filter>
     </ClInclude>
+    <ClInclude Include="db_manager.h">
+      <Filter>Database</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
@@ -81,6 +87,9 @@
     </ClCompile>
     <ClCompile Include="packet_dispatcher.cpp">
       <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="db_manager.cpp">
+      <Filter>Database</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

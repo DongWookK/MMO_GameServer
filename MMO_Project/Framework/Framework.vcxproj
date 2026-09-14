@@ -151,6 +151,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="db_manager.h" />
     <ClInclude Include="error.hpp" />
     <ClInclude Include="packet_dispatcher.h" />
     <ClInclude Include="session.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="thread_worker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="db_manager.cpp" />
     <ClCompile Include="feature.cpp" />
     <ClCompile Include="network_manager.cpp" />
     <ClCompile Include="object_pool.inl" />

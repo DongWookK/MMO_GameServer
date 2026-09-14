@@ -1,5 +1,5 @@
 #pragma once
-
+#pragma comment(lib, "odbc32.lib")
 
 // boost asio warning 
 // https://learn.microsoft.com/en-us/cpp/porting/modifying-winver-and-win32-winnt?view=msvc-160
@@ -12,6 +12,10 @@
 #include <spdlog/spdlog.h>
 #include <iostream>
 #include <utility>
+
+#include <windows.h>
+#include <sql.h>
+#include <sqlext.h>
 
 #include "macro.h"
 #include "error.hpp"
