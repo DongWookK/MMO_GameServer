@@ -62,6 +62,9 @@
     <ClInclude Include="db_manager.h">
       <Filter>Database</Filter>
     </ClInclude>
+    <ClInclude Include="util.h">
+      <Filter>Util</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
@@ -91,5 +94,8 @@
     <ClCompile Include="db_manager.cpp">
       <Filter>Database</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>

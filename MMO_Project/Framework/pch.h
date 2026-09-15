@@ -9,9 +9,11 @@
 
 #include <stdint.h>
 #include <boost/asio.hpp>
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #include <spdlog/spdlog.h>
 #include <iostream>
 #include <utility>
+#include "util.h"
 
 #include <windows.h>
 #include <sql.h>
@@ -34,16 +36,3 @@
 #include <flatbuffers/flatbuffers.h>
 #include "enum_game_generated.h"
 #include "enum_error_generated.h"
-
-namespace fw
-{
-	enum flag
-	{
-		none
-		, setup
-		, start
-		, stop
-		, teardown
-	};
-
-}
