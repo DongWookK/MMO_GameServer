@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "thread_manager.h"
+#include <nlohmann/json.hpp>
 
 class main_server : public singleton<main_server>
 {
@@ -34,10 +35,16 @@ private:
 
 	auto on_service() -> fw::error;
 
+	auto load_config_from_file() -> fw::error;
+	auto set_thread_config() -> fw::error;
+	auto set_network_config() -> fw::error;
+
 private:
 	feature_list_t feature_list_{};
 
 	std::unique_ptr<worker_context_t> io_context_;
 	std::unique_ptr<work_guard_t> work_guard_;
 	std::unique_ptr<fw::thread_manager> thread_manager_{};
+
+	std::wstring db_connection_str_{};
 };

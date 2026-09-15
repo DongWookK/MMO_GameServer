@@ -17,11 +17,11 @@ auto thread_pool::setup(const uint32_t thread_count) -> fw::error
 	return error_code;
 }
 
-auto thread_pool::start(io_context_t& io_context) -> fw::error
+auto thread_pool::start(io_context_t& io_context, const std::wstring& db_connection_str) -> fw::error
 {
 	for (auto& thread : threads_)
 	{
-		thread->allocate_job(io_context);
+		thread->allocate_job(io_context, db_connection_str);
 	}
 
 	return fw::error();
@@ -98,11 +98,13 @@ auto fw::thread_manager::setup() -> fw::error
 	return error_code;
 }
 
-auto thread_manager::start() -> fw::error
+auto thread_manager::start(const std::wstring& db_connection_str_) -> fw::error
 {
+	ASSERT_DEBUG_BREAK(!db_connection_str_.empty());
+
 	is_on_service_.store(true);
 
-	thread_pool_.start(io_context_);
+	thread_pool_.start(io_context_, db_connection_str_);
 
 	return fw::error{};
 }

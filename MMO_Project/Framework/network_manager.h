@@ -14,7 +14,7 @@ public:
 	using pool_t = fw::CObjectPool<session>;
 	using object_t = pool_t::Object;
 	
-	static constexpr uint16_t port_no = 221;
+	static constexpr uint16_t PORT_NO = 221;
 	static constexpr uint16_t BACKLOG_SIZE = 30; // syn 대기열 크기
 	static constexpr uint16_t SESSION_POOL_SIZE = 1000;
 
@@ -49,5 +49,6 @@ private:
 	boost::asio::io_context* worker_context_ = nullptr;
 	accept_handler_t accept_handler_{};
 	disconnect_handler_t disconnect_handler_{};
+	
 };
 }

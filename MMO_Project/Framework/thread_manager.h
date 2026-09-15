@@ -16,7 +16,7 @@ public:
 
 public:
 	auto setup(const uint32_t thread_count) -> fw::error;
-	auto start(io_context_t& io_context) -> fw::error;
+	auto start(io_context_t& io_context, const std::wstring& db_connection_str) -> fw::error;
 	auto stop() -> fw::error;
 	auto teardown() -> fw::error;
 
@@ -43,7 +43,7 @@ public:
 
 public:
 	auto setup() -> fw::error;
-	auto start() -> fw::error;
+	auto start(const std::wstring& db_connect_str) -> fw::error;
 	auto stop() -> fw::error;
 	auto teardown() -> fw::error;
 

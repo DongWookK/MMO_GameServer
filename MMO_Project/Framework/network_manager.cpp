@@ -62,7 +62,7 @@ auto fw::network_manager::initialize_acceptor(asio::io_context* worker_context) 
 	}
 
 	asio::ip::address_v4 ip_address = asio::ip::address_v4::any();
-	end_point_ = asio::ip::tcp::endpoint(ip_address, port_no);
+	end_point_ = asio::ip::tcp::endpoint(ip_address, PORT_NO);
 
 	acceptor_.bind(end_point_, ec);
 	if (ec.value() != 0)
