@@ -32,7 +32,7 @@ bool db_manager::connect(const std::wstring& connectionString) {
     }
 
     // 드라이버 연결 문자열을 이용해 DB 접속
-    // 예: "Driver={ODBC Driver 18 for SQL Server};Server=127.0.0.1;Database=GameDB;Uid=sa;Pwd=YourPassword;TrustServerCertificate=yes;"
+    // 예: "Driver={ODBC Driver 18 for SQL Server};Server=127.0.0.1;Database=mmo_info;Uid=dbo;Pwd=;TrustServerCertificate=yes;"
     ret = SQLDriverConnectW(
         m_dbc,
         NULL,

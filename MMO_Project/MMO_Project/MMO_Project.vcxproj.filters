@@ -20,6 +20,9 @@
     <Filter Include="Source Files\user\troc">
       <UniqueIdentifier>{af4b66eb-a117-4504-9b12-0368c71d77bf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\user\object">
+      <UniqueIdentifier>{0864459b-e289-4368-ae59-0209891c17c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -36,6 +39,9 @@
     </ClCompile>
     <ClCompile Include="troc_user.cpp">
       <Filter>Source Files\user\troc</Filter>
+    </ClCompile>
+    <ClCompile Include="user_sql.cpp">
+      <Filter>Source Files\user\object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +65,9 @@
     </ClInclude>
     <ClInclude Include="macro_server.h">
       <Filter>Source Files\header</Filter>
+    </ClInclude>
+    <ClInclude Include="user_sql.h">
+      <Filter>Source Files\user\object</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

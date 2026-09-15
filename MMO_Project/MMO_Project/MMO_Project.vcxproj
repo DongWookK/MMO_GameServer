@@ -176,6 +176,7 @@
     <ClCompile Include="user.cpp" />
     <ClCompile Include="user_manager.cpp" />
     <ClCompile Include="troc_user.cpp" />
+    <ClCompile Include="user_sql.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.h" />
@@ -185,6 +186,7 @@
     <ClInclude Include="user.h" />
     <ClInclude Include="user_manager.h" />
     <ClInclude Include="troc_user.h" />
+    <ClInclude Include="user_sql.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
