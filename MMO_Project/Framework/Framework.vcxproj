@@ -161,6 +161,7 @@
     <ClInclude Include="object_pool.hpp" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="singleton.h" />
+    <ClInclude Include="sql.h" />
     <ClInclude Include="thread_local.h" />
     <ClInclude Include="thread_manager.h" />
     <ClInclude Include="thread_worker.h" />

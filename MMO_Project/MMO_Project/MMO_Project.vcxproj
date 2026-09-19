@@ -176,7 +176,6 @@
     <ClCompile Include="user.cpp" />
     <ClCompile Include="user_manager.cpp" />
     <ClCompile Include="troc_user.cpp" />
-    <ClCompile Include="user_sql.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="logger.h" />

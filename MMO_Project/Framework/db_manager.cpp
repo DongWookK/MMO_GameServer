@@ -74,6 +74,18 @@ void db_manager::disconnect() {
     m_isConnected = false;
 }
 
+auto db_manager::prepare() -> fw::error
+{
+    fw::error error_code{};
+    for (auto& sql : sqls_)
+    {
+        error_code = sql->prepare();
+        ASSERT_RETURN_VALUE(!error_code, error_code);
+    }
+
+    return error_code;
+}
+
 // 3. 저장 프로시저(SP) 실행 예시
 bool db_manager::execute_login_proc(int userId, const std::wstring& userName) {
     if (!m_isConnected) return false;

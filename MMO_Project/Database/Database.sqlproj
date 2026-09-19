@@ -56,8 +56,12 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
-    <Folder Include="stored_proceduere" />
-    <Folder Include="table" />
+    <Folder Include="info" />
+    <Folder Include="game" />
+    <Folder Include="info\stored_proceduere" />
+    <Folder Include="info\table" />
+    <Folder Include="game\stored_procedure" />
+    <Folder Include="game\table" />
   </ItemGroup>
   <ItemGroup>
     <SqlCmdVariable Include="mmo_info">
@@ -70,5 +74,9 @@
       <HintPath>..\..\..\..\..\Documents\SQL Server Management Studio\DAC Packages\mmo_info.dacpac</HintPath>
       <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
     </ArtifactReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="game\table\tb_user.sql" />
+    <Build Include="game\stored_procedure\usp_user_login.sql" />
   </ItemGroup>
 </Project>

@@ -40,9 +40,6 @@
     <ClCompile Include="troc_user.cpp">
       <Filter>Source Files\user\troc</Filter>
     </ClCompile>
-    <ClCompile Include="user_sql.cpp">
-      <Filter>Source Files\user\object</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
