@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.5.11801.241 oobstable
+VisualStudioVersion = 18.5.11801.241
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "MMO_Project\MMO_Project.vcxproj", "{1A864650-2470-4C12-AA1A-657175449405}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -10,12 +10,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "MMO_Project\MMO_P
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Framework", "Framework\Framework.vcxproj", "{DE03D03B-DB69-41C1-B10E-AD383C2F4D21}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{DBF84600-B7A2-49A3-A12A-6AC29CC0E794}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dummy_client", "Client\Client.vcxproj", "{DBF84600-B7A2-49A3-A12A-6AC29CC0E794}"
 	ProjectSection(ProjectDependencies) = postProject
 		{DE03D03B-DB69-41C1-B10E-AD383C2F4D21} = {DE03D03B-DB69-41C1-B10E-AD383C2F4D21}
 	EndProjectSection
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Database", "Database\Database.sqlproj", "{1C03FDBA-2CD5-484E-8F57-D6ADE3490672}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "db_info", "Database\db_info.sqlproj", "{1C03FDBA-2CD5-484E-8F57-D6ADE3490672}"
+EndProject
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "db_game", "db_game\db_game.sqlproj", "{16C07899-98D7-4506-9A67-4BACB75B084F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,24 @@ Global
 		{1C03FDBA-2CD5-484E-8F57-D6ADE3490672}.Release|x86.ActiveCfg = Release|Any CPU
 		{1C03FDBA-2CD5-484E-8F57-D6ADE3490672}.Release|x86.Build.0 = Release|Any CPU
 		{1C03FDBA-2CD5-484E-8F57-D6ADE3490672}.Release|x86.Deploy.0 = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|x64.Build.0 = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|x64.Deploy.0 = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|x86.Build.0 = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Debug|x86.Deploy.0 = Debug|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|x64.ActiveCfg = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|x64.Build.0 = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|x64.Deploy.0 = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|x86.ActiveCfg = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|x86.Build.0 = Release|Any CPU
+		{16C07899-98D7-4506-9A67-4BACB75B084F}.Release|x86.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

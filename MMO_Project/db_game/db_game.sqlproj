@@ -3,16 +3,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>Database</Name>
+    <Name>db_game</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
-    <ProjectGuid>{1c03fdba-2cd5-484e-8f57-d6ade3490672}</ProjectGuid>
-    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql160DatabaseSchemaProvider</DSP>
+    <ProjectGuid>{16c07899-98d7-4506-9a67-4bacb75b084f}</ProjectGuid>
+    <DSP>Microsoft.Data.Tools.Schema.Sql.Sql170DatabaseSchemaProvider</DSP>
     <OutputType>Database</OutputType>
     <RootPath>
     </RootPath>
-    <RootNamespace>Database</RootNamespace>
-    <AssemblyName>Database</AssemblyName>
+    <RootNamespace>db_game</RootNamespace>
+    <AssemblyName>db_game</AssemblyName>
     <ModelCollation>1033, CI</ModelCollation>
     <DefaultFileStructure>BySchemaAndSchemaType</DefaultFileStructure>
     <DeployToDatabase>True</DeployToDatabase>
@@ -56,27 +56,11 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
-    <Folder Include="info" />
-    <Folder Include="game" />
-    <Folder Include="info\stored_proceduere" />
-    <Folder Include="info\table" />
-    <Folder Include="game\stored_procedure" />
-    <Folder Include="game\table" />
+    <Folder Include="stored_procedure" />
+    <Folder Include="table" />
   </ItemGroup>
   <ItemGroup>
-    <SqlCmdVariable Include="mmo_info">
-      <DefaultValue>mmo_info</DefaultValue>
-      <Value>$(SqlCmdVar__1)</Value>
-    </SqlCmdVariable>
-  </ItemGroup>
-  <ItemGroup>
-    <ArtifactReference Include="..\..\..\..\..\Documents\SQL Server Management Studio\DAC Packages\mmo_info.dacpac">
-      <HintPath>..\..\..\..\..\Documents\SQL Server Management Studio\DAC Packages\mmo_info.dacpac</HintPath>
-      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
-    </ArtifactReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Build Include="game\table\tb_user.sql" />
-    <Build Include="game\stored_procedure\usp_user_login.sql" />
+    <Build Include="stored_procedure\usp_user_login.sql" />
+    <Build Include="table\tb_user.sql" />
   </ItemGroup>
 </Project>

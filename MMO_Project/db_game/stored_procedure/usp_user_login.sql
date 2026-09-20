@@ -2,7 +2,7 @@
 title   : usp_user_login
 desc    : 유저 로그인, 최초생성
 
-2026.09.16 | 김동욱 |
+2026.09.16 | 김동욱 | 최초 생성
 */ -----------------------------------------------------------
 CREATE PROCEDURE [dbo].[usp_user_login]
 	@p_user_name NVARCHAR(20)
