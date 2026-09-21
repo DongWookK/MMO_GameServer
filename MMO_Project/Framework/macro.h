@@ -126,10 +126,13 @@ For Log
 
 
 namespace fw {
-    // Server에서 생성한 기본 로거를 FW의 spdlog 레지스트리에 공유 등록하는 함수
     inline void SetLogger(std::shared_ptr<spdlog::logger> logger) {
         if (logger) {
             spdlog::set_default_logger(logger);
         }
     }
 }
+
+#define BIND_PARAM(stmt, paramIndex, ioType, cType, sqlDataType, columnSize, decimalDigits, rgbValue, cbValue) \
+    ret_ = SQLBindParameter(stmt, paramIndex, ioType, cType, sqlDataType, columnSize, decimalDigits, rgbValue, 0, cbValue); \
+    if (!SQL_SUCCEEDED(ret_)) { ASSERT_DEBUG_BREAK(ret_); }

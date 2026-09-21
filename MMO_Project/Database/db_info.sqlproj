@@ -74,7 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="info\table\tb_server.sql" />
-    <Build Include="info\stored_proceduere\usp_get_server_info.sql" />
+    <Build Include="info\stored_proceduere\usp_server_info_select.sql" />
     <Build Include="info\table\tb_server_dsn.sql" />
   </ItemGroup>
 </Project>

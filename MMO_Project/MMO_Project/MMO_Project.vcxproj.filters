@@ -31,14 +31,14 @@
     <ClCompile Include="main_server.cpp">
       <Filter>Source Files\server</Filter>
     </ClCompile>
-    <ClCompile Include="user_manager.cpp">
-      <Filter>Source Files\user</Filter>
-    </ClCompile>
-    <ClCompile Include="user.cpp">
-      <Filter>Source Files\user</Filter>
-    </ClCompile>
     <ClCompile Include="troc_user.cpp">
       <Filter>Source Files\user\troc</Filter>
+    </ClCompile>
+    <ClCompile Include="user.cpp">
+      <Filter>Source Files\user\object</Filter>
+    </ClCompile>
+    <ClCompile Include="user_manager.cpp">
+      <Filter>Source Files\user\object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -51,12 +51,6 @@
     <ClInclude Include="logger.h">
       <Filter>Source Files\logger</Filter>
     </ClInclude>
-    <ClInclude Include="user_manager.h">
-      <Filter>Source Files\user</Filter>
-    </ClInclude>
-    <ClInclude Include="user.h">
-      <Filter>Source Files\user</Filter>
-    </ClInclude>
     <ClInclude Include="troc_user.h">
       <Filter>Source Files\user\troc</Filter>
     </ClInclude>
@@ -65,6 +59,15 @@
     </ClInclude>
     <ClInclude Include="user_sql.h">
       <Filter>Source Files\user\object</Filter>
+    </ClInclude>
+    <ClInclude Include="user.h">
+      <Filter>Source Files\user\object</Filter>
+    </ClInclude>
+    <ClInclude Include="user_manager.h">
+      <Filter>Source Files\user\object</Filter>
+    </ClInclude>
+    <ClInclude Include="server_sql.h">
+      <Filter>Source Files\server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

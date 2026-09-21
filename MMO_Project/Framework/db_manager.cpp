@@ -9,11 +9,9 @@ db_manager::~db_manager() {
     disconnect();
 }
 
-// 1. 데이터베이스 연결
 bool db_manager::connect(const std::wstring& connectionString) {
     SQLRETURN ret;
 
-    // 환경 핸들 할당
     ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &m_env);
     if (!SQL_SUCCEEDED(ret)) return false;
 
@@ -24,15 +22,12 @@ bool db_manager::connect(const std::wstring& connectionString) {
         return false;
     }
 
-    // 연결 핸들 할당
     ret = SQLAllocHandle(SQL_HANDLE_DBC, m_env, &m_dbc);
     if (!SQL_SUCCEEDED(ret)) {
         SQLFreeHandle(SQL_HANDLE_ENV, m_env);
         return false;
     }
 
-    // 드라이버 연결 문자열을 이용해 DB 접속
-    // 예: "Driver={ODBC Driver 18 for SQL Server};Server=127.0.0.1;Database=mmo_info;Uid=dbo;Pwd=;TrustServerCertificate=yes;"
     ret = SQLDriverConnectW(
         m_dbc,
         NULL,
@@ -56,7 +51,6 @@ bool db_manager::connect(const std::wstring& connectionString) {
     return true;
 }
 
-// 2. 연결 해제
 void db_manager::disconnect() {
     if (m_dbc != SQL_NULL_HDBC) {
         if (m_isConnected) {
@@ -86,7 +80,6 @@ auto db_manager::prepare() -> fw::error
     return error_code;
 }
 
-// 3. 저장 프로시저(SP) 실행 예시
 bool db_manager::execute_login_proc(int userId, const std::wstring& userName) {
     if (!m_isConnected) return false;
 

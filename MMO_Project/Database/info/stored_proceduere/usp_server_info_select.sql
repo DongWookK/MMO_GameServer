@@ -1,10 +1,10 @@
 ﻿/* ------------------------------------------------------------
-title   : usp_get_server_info
+title   : usp_server_info_select
 desc    : 유저 로그인, 최초생성
 
 2026.09.16 | 김동욱 | 최초 생성
 */ -----------------------------------------------------------
-CREATE PROCEDURE [dbo].[usp_get_server_info]
+CREATE PROCEDURE [dbo].[usp_server_info_select]
 	@p_ip NVARCHAR(20)
 AS
 BEGIN

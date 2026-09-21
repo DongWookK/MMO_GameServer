@@ -5,97 +5,97 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Network">
-      <UniqueIdentifier>{00f66829-08e9-4c63-9751-6c9a9d2784ef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Thread">
-      <UniqueIdentifier>{e7cf3ac4-94fb-4f21-b4ca-3d0ad25650b7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Util">
-      <UniqueIdentifier>{2ce5afb0-d655-465c-8215-c826bbbda7ce}</UniqueIdentifier>
-    </Filter>
     <Filter Include="header">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Database">
+    <Filter Include="database">
       <UniqueIdentifier>{7e864800-04fa-4261-a88f-23d1f116145b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="network">
+      <UniqueIdentifier>{00f66829-08e9-4c63-9751-6c9a9d2784ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thread">
+      <UniqueIdentifier>{e7cf3ac4-94fb-4f21-b4ca-3d0ad25650b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="util">
+      <UniqueIdentifier>{2ce5afb0-d655-465c-8215-c826bbbda7ce}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="thread_local.h">
-      <Filter>Thread</Filter>
+      <Filter>thread</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="thread_worker.h">
-      <Filter>Thread</Filter>
+      <Filter>thread</Filter>
     </ClInclude>
     <ClInclude Include="thread_manager.h">
-      <Filter>Thread</Filter>
+      <Filter>thread</Filter>
     </ClInclude>
     <ClInclude Include="singleton.h">
-      <Filter>Util</Filter>
+      <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="macro.h">
-      <Filter>Util</Filter>
+      <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="object_pool.hpp">
-      <Filter>Util</Filter>
+      <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="feature.h">
-      <Filter>Util</Filter>
+      <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="network_manager.h">
-      <Filter>Network</Filter>
+      <Filter>network</Filter>
     </ClInclude>
     <ClInclude Include="session.h">
-      <Filter>Network</Filter>
+      <Filter>network</Filter>
     </ClInclude>
     <ClInclude Include="error.hpp">
-      <Filter>Util</Filter>
+      <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="packet_dispatcher.h">
-      <Filter>Network</Filter>
+      <Filter>network</Filter>
     </ClInclude>
     <ClInclude Include="db_manager.h">
-      <Filter>Database</Filter>
+      <Filter>database</Filter>
     </ClInclude>
     <ClInclude Include="util.h">
-      <Filter>Util</Filter>
+      <Filter>util</Filter>
     </ClInclude>
     <ClInclude Include="sql.h">
-      <Filter>Database</Filter>
+      <Filter>database</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
-      <Filter>Thread</Filter>
+      <Filter>thread</Filter>
     </ClCompile>
     <ClCompile Include="thread_worker.cpp">
-      <Filter>Thread</Filter>
+      <Filter>thread</Filter>
     </ClCompile>
     <ClCompile Include="thread_manager.cpp">
-      <Filter>Thread</Filter>
+      <Filter>thread</Filter>
     </ClCompile>
     <ClCompile Include="object_pool.inl">
-      <Filter>Util</Filter>
+      <Filter>util</Filter>
     </ClCompile>
     <ClCompile Include="feature.cpp">
-      <Filter>Util</Filter>
+      <Filter>util</Filter>
     </ClCompile>
     <ClCompile Include="network_manager.cpp">
-      <Filter>Network</Filter>
+      <Filter>network</Filter>
     </ClCompile>
     <ClCompile Include="session.cpp">
-      <Filter>Network</Filter>
+      <Filter>network</Filter>
     </ClCompile>
     <ClCompile Include="packet_dispatcher.cpp">
-      <Filter>Network</Filter>
+      <Filter>network</Filter>
     </ClCompile>
     <ClCompile Include="db_manager.cpp">
-      <Filter>Database</Filter>
+      <Filter>database</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
