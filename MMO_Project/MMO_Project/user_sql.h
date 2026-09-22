@@ -2,7 +2,7 @@
 #include "pch.h"
 #include "sql.h"
 
-class user_sql : public sql
+class user_sql : public thread_sql
 {
 public:
 	auto prepare() -> fw::error override
@@ -23,7 +23,7 @@ private:
 		if (!SQL_SUCCEEDED(ret_)) 
 		{
 			// log ret
-			return error::code::ObjectAcquireFail;
+			return error::code::sql_fail;
 		}
 
 		m_cbParam1 = 0;
@@ -32,7 +32,7 @@ private:
 		BIND_PARAM(m_hStmt, 1, SQL_PARAM_INPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &m_bindUserId, &m_cbParam1);
 		BIND_PARAM(m_hStmt, 2, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 50, 0, m_bindUserName, 0, &m_cbParam2);
 
-		return error::code::none;
+		return error::code::ok;
 	}
 
 public:

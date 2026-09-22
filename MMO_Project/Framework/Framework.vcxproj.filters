@@ -65,7 +65,7 @@
     <ClInclude Include="util.h">
       <Filter>util</Filter>
     </ClInclude>
-    <ClInclude Include="sql.h">
+    <ClInclude Include="thread_sql.h">
       <Filter>database</Filter>
     </ClInclude>
   </ItemGroup>

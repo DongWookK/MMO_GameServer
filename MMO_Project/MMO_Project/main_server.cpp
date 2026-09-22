@@ -179,7 +179,7 @@ auto main_server::load_config_from_file() -> fw::error
     std::ifstream file(file_path);
     if (!file.is_open()) {
         FLOG_CRITICAL("[Error] 설정 파일을 찾을 수 없습니다: {}", file_path.string());
-        return error::code::ObjectAcquireFail;
+        return error::code::file_open_fail;
     }
 
     try {
@@ -195,12 +195,12 @@ auto main_server::load_config_from_file() -> fw::error
     }
     catch (const std::exception& e) {
         FLOG_CRITICAL("[Error] JSON 파싱 실패:  {}", e.what());
-        return error::code::ObjectAcquireFail;
+        return error::code::file_open_fail;
     }
 
     FLOG_INFO("connection info : db_connection({})", wstring_to_string(db_connection_str_));
 
-    return error::code::none;
+    return error::code::ok;
 }
 
 auto main_server::set_thread_config() -> fw::error

@@ -29,7 +29,7 @@ HANDLER_TR_DEFINE(troc_user, UserLoginReq)
     }
 
     auto user = user_manager::instance()->user_login(sess);
-    ASSERT_RETURN_VALUE(nullptr != user, error::code::UserLoginFail);
+    ASSERT_RETURN_VALUE(nullptr != user, error::code::user_login_fail);
 
     flatbuffers::FlatBufferBuilder builder;
     auto offset = game::CreateUserLoginAck(builder, std::to_underlying(PacketTraits<game::UserLoginAck>::type), user->get_user_no());
@@ -47,7 +47,7 @@ HANDLER_TR_DEFINE(troc_user, UserLogoutReq)
     }
 
     error = user_manager::instance()->user_logout(sess);
-    ASSERT_RETURN_VALUE(!(error), error::code::UserLoginFail);
+    ASSERT_RETURN_VALUE(!(error), error::code::user_login_fail);
 
     flatbuffers::FlatBufferBuilder builder;
     auto offset = game::CreateUserLoginAck(builder, std::to_underlying(PacketTraits<game::UserLogoutAck>::type), 123);

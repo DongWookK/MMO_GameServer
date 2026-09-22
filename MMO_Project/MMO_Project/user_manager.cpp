@@ -52,7 +52,7 @@ auto user_manager::user_logout(session_s_ptr_t session) -> fw::error
 	auto error = fw::error{};
 	
 	auto user = find_user(session);
-	ASSERT_RETURN_VALUE(user != nullptr, error::code::UserNotExist);
+	ASSERT_RETURN_VALUE(user != nullptr, error::code::user_not_exist);
 
 	auto& key_index = user_list_.get<tag_key>();
 	auto it = key_index.find(user->get_index());

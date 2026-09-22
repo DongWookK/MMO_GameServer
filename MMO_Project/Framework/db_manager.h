@@ -1,11 +1,11 @@
 #pragma once
 #pragma comment(lib, "odbc32.lib")
 #include "pch.h"
-#include "sql.h"
+#include "thread_sql.h"
 
 class db_manager {
 public:
-    using sqls_t = std::vector<std::unique_ptr<sql>>;
+    using sqls_t = std::vector<std::unique_ptr<thread_sql>>;
 
 public:
     db_manager();

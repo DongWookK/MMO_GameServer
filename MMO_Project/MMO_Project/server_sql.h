@@ -2,7 +2,7 @@
 #include "pch.h"
 #include "sql.h"
 
-class server_sql : public sql
+class server_sql : public thread_sql
 {
 public:
 	auto prepare() -> fw::error override
@@ -25,7 +25,7 @@ private:
 		if (!SQL_SUCCEEDED(ret_))
 		{
 			// log ret
-			return error::code::ObjectAcquireFail;
+			return error::code::sql_fail;
 		}
 
 		sql_param_50 = SQL_NTS;
@@ -34,13 +34,13 @@ private:
 		BIND_PARAM(stmt_, 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 50, 0, &ip_, 0, &sql_param_50);
 		BIND_PARAM(stmt_, 2, SQL_PARAM_OUTPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &server_no_, 0, &sql_param_int);
 
-		return error::code::none;
+		return error::code::ok;
 	}
 
 public:
 	auto server_info_select(std::wstring_view ip) -> fw::error
 	{
-		ASSERT_RETURN_VALUE(stmt_ != SQL_NULL_HSTMT, error::code::UserLoginFail);
+		ASSERT_RETURN_VALUE(stmt_ != SQL_NULL_HSTMT, error::code::sql_stmt_invalid);
 
 		wcsncpy_s(ip_, ip.data(), _TRUNCATE);
 		sql_param_50 = SQL_NTS;
@@ -49,7 +49,7 @@ public:
 		if (!SQL_SUCCEEDED(ret_))
 		{
 			SQLCloseCursor(stmt_);
-			return error::code::UserLoginFail;
+			return error::code::sql_fail;
 		}
 
 		SQLCloseCursor(stmt_);

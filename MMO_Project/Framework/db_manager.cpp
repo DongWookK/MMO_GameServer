@@ -71,9 +71,9 @@ void db_manager::disconnect() {
 auto db_manager::prepare() -> fw::error
 {
     fw::error error_code{};
-    for (auto& sql : sqls_)
+    for (auto& thread_sql : sqls_)
     {
-        error_code = sql->prepare();
+        error_code = thread_sql->prepare();
         ASSERT_RETURN_VALUE(!error_code, error_code);
     }
 
