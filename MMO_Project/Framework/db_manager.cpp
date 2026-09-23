@@ -40,14 +40,14 @@ bool db_manager::connect(const std::wstring& connectionString) {
     );
 
     if (!SQL_SUCCEEDED(ret)) {
-        std::wcout << L"[DB Error] Connection Failed:\n";
+        FLOG_CRITICAL("[DB Error] Connection Failed:");
         print_error(SQL_HANDLE_DBC, conn_handle_);
         disconnect();
         return false;
     }
 
     is_connected_ = true;
-    std::wcout << L"[DB Success] Connected to MS-SQL successfully!\n";
+    FLOG_INFO("[DB Success] Connected to MS-SQL successfully!");
     return true;
 }
 

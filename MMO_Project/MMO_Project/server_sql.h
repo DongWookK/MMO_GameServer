@@ -23,11 +23,13 @@ public:
 private:
 	auto prepare_server_info_select() -> fw::error
 	{
+		ASSERT_RETURN_VALUE(stmt_ != SQL_NULL_HSTMT, error::code::sql_stmt_invalid);
+
 		SQLWCHAR* query = (SQLWCHAR*)L"{CALL usp_server_info_select(?,?)}";
 		auto ret_ = SQLPrepareW(stmt_, query, SQL_NTS);
 		if (!SQL_SUCCEEDED(ret_))
 		{
-			// log ret
+			log_error(stmt_, SQL_HANDLE_STMT, "db_manager::prepare");
 			return error::code::sql_fail;
 		}
 
@@ -67,8 +69,6 @@ public:
 	}
 
 private:
-	SQLHSTMT stmt_;
-
 	// bind parameter
 	int32_t server_no_ = 0;
 	SQLWCHAR ip_[50] = { 0 };
