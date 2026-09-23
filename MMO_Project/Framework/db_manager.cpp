@@ -3,7 +3,7 @@
 #include "db_manager.h"
 
 db_manager::db_manager()
-    : m_env(SQL_NULL_HENV), m_dbc(SQL_NULL_HDBC), m_isConnected(false) {}
+    : env_handle_(SQL_NULL_HENV), conn_handle_(SQL_NULL_HDBC), is_connected_(false) {}
 
 db_manager::~db_manager() {
     disconnect();
@@ -12,60 +12,60 @@ db_manager::~db_manager() {
 bool db_manager::connect(const std::wstring& connectionString) {
     SQLRETURN ret;
 
-    ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &m_env);
+    ret = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &env_handle_);
     if (!SQL_SUCCEEDED(ret)) return false;
 
     // ODBC 버전 설정 (ODBC 3.x)
-    ret = SQLSetEnvAttr(m_env, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0);
+    ret = SQLSetEnvAttr(env_handle_, SQL_ATTR_ODBC_VERSION, (SQLPOINTER)SQL_OV_ODBC3, 0);
     if (!SQL_SUCCEEDED(ret)) {
-        SQLFreeHandle(SQL_HANDLE_ENV, m_env);
+        SQLFreeHandle(SQL_HANDLE_ENV, env_handle_);
         return false;
     }
 
-    ret = SQLAllocHandle(SQL_HANDLE_DBC, m_env, &m_dbc);
+    ret = SQLAllocHandle(SQL_HANDLE_DBC, env_handle_, &conn_handle_);
     if (!SQL_SUCCEEDED(ret)) {
-        SQLFreeHandle(SQL_HANDLE_ENV, m_env);
+        SQLFreeHandle(SQL_HANDLE_ENV, env_handle_);
         return false;
     }
 
     ret = SQLDriverConnectW(
-        m_dbc,
+        conn_handle_,
         NULL,
         (SQLWCHAR*)connectionString.c_str(),
         SQL_NTS,
         NULL,
         0,
         NULL,
-        SQL_DRIVER_COMPLETE
+        SQL_DRIVER_NOPROMPT
     );
 
     if (!SQL_SUCCEEDED(ret)) {
         std::wcout << L"[DB Error] Connection Failed:\n";
-        print_error(SQL_HANDLE_DBC, m_dbc);
+        print_error(SQL_HANDLE_DBC, conn_handle_);
         disconnect();
         return false;
     }
 
-    m_isConnected = true;
+    is_connected_ = true;
     std::wcout << L"[DB Success] Connected to MS-SQL successfully!\n";
     return true;
 }
 
 void db_manager::disconnect() {
-    if (m_dbc != SQL_NULL_HDBC) {
-        if (m_isConnected) {
-            SQLDisconnect(m_dbc);
+    if (conn_handle_ != SQL_NULL_HDBC) {
+        if (is_connected_) {
+            SQLDisconnect(conn_handle_);
         }
-        SQLFreeHandle(SQL_HANDLE_DBC, m_dbc);
-        m_dbc = SQL_NULL_HDBC;
+        SQLFreeHandle(SQL_HANDLE_DBC, conn_handle_);
+        conn_handle_ = SQL_NULL_HDBC;
     }
 
-    if (m_env != SQL_NULL_HENV) {
-        SQLFreeHandle(SQL_HANDLE_ENV, m_env);
-        m_env = SQL_NULL_HENV;
+    if (env_handle_ != SQL_NULL_HENV) {
+        SQLFreeHandle(SQL_HANDLE_ENV, env_handle_);
+        env_handle_ = SQL_NULL_HENV;
     }
 
-    m_isConnected = false;
+    is_connected_ = false;
 }
 
 auto db_manager::prepare() -> fw::error
@@ -80,14 +80,19 @@ auto db_manager::prepare() -> fw::error
     return error_code;
 }
 
+auto db_manager::get_connect_handle() const -> SQLHDBC
+{
+    return conn_handle_;
+}
+
 bool db_manager::execute_login_proc(int userId, const std::wstring& userName) {
-    if (!m_isConnected) return false;
+    if (!is_connected_) return false;
 
     SQLHSTMT hStmt = SQL_NULL_HSTMT;
     SQLRETURN ret;
 
     // 문장(Statement) 핸들 할당
-    ret = SQLAllocHandle(SQL_HANDLE_STMT, m_dbc, &hStmt);
+    ret = SQLAllocHandle(SQL_HANDLE_STMT, conn_handle_, &hStmt);
     if (!SQL_SUCCEEDED(ret)) return false;
 
     // 호출할 저장 프로시저 쿼리 구문 작성 (예: EXEC sp_CheckUser ?, ?)
@@ -149,5 +154,5 @@ void db_manager::print_error(SQLSMALLINT handleType, SQLHANDLE handle) {
     SQLSMALLINT textLength = 0;
 
     SQLGetDiagRecW(handleType, handle, 1, sqlState, &nativeError, messageText, sizeof(messageText) / sizeof(SQLWCHAR), &textLength);
-    std::wcout << L"SQL State: " << sqlState << L", Message: " << messageText << std::endl;
+    FLOG_INFO(L"SQL STATE: {}, Message: {}", std::wstring_view(sqlState), std::wstring_view(messageText));
 }

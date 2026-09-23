@@ -8,9 +8,6 @@
     <Filter Include="Source Files\server">
       <UniqueIdentifier>{a6a261c4-7518-4b23-a57b-89a7466547ca}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\header">
-      <UniqueIdentifier>{48f3a342-287d-4c1a-9adb-18a4cbddc307}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\logger">
       <UniqueIdentifier>{7ebbfb62-66a1-4d65-85b5-56db10ce724d}</UniqueIdentifier>
     </Filter>
@@ -22,6 +19,9 @@
     </Filter>
     <Filter Include="Source Files\user\object">
       <UniqueIdentifier>{0864459b-e289-4368-ae59-0209891c17c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\util">
+      <UniqueIdentifier>{48f3a342-287d-4c1a-9adb-18a4cbddc307}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
-      <Filter>Source Files\header</Filter>
+      <Filter>Source Files\util</Filter>
     </ClInclude>
     <ClInclude Include="main_server.h">
       <Filter>Source Files\server</Filter>
@@ -55,7 +55,7 @@
       <Filter>Source Files\user\troc</Filter>
     </ClInclude>
     <ClInclude Include="macro_server.h">
-      <Filter>Source Files\header</Filter>
+      <Filter>Source Files\util</Filter>
     </ClInclude>
     <ClInclude Include="user_sql.h">
       <Filter>Source Files\user\object</Filter>

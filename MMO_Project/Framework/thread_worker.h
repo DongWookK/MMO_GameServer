@@ -12,8 +12,10 @@ public:
 
 public:
 	auto set_index(size_t index) -> void;
-	auto allocate_job(io_context_t& io_contex, const std::wstring& db_connection_str) -> void;
+	auto allocate_job(io_context_t& io_contex, const std::wstring& db_connection_str, std::function<fw::error(db_manager&)> on_init) -> void;
 	auto get_db() -> db_manager& { return db_; }
+
+	auto db_setup(const std::wstring& db_connection_str, std::function<fw::error(db_manager&)> on_init) -> fw::error;
 
 private:
 	size_t index_;

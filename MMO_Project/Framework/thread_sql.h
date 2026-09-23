@@ -2,15 +2,21 @@
 #include "pch.h"
 #include "db_manager.h"
 
-class thread_sql
-{
+class thread_sql {
 public:
-	thread_sql(SQLRETURN ret) : ret_(ret) {};
-	virtual ~thread_sql() = default;
+    thread_sql(SQLHDBC hdbc) : hdbc_(hdbc), hstmt_(SQL_NULL_HSTMT) {
+        SQLAllocHandle(SQL_HANDLE_STMT, hdbc_, &hstmt_);
+    }
 
-	virtual auto prepare() -> fw::error = 0;
-	virtual auto exec() -> fw::error = 0;
+    virtual ~thread_sql() {
+        if (hstmt_ != SQL_NULL_HSTMT) {
+            SQLFreeHandle(SQL_HANDLE_STMT, hstmt_);
+        }
+    }
+
+    virtual auto prepare() -> fw::error = 0;
 
 protected:
-	SQLRETURN ret_;
+    SQLHDBC   hdbc_;
+    SQLHSTMT  hstmt_;
 };

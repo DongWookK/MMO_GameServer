@@ -1,9 +1,12 @@
 #pragma once
 #include "pch.h"
-#include "sql.h"
+#include "thread_sql.h"
 
 class server_sql : public thread_sql
 {
+public:
+	server_sql(SQLHDBC hdbc) : thread_sql(hdbc) {};
+
 public:
 	auto prepare() -> fw::error override
 	{
@@ -21,7 +24,7 @@ private:
 	auto prepare_server_info_select() -> fw::error
 	{
 		SQLWCHAR* query = (SQLWCHAR*)L"{CALL usp_server_info_select(?,?)}";
-		ret_ = SQLPrepareW(stmt_, query, SQL_NTS);
+		auto ret_ = SQLPrepareW(stmt_, query, SQL_NTS);
 		if (!SQL_SUCCEEDED(ret_))
 		{
 			// log ret
@@ -45,7 +48,7 @@ public:
 		wcsncpy_s(ip_, ip.data(), _TRUNCATE);
 		sql_param_50 = SQL_NTS;
 
-		ret_ = SQLExecute(stmt_);
+		auto  ret_ = SQLExecute(stmt_);
 		if (!SQL_SUCCEEDED(ret_))
 		{
 			SQLCloseCursor(stmt_);
@@ -53,6 +56,8 @@ public:
 		}
 
 		SQLCloseCursor(stmt_);
+
+		return error::code::ok;
 	}
 
 public:

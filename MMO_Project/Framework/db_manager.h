@@ -15,9 +15,9 @@ public:
     auto disconnect() -> void;
     
     template<typename T, typename... Args>
-    auto register_sql(Args&&... args) -> T* 
+    auto register_sql(Args&&... args) -> T*
     {
-        auto sql_ptr = std::make_unique<T>(std::forward<Args>(args)...);
+        auto sql_ptr = std::make_unique<T>(conn_handle_, std::forward<Args>(args)...);
         T* raw_ptr = sql_ptr.get();
         sqls_.push_back(std::move(sql_ptr));
         return raw_ptr;
@@ -35,15 +35,15 @@ public:
     }
 
     auto prepare() -> fw::error;
-
+    auto get_connect_handle() const -> SQLHDBC;
     bool execute_login_proc(int userId, const std::wstring& userName);
 
 private:
     void print_error(SQLSMALLINT handleType, SQLHANDLE handle);
 
 private:
-    SQLHENV m_env;   // 환경 핸들
-    SQLHDBC m_dbc;   // 연결 핸들
-    bool    m_isConnected;
+    SQLHENV env_handle_;
+    SQLHDBC conn_handle_;   // 연결 핸들
+    bool    is_connected_;
     sqls_t  sqls_{};
 };

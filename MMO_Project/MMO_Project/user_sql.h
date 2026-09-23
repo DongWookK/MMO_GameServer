@@ -1,6 +1,6 @@
 #pragma once
 #include "pch.h"
-#include "sql.h"
+#include "thread_sql.h"
 
 class user_sql : public thread_sql
 {
@@ -19,7 +19,7 @@ private:
 	auto prepare_user_login() -> fw::error
 	{
 		SQLWCHAR* query = (SQLWCHAR*)L"{CALL usp_user_login(?,?)}";
-		ret_ = SQLPrepareW(m_hStmt, query, SQL_NTS);
+		auto ret_ = SQLPrepareW(m_hStmt, query, SQL_NTS);
 		if (!SQL_SUCCEEDED(ret_)) 
 		{
 			// log ret

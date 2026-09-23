@@ -8,6 +8,7 @@ namespace fw
 class thread_pool
 {
 	using io_context_t = boost::asio::io_context;
+	using sql_regiser_t = std::function<fw::error(db_manager&)>;
 
 public:
 	using pool_t = fw::CObjectPool<worker>;
@@ -16,7 +17,7 @@ public:
 
 public:
 	auto setup(const uint32_t thread_count) -> fw::error;
-	auto start(io_context_t& io_context, const std::wstring& db_connection_str) -> fw::error;
+	auto start(io_context_t& io_context, const std::wstring& db_connection_str, sql_regiser_t sql_register) -> fw::error;
 	auto stop() -> fw::error;
 	auto teardown() -> fw::error;
 
@@ -37,13 +38,14 @@ class thread_manager
 {
 public:
 	using io_context_t = boost::asio::io_context;
+	using sql_regiser_t = std::function<fw::error(db_manager&)>;
 
 	thread_manager() = delete;
 	thread_manager(io_context_t* io_context, uint32_t thread_count);
 
 public:
 	auto setup() -> fw::error;
-	auto start(const std::wstring& db_connect_str) -> fw::error;
+	auto start(const std::wstring& db_connect_str, sql_regiser_t sql_register) -> fw::error;
 	auto stop() -> fw::error;
 	auto teardown() -> fw::error;
 

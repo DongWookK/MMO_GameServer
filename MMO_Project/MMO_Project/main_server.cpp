@@ -9,6 +9,7 @@
 #include "troc_user.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
+#include "server_sql.h"
 
 main_server::~main_server() = default;
 
@@ -82,7 +83,7 @@ auto main_server::core_start() -> fw::error
 {
     fw::error error_code{};
 
-    error_code = thread_manager_->start(db_connection_str_);
+    error_code = thread_manager_start();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = fw::network_manager::instance()->start();
@@ -240,6 +241,21 @@ auto main_server::set_network_config() -> fw::error
 
             return error;
         });
+
+    return error_code;
+}
+
+auto main_server::thread_manager_start() -> fw::error
+{
+    auto error_code = fw::error{};
+    
+    error_code = thread_manager_->start(db_connection_str_, [](db_manager& db_manager) ->fw::error 
+        {
+            db_manager.register_sql<server_sql>();
+
+            return error::code::ok;
+        });
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
 }

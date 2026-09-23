@@ -39,6 +39,8 @@ private:
 	auto set_thread_config() -> fw::error;
 	auto set_network_config() -> fw::error;
 
+	auto thread_manager_start() -> fw::error;
+
 private:
 	feature_list_t feature_list_{};
 
