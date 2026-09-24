@@ -36,3 +36,5 @@
 #include <flatbuffers/flatbuffers.h>
 #include "enum_game_generated.h"
 #include "enum_error_generated.h"
+#include "enum_common_generated.h"
+#include "common_generated.h"

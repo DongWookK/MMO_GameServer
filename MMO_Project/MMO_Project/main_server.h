@@ -3,8 +3,11 @@
 #include "thread_manager.h"
 #include <nlohmann/json.hpp>
 
+class db_manager;
 class main_server : public singleton<main_server>
 {
+public:
+	using db_list_t = std::vector<db_manager>;
 	friend class singleton<main_server>;
 public:
 	main_server() = default;
@@ -49,4 +52,5 @@ private:
 	std::unique_ptr<fw::thread_manager> thread_manager_{};
 
 	std::wstring db_connection_str_{};
+	db_list_t db_{};
 };

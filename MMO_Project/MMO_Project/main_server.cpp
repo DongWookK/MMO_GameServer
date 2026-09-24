@@ -83,6 +83,9 @@ auto main_server::core_start() -> fw::error
 {
     fw::error error_code{};
 
+    // primary thread db연결 먼저.
+    db.push
+
     error_code = thread_manager_start();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
