@@ -83,8 +83,8 @@ auto main_server::core_start() -> fw::error
 {
     fw::error error_code{};
 
-    // primary thread db연결 먼저.
-    db.push
+    error_code = primary_thread_start();
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     error_code = thread_manager_start();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
@@ -193,8 +193,8 @@ auto main_server::load_config_from_file() -> fw::error
         std::string utf8_conn = j["database"]["connection_string"].get<std::string>();
 
         int size_needed = MultiByteToWideChar(CP_UTF8, 0, utf8_conn.c_str(), (int)utf8_conn.size(), NULL, 0);
-        db_connection_str_.resize(size_needed);
-        MultiByteToWideChar(CP_UTF8, 0, utf8_conn.c_str(), (int)utf8_conn.size(), &db_connection_str_[0], size_needed);
+        db_conn_str_list_[fw::to_underlying(common::sql_type::info)].resize(size_needed);
+        MultiByteToWideChar(CP_UTF8, 0, utf8_conn.c_str(), (int)utf8_conn.size(), &db_conn_str_list_[fw::to_underlying(common::sql_type::info)][0], size_needed);
 
     }
     catch (const std::exception& e) {
@@ -202,7 +202,7 @@ auto main_server::load_config_from_file() -> fw::error
         return error::code::file_open_fail;
     }
 
-    FLOG_INFO("connection info : db_connection({})", wstring_to_string(db_connection_str_));
+    FLOG_INFO("connection info : db_connection({})", wstring_to_string(db_conn_str_list_[fw::to_underlying(common::sql_type::info)]));
 
     return error::code::ok;
 }
@@ -248,11 +248,36 @@ auto main_server::set_network_config() -> fw::error
     return error_code;
 }
 
+auto main_server::primary_thread_start() -> fw::error
+{
+    fw::error error_code{};
+    
+    constexpr auto info_db = fw::to_underlying(common::sql_type::info);
+
+    if (!dbms_[info_db].connect(db_conn_str_list_[info_db])) {
+        FLOG_CRITICAL("PRIMARY Thread :: DB Connection Failed");
+        ASSERT_RETURN_VALUE(false, error::code::sql_stmt_invalid);
+    }
+
+    sql_reigsters_[info_db] = [](db_manager& info_db) -> void{
+            info_db.register_sql<server_sql>();
+        };
+
+    sql_reigsters_[info_db](dbms_[info_db]);
+
+    error_code = dbms_[info_db].prepare();
+    ASSERT_RETURN_VALUE(!error_code, error_code);
+
+
+
+    return error_code;
+}
+
 auto main_server::thread_manager_start() -> fw::error
 {
     auto error_code = fw::error{};
     
-    error_code = thread_manager_->start(db_connection_str_, [](db_manager& db_manager) ->fw::error 
+    error_code = thread_manager_->start(db_conn_str_list_[fw::to_underlying(common::sql_type::info)], [](db_manager& db_manager) ->fw::error
         {
             db_manager.register_sql<server_sql>();
 
