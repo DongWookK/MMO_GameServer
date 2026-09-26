@@ -143,4 +143,27 @@ namespace fw {
     constexpr auto to_underlying(Enum e) noexcept {
         return static_cast<std::underlying_type_t<Enum>>(e);
     }
+
+
+    inline auto wstring_to_string(const std::wstring& wstr) -> std::string
+    {
+        if (wstr.empty()) return {};
+
+        int size_needed = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.size()), nullptr, 0, nullptr, nullptr);
+        std::string str(size_needed, 0);
+        WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.size()), &str[0], size_needed, nullptr, nullptr);
+
+        return str;
+    }
+
+    inline auto string_to_wstring(const std::string& str) -> std::wstring
+    {
+        if (str.empty()) return {};
+
+        int size_needed = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.size()), nullptr, 0);
+        std::wstring wstr(size_needed, 0);
+        MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.size()), &wstr[0], size_needed);
+
+        return wstr;
+    }
 }

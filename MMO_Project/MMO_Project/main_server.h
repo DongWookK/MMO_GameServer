@@ -27,6 +27,21 @@ public:
 
 	auto get_io_context() -> boost::asio::io_context*;
 
+	template <typename T>
+	auto get_sql(common::sql_type type) -> T*
+	{
+		const auto index = fw::to_underlying(type);
+		for (const auto& sql_base_ptr : dbms_[index].get_sqls())
+		{
+			if (auto* casted_sql = dynamic_cast<T*>(sql_base_ptr.get()))
+			{
+				return casted_sql;
+			}
+		}
+
+		return nullptr; // 일치하는 객체가 없으면 nullptr 반환
+	}
+
 private:
 	auto core_setup() -> fw::error;
 	auto core_start() -> fw::error;
@@ -58,4 +73,6 @@ private:
 	db_conn_str_list_t db_conn_str_list_{};
 	dbms_t dbms_{};
 	sql_registers_t sql_reigsters_{};
+
+	uint16_t server_no_{};
 };

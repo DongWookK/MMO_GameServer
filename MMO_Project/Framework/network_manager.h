@@ -32,13 +32,15 @@ public:
 	auto set_accept_handler(accept_handler_t handler) -> void;
 	auto set_disconnect_handler(disconnect_handler_t handler) -> void;
 
+	auto get_end_point() const -> asio::ip::tcp::endpoint;
+
 private:
 	auto initialize_acceptor(asio::io_context* worker_context) -> fw::error;
 	auto initialize_session_pool() -> fw::error;
 
     auto start_accept() -> void;
 	auto handle_accept(session_ptr_t new_session, boost::system::error_code error) -> void;
-	
+
 private:
 	asio::ip::tcp::endpoint end_point_{};
 	asio::io_context accept_context_{};

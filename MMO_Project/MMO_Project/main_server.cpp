@@ -268,7 +268,20 @@ auto main_server::primary_thread_start() -> fw::error
     error_code = dbms_[info_db].prepare();
     ASSERT_RETURN_VALUE(!error_code, error_code);
 
+    auto info_sql = main_server::instance()->get_sql<server_sql>(common::sql_type::info);
+    ASSERT_RETURN_VALUE(info_sql != nullptr, error::code::sql_fail);
 
+    auto end_point = fw::network_manager::instance()->get_end_point();
+    auto string_ip = end_point.address().to_string();
+    auto wstring_ip = fw::string_to_wstring(string_ip);
+
+    error_code = info_sql->server_info_select(wstring_ip);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
+    
+    server_no_ = info_sql->get_server_no();
+    FLOG_INFO("server_info :: server_no({})");
+
+    // todo: dsn get해오기
 
     return error_code;
 }

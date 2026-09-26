@@ -135,3 +135,8 @@ auto fw::network_manager::handle_accept(session_ptr_t new_session, boost::system
 
 	start_accept();
 }
+
+auto fw::network_manager::get_end_point() const -> asio::ip::tcp::endpoint
+{
+	return end_point_;
+}

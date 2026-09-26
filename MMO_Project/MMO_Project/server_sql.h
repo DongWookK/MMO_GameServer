@@ -63,14 +63,14 @@ public:
 	}
 
 public:
-	auto get_server_no() const -> int32_t
+	auto get_server_no() const -> int16_t
 	{
 		return server_no_;
 	}
 
 private:
 	// bind parameter
-	int32_t server_no_ = 0;
+	int16_t server_no_ = 0;
 	SQLWCHAR ip_[50] = { 0 };
 
 	// 데이터의 길이를 알려줄 지시자
