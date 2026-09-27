@@ -25,7 +25,7 @@ private:
 	{
 		ASSERT_RETURN_VALUE(stmt_ != SQL_NULL_HSTMT, error::code::sql_stmt_invalid);
 
-		SQLWCHAR* query = (SQLWCHAR*)L"{CALL usp_server_info_select(?,?)}";
+		SQLWCHAR* query = (SQLWCHAR*)L"{CALL usp_server_info_select(?)}";
 		auto ret_ = SQLPrepareW(stmt_, query, SQL_NTS);
 		if (!SQL_SUCCEEDED(ret_))
 		{
@@ -39,6 +39,9 @@ private:
 		BIND_PARAM(stmt_, 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 50, 0, &ip_, 0, &sql_param_50);
 		BIND_PARAM(stmt_, 2, SQL_PARAM_OUTPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &server_no_, 0, &sql_param_int);
 
+		SQLBindCol(stmt_, 1, SQL_C_LONG, &col_int_val_, 0, &col_int_len_);
+		SQLBindCol(stmt_, 2, SQL_C_UTINYINT, &col_tiny_val_, 0, &col_tiny_len_);
+
 		return error::code::ok;
 	}
 
@@ -50,28 +53,30 @@ public:
 		wcsncpy_s(ip_, ip.data(), _TRUNCATE);
 		sql_param_50 = SQL_NTS;
 
-		auto  ret_ = SQLExecute(stmt_);
+		auto ret_ = SQLExecute(stmt_);
 		if (!SQL_SUCCEEDED(ret_))
 		{
-			SQLCloseCursor(stmt_);
+			log_error(stmt_, SQL_HANDLE_STMT, "db_manager::execute");
 			return error::code::sql_fail;
 		}
-
-		SQLCloseCursor(stmt_);
 
 		return error::code::ok;
 	}
 
 public:
-	auto get_server_no() const -> int16_t
-	{
-		return server_no_;
-	}
+	auto get_col_int() const -> int32_t { return col_int_val_; }
+	auto get_col_tiny() const -> uint8_t { return col_tiny_val_; }
 
 private:
 	// bind parameter
-	int16_t server_no_ = 0;
+	SQLINTEGER server_no_ = 0;
 	SQLWCHAR ip_[50] = { 0 };
+
+	int32_t  col_int_val_ = 0;
+	SQLLEN   col_int_len_ = 0;
+
+	uint8_t  col_tiny_val_ = 0; // tinyint는 보통 1바이트 unsigned (uint8_t)
+	SQLLEN   col_tiny_len_ = 0;
 
 	// 데이터의 길이를 알려줄 지시자
 	SQLLEN   sql_param_int = 0;

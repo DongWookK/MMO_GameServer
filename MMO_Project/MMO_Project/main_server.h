@@ -75,4 +75,5 @@ private:
 	sql_registers_t sql_reigsters_{};
 
 	uint16_t server_no_{};
+	uint8_t server_type_{};
 };

@@ -34,6 +34,11 @@ public:
         return nullptr;
     }
 
+    auto get_sqls() -> sqls_t&
+    {
+        return sqls_;
+    }
+
     auto prepare() -> fw::error;
     auto get_connect_handle() const -> SQLHDBC;
     bool execute_login_proc(int userId, const std::wstring& userName);

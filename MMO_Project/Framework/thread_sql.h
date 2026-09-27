@@ -16,6 +16,11 @@ public:
 
     virtual auto prepare() -> fw::error = 0;
 
+    auto get_stmt() -> SQLHSTMT
+    {
+        return stmt_;
+    }
+
     auto log_error(SQLHANDLE handle, SQLSMALLINT handle_type, const std::string_view context_msg) -> bool
     {
         std::string all_error_msgs = "";

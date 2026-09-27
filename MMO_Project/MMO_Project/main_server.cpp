@@ -276,12 +276,16 @@ auto main_server::primary_thread_start() -> fw::error
     auto wstring_ip = fw::string_to_wstring(string_ip);
 
     error_code = info_sql->server_info_select(wstring_ip);
-    ASSERT_RETURN_VALUE(!(error_code), error_code);
-    
-    server_no_ = info_sql->get_server_no();
-    FLOG_INFO("server_info :: server_no({})");
+	ASSERT_RETURN_VALUE(!(error_code), error_code);
 
-    // todo: dsn get해오기
+	while (SQLFetch(info_sql->get_stmt()) == SQL_SUCCESS)
+	{
+        server_no_ = info_sql->get_col_int();
+        server_type_ = info_sql->get_col_tiny();
+	}
+
+	FLOG_INFO("server_info :: server({}:{})", server_no_, server_type_);
+
 
     return error_code;
 }

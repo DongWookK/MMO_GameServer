@@ -61,7 +61,7 @@ auto fw::network_manager::initialize_acceptor(asio::io_context* worker_context) 
 		return fw::error{1};
 	}
 
-	asio::ip::address_v4 ip_address = asio::ip::address_v4::any();
+	auto ip_address = boost::asio::ip::make_address_v4("127.0.0.1");
 	end_point_ = asio::ip::tcp::endpoint(ip_address, PORT_NO);
 
 	acceptor_.bind(end_point_, ec);
