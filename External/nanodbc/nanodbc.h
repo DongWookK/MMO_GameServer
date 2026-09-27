@@ -1,0 +1,3286 @@
+/// \file nanodbc.h The entirety of nanodbc can be found within this file and nanodbc.cpp.
+
+/// \mainpage
+///
+/// \section synopsis Synopsis
+/// This library provides a wrapper API for the native ODBC API. It aims to do everything ODBC does,
+/// but with a \b much nicer interface. Anything it doesn't (yet) do can be done by retrieving the
+/// native ODBC handles and dropping down to straight ODBC C API code.
+/// For more propaganda, please see the <a href="http://nanodbc.io/">project
+/// homepage</a>.
+///
+/// \section toc Table of Contents
+/// - \ref license "License"
+/// - \ref credits "Credits"
+/// - Source level documentation:
+///     - \ref nanodbc "nanodbc namespace"
+///     - \ref exceptions
+///     - \ref utility
+///     - \ref mainc
+///     - \ref mainf
+///     - \ref binding
+///     - \ref bind_multi
+///     - \ref bind_strings
+///
+/// \section license License
+/// <pre class="license">
+/// Copyright (C) lexicalunit <lexicalunit@lexicalunit.com>
+/// Copyright (C) Mateusz Loskot <mateusz@loskot.net>
+///
+/// The MIT License
+///
+/// Permission is hereby granted, free of charge, to any person obtaining a copy
+/// of this software and associated documentation files (the "Software"), to deal
+/// in the Software without restriction, including without limitation the rights
+/// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+/// copies of the Software, and to permit persons to whom the Software is
+/// furnished to do so, subject to the following conditions:
+///
+/// The above copyright notice and this permission notice shall be included in
+/// all copies or substantial portions of the Software.
+///
+/// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+/// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+/// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+/// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+/// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+/// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+/// THE SOFTWARE.
+/// </pre>
+///
+/// \section credits Credits
+/// <pre class="license">
+/// Much of the code in this file was originally derived from TinyODBC.
+/// TinyODBC is hosted at http://code.google.com/p/tiodbc/
+/// Copyright (C) SqUe squarious@gmail.com
+/// License: The MIT License
+///
+/// The idea for using RAII for transactions was inspired by SimpleDB: C++ ODBC database API,
+/// however the code in nanodbc is original and not derived from SimpleDB. Therefore
+/// the LGPL license under which SimpleDB is distributed does NOT apply to nanodbc.
+/// SimpleDB is hosted at http://simpledb.sourceforge.net
+/// Copyright (C) Eminence Technology Pty Ltd
+/// Copyright (C) Russell Kliese russell@kliese.id.au
+/// License: GNU Lesser General Public version 2.1
+///
+/// Some improvements and features are based on The Python ODBC Library.
+/// The Python ODBC Library is hosted at http://code.google.com/p/pyodbc/
+/// License: The MIT License
+///
+/// Implementation of column binding inspired by Nick E. Geht's source code posted to on CodeGuru.
+/// GSODBC hosted at http://www.codeguru.com/mfc_database/gsodbc.html
+/// Copyright (C) Nick E. Geht
+/// License: Perpetual license to reproduce, distribute, adapt, perform, display, and sublicense.
+/// See http://www.codeguru.com/submission-guidelines.php for details.
+/// </pre>
+
+#ifndef NANODBC_NANODBC_H
+#define NANODBC_NANODBC_H
+
+#include <any>
+#include <cstddef>
+#include <cstdint>
+#include <exception>
+#include <functional>
+#include <iterator>
+#include <list>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string>
+#include <string_view>
+#include <type_traits>
+#include <utility>
+#include <variant>
+#include <vector>
+
+// nanodbc requires C++17, so these always hold. They are still defined, so that code
+// written against an earlier release and asking whether the feature is there keeps
+// compiling; new code has no reason to ask.
+#define NANODBC_HAS_STD_STRING_VIEW
+#define NANODBC_HAS_STD_OPTIONAL
+#define NANODBC_HAS_STD_VARIANT
+#define NANODBC_HAS_STD_ANY
+
+/// \brief The entirety of nanodbc can be found within this one namespace.
+///
+/// \note This library does not make any exception safety guarantees, but should work just fine with
+///       a threading enabled ODBC driver. If you want to use nanodbc objects in threads I recommend
+///       each thread keep their own connection to the database. Otherwise you must synchronize any
+///       access to nanodbc objects.
+namespace nanodbc
+{
+
+// clang-format off
+//  .d8888b.                     .d888 d8b                                   888    d8b
+// d88P  Y88b                   d88P"  Y8P                                   888    Y8P
+// 888    888                   888                                          888
+// 888         .d88b.  88888b.  888888 888  .d88b.  888  888 888d888 8888b.  888888 888  .d88b.  88888b.
+// 888        d88""88b 888 "88b 888    888 d88P"88b 888  888 888P"      "88b 888    888 d88""88b 888 "88b
+// 888    888 888  888 888  888 888    888 888  888 888  888 888    .d888888 888    888 888  888 888  888
+// Y88b  d88P Y88..88P 888  888 888    888 Y88b 888 Y88b 888 888    888  888 Y88b.  888 Y88..88P 888  888
+//  "Y8888P"   "Y88P"  888  888 888    888  "Y88888  "Y88888 888    "Y888888  "Y888 888  "Y88P"  888  888
+//                                              888
+//                                         Y8b d88P
+//                                          "Y88P"
+// MARK: Configuration -
+// clang-format on
+
+/// \addtogroup macros Macros
+/// \brief Configuration and utility macros that nanodbc uses, can be overriden by users.
+///
+/// @{
+#ifdef DOXYGEN
+
+/// \def NANODBC_THROW_NO_SOURCE_LOCATION
+/// \brief Configures \c nanodbc::database_error message
+///
+/// If defined, removes source file name and line number from \c nanodbc::database_error message
+/// By default, nanodbc includes source location of exception in the error message.
+#define NANODBC_THROW_NO_SOURCE_LOCATION 1
+
+/// \def NANODBC_ASSERT(expression)
+/// \brief Assertion.
+///
+/// By default, nanodbc uses C \c assert() for internal assertions.
+/// User can override it by defining \c NANODBC_ASSERT(expr) macro
+/// in the nanodbc.h file and customizing it as desired,
+/// before building the library.
+///
+/// \code{.cpp}
+/// #ifdef _DEBUG
+///     #include <crtdbg.h>
+///     #define NANODBC_ASSERT _ASSERTE
+/// #endif
+/// \endcode
+#define NANODBC_ASSERT(expression) assert(expression)
+
+#endif
+/// @}
+
+// You must explicitly request Unicode support by defining NANODBC_ENABLE_UNICODE at compile time.
+#ifndef DOXYGEN
+#ifdef NANODBC_ENABLE_UNICODE
+#ifdef NANODBC_USE_IODBC_WIDE_STRINGS
+#define NANODBC_TEXT(s) U##s
+using string = std::u32string;
+using string_view = std::u32string_view;
+#else
+#ifdef _MSC_VER
+using string = std::wstring;
+using string_view = std::wstring_view;
+#define NANODBC_TEXT(s) L##s
+#else
+using string = std::u16string;
+using string_view = std::u16string_view;
+#define NANODBC_TEXT(s) u##s
+#endif
+#endif
+#else
+using string = std::string;
+using string_view = std::string_view;
+#define NANODBC_TEXT(s) s
+#endif
+
+#ifdef NANODBC_USE_IODBC_WIDE_STRINGS
+using wide_string = std::u32string;
+using wide_string_view = std::u32string_view;
+#else
+#ifdef _MSC_VER
+using wide_string = std::wstring;
+using wide_string_view = std::wstring_view;
+#else
+using wide_string = std::u16string;
+using wide_string_view = std::u16string_view;
+#endif
+#endif
+
+using wide_char_t = wide_string::value_type;
+
+#if defined(_WIN64)
+// LLP64 machine: Windows
+using null_type = std::int64_t;
+#elif !defined(_WIN64) && defined(__LP64__)
+// LP64 machine: OS X or Linux
+using null_type = long;
+#else
+// 32-bit machine
+using null_type = long;
+#endif
+#else
+/// \def NANODBC_TEXT(s)
+/// \brief Creates a string literal of the type corresponding to `nanodbc::string`.
+///
+/// By default, the macro maps to an unprefixed string literal.
+/// If building with options NANODBC_ENABLE_UNICODE=ON and
+/// NANODBC_USE_IODBC_WIDE_STRINGS=ON specified, then it prefixes a literal with U"...".
+/// If only NANODBC_ENABLE_UNICODE=ON is specified, then:
+///   * If building with Visual Studio, then the macro prefixes a literal with L"...".
+///   * Otherwise, it prefixes a literal with u"...".
+#define NANODBC_TEXT(s) s
+
+/// \c string will be \c std::u16string or \c std::32string if \c NANODBC_ENABLE_UNICODE
+/// defined.
+///
+/// Otherwise it will be \c std::string.
+typedef unspecified - type string;
+/// \c null_type will be \c int64_t for 64-bit compilations, otherwise \c long.
+typedef unspecified - type null_type;
+#endif
+
+/// \def NANODBC_DEPRECATED
+/// \brief Marks a declaration as deprecated.
+#define NANODBC_DEPRECATED [[deprecated]]
+
+// forward declare
+#ifndef NANODBC_DISABLE_MSSQL_TVP
+class table_valued_parameter;
+#endif
+class statement;
+class connection;
+class transaction;
+class catalog;
+class result;
+
+// clang-format off
+// 8888888888                                      888    888                        888 888 d8b
+// 888                                             888    888                        888 888 Y8P
+// 888                                             888    888                        888 888
+// 8888888    888d888 888d888 .d88b.  888d888      8888888888  8888b.  88888b.   .d88888 888 888 88888b.   .d88b.
+// 888        888P"   888P"  d88""88b 888P"        888    888     "88b 888 "88b d88" 888 888 888 888 "88b d88P"88b
+// 888        888     888    888  888 888          888    888 .d888888 888  888 888  888 888 888 888  888 888  888
+// 888        888     888    Y88..88P 888          888    888 888  888 888  888 Y88b 888 888 888 888  888 Y88b 888
+// 8888888888 888     888     "Y88P"  888          888    888 "Y888888 888  888  "Y88888 888 888 888  888  "Y88888
+//                                                                                                             888
+//                                                                                                        Y8b d88P
+//                                                                                                         "Y88P"
+// MARK: Error Handling -
+// clang-format on
+
+/// \addtogroup exceptions Exception types
+/// \brief Possible error conditions.
+///
+/// Specific errors such as \c type_incompatible_error, \c null_access_error, and
+/// \c index_range_error can arise from improper use of the nanodbc library. The general
+/// \c database_error is for all other situations in which the ODBC driver or C API reports an error
+/// condition. The explanatory string for database_error will, if possible, contain a diagnostic
+/// message obtained from \c SQLGetDiagRec().
+/// @{
+
+/// \brief Type incompatible.
+/// \see exceptions
+class type_incompatible_error : public std::runtime_error
+{
+public:
+    type_incompatible_error();
+
+    /// \brief Returns the message describing the incompatibility.
+    char const* what() const noexcept override;
+};
+
+/// \brief Accessed null data.
+/// \see exceptions
+class null_access_error : public std::runtime_error
+{
+public:
+    null_access_error();
+
+    /// \brief Returns the message describing the null access.
+    char const* what() const noexcept override;
+};
+
+/// \brief Index out of range.
+/// \see exceptions
+class index_range_error : public std::runtime_error
+{
+public:
+    index_range_error();
+
+    /// \brief Returns the message describing the out of range index.
+    char const* what() const noexcept override;
+};
+
+/// \brief Programming logic error.
+/// \see exceptions
+class programming_error : public std::runtime_error
+{
+public:
+    /// \brief Creates a programming error with the given message.
+    /// \param info The message describing the error.
+    explicit programming_error(std::string const& info);
+
+    /// \brief Returns the message describing the error.
+    char const* what() const noexcept override;
+};
+
+/// \brief General database error.
+/// \see exceptions
+class database_error : public std::runtime_error
+{
+public:
+    /// \brief Creates runtime_error with message about last ODBC error.
+    /// \param handle The native ODBC statement or connection handle.
+    /// \param handle_type The native ODBC handle type code for the given handle.
+    /// \param info Additional info that will be appended to the beginning of the error message.
+    database_error(void* handle, short handle_type, std::string const& info = "");
+
+    /// \brief Returns the full message, including the driver's own text.
+    char const* what() const noexcept override;
+
+    /// \brief Returns the native error code reported by the driver.
+    long native() const noexcept;
+
+    /// \brief Returns the five character SQLSTATE reported by the driver.
+    std::string const& state() const noexcept;
+
+private:
+    long native_error;
+    std::string sql_state;
+    std::string message;
+};
+
+/// @}
+
+// clang-format off
+// 888     888 888    d8b 888 d8b 888    d8b
+// 888     888 888    Y8P 888 Y8P 888    Y8P
+// 888     888 888        888     888
+// 888     888 888888 888 888 888 888888 888  .d88b.  .d8888b
+// 888     888 888    888 888 888 888    888 d8P  Y8b 88K
+// 888     888 888    888 888 888 888    888 88888888 "Y8888b.
+// Y88b. .d88P Y88b.  888 888 888 Y88b.  888 Y8b.          X88
+//  "Y88888P"   "Y888 888 888 888  "Y888 888  "Y8888   88888P'
+// MARK: Utilities -
+// clang-format on
+
+/// \addtogroup utility Utilities
+/// \brief Additional nanodbc utility classes and functions.
+///
+/// \{
+
+/// \brief A type capturing parameter array length as well as
+/// number of rows in a rowset of a result.
+struct batch_ops
+{
+    long parameter_array_length; ///< Number of parameter values bound per execution.
+    long rowset_size;            ///< Number of rows fetched into a rowset at a time.
+
+    /// \brief Creates lengths of -1, meaning neither has been chosen.
+    batch_ops() noexcept
+        : parameter_array_length(-1L)
+        , rowset_size(-1L) {};
+
+    /// \brief Creates both lengths with the same value.
+    /// \param all_length Value used for the parameter array length and the rowset size.
+    batch_ops(const long all_length) noexcept
+        : parameter_array_length(all_length)
+        , rowset_size(all_length) {};
+};
+
+/// \brief A type for representing date data.
+struct date
+{
+    std::int16_t year;  ///< Year [0-inf).
+    std::int16_t month; ///< Month of the year [1-12].
+    std::int16_t day;   ///< Day of the month [1-31].
+};
+
+/// \brief A type for representing time data.
+struct time
+{
+    std::int16_t hour; ///< Hours since midnight [0-23].
+    std::int16_t min;  ///< Minutes after the hour [0-59].
+    std::int16_t sec;  ///< Seconds after the minute.
+};
+
+/// \brief A type for representing timestamp data.
+struct timestamp
+{
+    std::int16_t year;  ///< Year [0-inf).
+    std::int16_t month; ///< Month of the year [1-12].
+    std::int16_t day;   ///< Day of the month [1-31].
+    std::int16_t hour;  ///< Hours since midnight [0-23].
+    std::int16_t min;   ///< Minutes after the hour [0-59].
+    std::int16_t sec;   ///< Seconds after the minute.
+    std::int32_t fract; ///< Fractional seconds.
+};
+
+/// \brief A type for representing timestamp+offset data.
+struct timestampoffset
+{
+    timestamp stamp;            ///< Date and time, in the offset's local terms.
+    std::int16_t offset_hour;   ///< Whole hour part of time zone offset
+    std::int16_t offset_minute; ///< Minutes part of time zome offset
+};
+
+/// \brief A class representing a connection or a statement attribute.
+///
+/// Callers should create attributes using the 3 argument constructor.
+/// First argument is the Attribute argument to the ODBC API call -
+//  `SQLSetConnectAttr`, or `SQLSetStmtAttr`.  The second is the StringLength,
+//  and the third is used to inform the ValuePtr argument.  This argument,
+/// a std::variant, is a type safe union of std::vector<uint8_t> ( binary
+/// buffer payloads ), nanodbc::string ( string payloads ), or std::(u)intptr_t,
+/// for both u/int payloads, as well as pointers to more generic buffers.
+///
+/// See https://learn.microsoft.com/en-us/sql/odbc/reference/syntax/sqlsetconnectattr-function
+class attribute
+{
+public:
+#ifdef NANODBC_ENABLE_UNICODE
+    using variant =
+        std::variant<std::vector<uint8_t>, string, std::string, std::intptr_t, std::uintptr_t>;
+#else
+    using variant = std::variant<std::vector<uint8_t>, string, std::intptr_t, std::uintptr_t>;
+#endif
+    attribute() = delete;
+    attribute& operator=(attribute const&) = delete;
+
+    /// \brief Copy constructor.
+    attribute(attribute const& other) noexcept;
+
+    /// \brief Creates an attribute from the three arguments the ODBC call takes.
+    /// \param attribute The Attribute argument of SQLSetConnectAttr or SQLSetStmtAttr.
+    /// \param string_length The StringLength argument.
+    /// \param resource The value the ValuePtr argument should refer to.
+    attribute(long const& attribute, long const& string_length, variant const& resource) noexcept;
+
+protected:
+    /// \brief Points value_ptr_ at the resource, according to which type it holds.
+    ///
+    /// Visiting a variant that always holds an alternative cannot throw, and the two
+    /// constructors calling this are themselves noexcept.
+    void extractValuePtr() noexcept;
+
+    long attribute_;     ///< The Attribute argument of the ODBC call.
+    long string_length_; ///< The StringLength argument of the ODBC call.
+    variant resource_;   ///< Owns the value that value_ptr_ refers to.
+    void* value_ptr_;    ///< The ValuePtr argument of the ODBC call.
+};
+
+/// \brief A type trait for testing if a type is a std::basic_string compatible with the current
+/// nanodbc configuration
+template <typename T>
+using is_string = std::bool_constant<
+    std::is_same_v<std::decay_t<T>, std::string> || std::is_same_v<std::decay_t<T>, wide_string> ||
+    std::is_same_v<std::decay_t<T>, std::string_view> ||
+    std::is_same_v<std::decay_t<T>, wide_string_view>>;
+
+/// \brief Whether a type is a string compatible with the current nanodbc configuration.
+template <typename T>
+inline constexpr bool is_string_v = is_string<T>::value;
+
+/// \brief A type trait for testing if a type is a string owning the characters it holds.
+///
+/// Unlike is_string, the view types are excluded: they neither own their characters nor
+/// promise a terminating NUL, which is what binding a single value hands to the driver.
+template <typename T>
+using is_owning_string = std::bool_constant<
+    std::is_same_v<std::decay_t<T>, std::string> || std::is_same_v<std::decay_t<T>, wide_string>>;
+
+/// \brief Whether a type is a string owning the characters it holds.
+template <typename T>
+inline constexpr bool is_owning_string_v = is_owning_string<T>::value;
+
+/// \brief A type trait for testing if a type is a character compatible with the current nanodbc
+/// configuration
+template <typename T>
+using is_character = std::bool_constant<
+    std::is_same_v<std::decay_t<T>, std::string::value_type> ||
+    std::is_same_v<std::decay_t<T>, wide_char_t>>;
+
+/// \brief Whether a type is a character compatible with the current nanodbc configuration.
+template <typename T>
+inline constexpr bool is_character_v = is_character<T>::value;
+
+/// \brief Enables an overload only for the string types nanodbc binds as strings.
+template <typename T>
+using enable_if_string = std::enable_if_t<is_string_v<T>>;
+
+/// \brief Enables an overload only for the character types nanodbc binds as strings.
+template <typename T>
+using enable_if_character = std::enable_if_t<is_character_v<T>>;
+
+namespace detail
+{
+
+/// \brief Splits optionals into the values themselves and flags saying which are null.
+///
+/// An absent value still takes up its place in the column, so that the values line up with
+/// the flags marking which of them are null. What fills that place is never read.
+///
+/// \param values The optionals to split.
+/// \param column Receives one value per optional, in order.
+/// \return One flag per optional, true where the value was absent.
+template <class T>
+std::unique_ptr<bool[]>
+split_optional(std::vector<std::optional<T>> const& values, std::vector<T>& column)
+{
+    auto nulls = std::make_unique<bool[]>(values.size());
+    column.reserve(values.size());
+    std::size_t i = 0;
+    for (auto const& value : values)
+    {
+        nulls[i++] = !value.has_value();
+        column.push_back(value ? *value : T());
+    }
+    return nulls;
+}
+
+} // namespace detail
+
+/// \}
+
+/// \addtogroup mainc Main classes
+/// \brief Main nanodbc classes.
+///
+/// @{
+
+// clang-format off
+// 88888888888                                                  888    d8b
+//     888                                                      888    Y8P
+//     888                                                      888
+//     888  888d888 8888b.  88888b.  .d8888b   8888b.   .d8888b 888888 888  .d88b.  88888b.
+//     888  888P"      "88b 888 "88b 88K          "88b d88P"    888    888 d88""88b 888 "88b
+//     888  888    .d888888 888  888 "Y8888b. .d888888 888      888    888 888  888 888  888
+//     888  888    888  888 888  888      X88 888  888 Y88b.    Y88b.  888 Y88..88P 888  888
+//     888  888    "Y888888 888  888  88888P' "Y888888  "Y8888P  "Y888 888  "Y88P"  888  888
+// MARK: Transaction -
+// clang-format on
+
+/// \brief A resource for managing transaction commits and rollbacks.
+/// \attention You will want to use transactions if you are doing batch operations because it will
+///            prevent auto commits from occurring after each individual operation is executed.
+class transaction
+{
+public:
+    /// \brief Begin a transaction on the given connection object.
+    /// \post Operations that modify the database must now be committed before taking effect.
+    /// \throws database_error
+    explicit transaction(const class connection& conn);
+
+    /// Copy constructor.
+    transaction(const transaction& rhs) noexcept;
+
+    /// Move constructor.
+    transaction(transaction&& rhs) noexcept;
+
+    /// Assignment.
+    transaction& operator=(transaction rhs) noexcept;
+
+    /// Member swap.
+    void swap(transaction& rhs) noexcept;
+
+    /// \brief If this transaction has not been committed, it will rollback any modifying ops.
+    ~transaction() noexcept;
+
+    /// \brief Commits transaction immediately.
+    /// \throws database_error
+    void commit();
+
+    /// \brief Marks this transaction for rollback.
+    void rollback() noexcept;
+
+    /// Returns the connection object.
+    class connection& connection() noexcept;
+
+    /// Returns the connection object.
+    const class connection& connection() const noexcept;
+
+    /// Returns the connection object.
+    operator class connection &() noexcept;
+
+    /// Returns the connection object.
+    operator const class connection &() const noexcept;
+
+private:
+    class transaction_impl;
+    friend class nanodbc::connection;
+
+private:
+    std::shared_ptr<transaction_impl> impl_;
+};
+
+// clang-format off
+// 888b     d888  .d8888b.   .d8888b.   .d88888b.  888                       88888888888 888     888 8888888b.
+// 8888b   d8888 d88P  Y88b d88P  Y88b d88P" "Y88b 888                           888     888     888 888   Y88b
+// 88888b.d88888 Y88b.      Y88b.      888     888 888                           888     888     888 888    888
+// 888Y88888P888  "Y888b.    "Y888b.   888     888 888                           888     Y88b   d88P 888   d88P
+// 888 Y888P 888     "Y88b.     "Y88b. 888     888 888                           888      Y88b d88P  8888888P"
+// 888  Y8P  888       "888       "888 888 Y8b 888 888           888888          888       Y88o88P   888
+// 888   "   888 Y88b  d88P Y88b  d88P Y88b.Y8b88P 888                           888        Y888P    888
+// 888       888  "Y8888P"   "Y8888P"   "Y888888"  88888888                      888         Y8P     888
+//                                            Y8b
+// MARK: MSSQL - TVP (Table Valued Parameters) -
+// clang-format on
+#ifndef NANODBC_DISABLE_MSSQL_TVP
+/// \brief Support for table-valued parameter
+class table_valued_parameter
+{
+public:
+    /// \brief Creates a table-valued parameter that is not yet open.
+    table_valued_parameter();
+
+    /// \brief Copy constructor.
+    table_valued_parameter(const table_valued_parameter& rhs) noexcept;
+
+    /// \brief Move constructor.
+    table_valued_parameter(table_valued_parameter&& rhs) noexcept;
+
+    /// \brief Creates a table-valued parameter and opens it on the given statement.
+    /// \see open()
+    table_valued_parameter(statement& stmt, short param_index, size_t row_count);
+
+    /// \brief Closes the parameter, if it is still open.
+    ~table_valued_parameter() noexcept;
+
+    /// \brief Opens the parameter on a statement, ready for values to be bound to it.
+    ///
+    /// Only one table-valued parameter may be open on a statement at a time, and it must be
+    /// closed before other parameters of that statement are bound.
+    ///
+    /// \param stmt The prepared statement carrying the parameter marker.
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param row_count Number of rows that will be bound.
+    /// \throws database_error
+    void open(statement& stmt, short param_index, std::size_t row_count);
+
+    /// \brief Finishes the parameter, so the statement can be executed or bound further.
+    /// \throws database_error
+    void close();
+
+    /// \addtogroup bind_multi Binding multiple non-string values
+    /// \brief Binds given values to given parameter placeholder number in the prepared statement.
+    ///
+    /// If your prepared SQL query has any parameter markers, ? (question  mark) placeholders,
+    /// this is how you bind values to them.
+    /// Parameter markers are numbered using Zero-based index from left to right.
+    ///
+    /// It is possible to use these functions for batch operations.
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param values Values to substitute into placeholder.
+    /// \param batch_size The number of values being bound. batch_size should greater or equal than
+    /// row_count
+    /// \param null_sentry Value which should represent a null value.
+    /// \param nulls Flags for values that should be set to a null value.
+    /// \param param_direction ODBC parameter direction.
+    /// \throws database_error
+    ///
+    /// @{
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    template <class T>
+    void bind(short param_index, T const* values, std::size_t batch_size);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    template <class T>
+    void bind(short param_index, T const* values, std::size_t batch_size, T const* null_sentry);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    template <class T>
+    void bind(short param_index, T const* values, std::size_t batch_size, bool const* nulls);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    void bind(short param_index, std::vector<std::vector<uint8_t>> const& values);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    void
+    bind(short param_index, std::vector<std::vector<uint8_t>> const& values, bool const* nulls);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    void bind(
+        short param_index,
+        std::vector<std::vector<uint8_t>> const& values,
+        uint8_t const* null_sentry);
+
+    /// @}
+
+    /// \addtogroup bind_strings Binding multiple string values
+    /// \brief Binds given string values to parameter marker in prepared statement.
+    ///
+    /// If your prepared SQL query has any parameter markers, ? (question  mark) placeholders,
+    /// this is how you bind values to them.
+    /// Parameter markers are numbered using Zero-based index from left to right.
+    ///
+    /// It is possible to use these functions for batch operations.
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param values Array of values to substitute into parameter placeholders.
+    /// \param value_size Maximum length of string value in array.
+    /// \param batch_size Number of string values to bind. Otherwise template parameter BatchSize is
+    /// taken as the number of values. batch_size should greater or equal than row_count
+    /// \param null_sentry Value which should represent a null value.
+    /// \param nulls Flags for values that should be set to a null value.
+    /// \throws database_error
+    ///
+    /// @{
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const* values,
+        std::size_t value_size,
+        std::size_t batch_size);
+
+    /// \brief Binds multiple string values.
+    ///
+    /// Size of the values vector indicates number of values to bind.
+    /// Longest string in the array determines maximum length of individual value.
+    ///
+    /// \see bind_strings
+    template <class T, typename = enable_if_string<T>>
+    void bind_strings(short param_index, std::vector<T> const& values);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <
+        std::size_t BatchSize,
+        std::size_t ValueSize,
+        class T,
+        typename = enable_if_character<T>>
+    void bind_strings(short param_index, T const (&values)[BatchSize][ValueSize])
+    {
+        auto param_values = reinterpret_cast<T const*>(values);
+        bind_strings(param_index, param_values, ValueSize, BatchSize);
+    }
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const* values,
+        std::size_t value_size,
+        std::size_t batch_size,
+        T const* null_sentry);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_string<T>>
+    void bind_strings(
+        short param_index,
+        std::vector<T> const& values,
+        typename T::value_type const* null_sentry);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <
+        std::size_t BatchSize,
+        std::size_t ValueSize,
+        class T,
+        typename = enable_if_character<T>>
+    void
+    bind_strings(short param_index, T const (&values)[BatchSize][ValueSize], T const* null_sentry)
+    {
+        auto param_values = reinterpret_cast<T const*>(values);
+        bind_strings(param_index, param_values, ValueSize, BatchSize, nullptr, null_sentry);
+    }
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const* values,
+        std::size_t value_size,
+        std::size_t batch_size,
+        bool const* nulls);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_string<T>>
+    void bind_strings(short param_index, std::vector<T> const& values, bool const* nulls);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <
+        std::size_t BatchSize,
+        std::size_t ValueSize,
+        class T,
+        typename = enable_if_character<T>>
+    void bind_strings(short param_index, T const (&values)[BatchSize][ValueSize], bool const* nulls)
+    {
+        auto param_values = reinterpret_cast<T const*>(values);
+        bind_strings(param_index, param_values, ValueSize, BatchSize, nulls);
+    }
+
+    /// @}
+
+    /// \brief Binds a null value to the given column of every row.
+    /// \param param_index Zero-based index of the column within the parameter.
+    /// \throws database_error
+    void bind_null(short param_index);
+
+    /// \brief Sets descriptions for columns of the table-valued parameter.
+    ///
+    /// Describing a column up front avoids the call to SQLDescribeParam that binding would
+    /// otherwise make. A description is re-used across binds until the parameter is closed.
+    ///
+    /// \param idx Vector of zero-based indices of the columns being described.
+    /// \param type Vector of (short integer) types.
+    /// \param size Vector of (unsigned long) sizes.
+    /// \param scale Vector of (short integer) decimal precision / scale.
+    /// \throws programming_error
+    void describe_parameters(
+        const std::vector<short>& idx,
+        const std::vector<short>& type,
+        const std::vector<unsigned long>& size,
+        const std::vector<short>& scale);
+
+    /// \brief Returns the number of columns in the table valued parameter.
+    short parameters() const noexcept;
+
+    /// \brief Returns parameter size for indicated column in the TVP.
+    unsigned long parameter_size(short param_index) const;
+
+    /// \brief Returns parameter scale for indicated column in the TVP.
+    short parameter_scale(short param_index) const;
+
+    /// \brief Returns parameter type for indicated column in the TVP.
+    short parameter_type(short param_index) const;
+
+private:
+    class table_valued_parameter_impl;
+    friend class statement;
+
+private:
+    std::shared_ptr<table_valued_parameter_impl> impl_;
+};
+#endif // NANODBC_DISABLE_MSSQL_TVP
+
+// clang-format off
+//  .d8888b.  888             888                                            888
+// d88P  Y88b 888             888                                            888
+// Y88b.      888             888                                            888
+//  "Y888b.   888888  8888b.  888888 .d88b.  88888b.d88b.   .d88b.  88888b.  888888
+//     "Y88b. 888        "88b 888   d8P  Y8b 888 "888 "88b d8P  Y8b 888 "88b 888
+//       "888 888    .d888888 888   88888888 888  888  888 88888888 888  888 888
+// Y88b  d88P Y88b.  888  888 Y88b. Y8b.     888  888  888 Y8b.     888  888 Y88b.
+//  "Y8888P"   "Y888 "Y888888  "Y888 "Y8888  888  888  888  "Y8888  888  888  "Y888
+// MARK: Statement -
+// clang-format on
+
+/// \brief Represents a statement on the database.
+class statement
+{
+
+private:
+    class statement_impl;
+
+public:
+    class attribute : public nanodbc::attribute
+    {
+    public:
+        attribute(
+            long const& attribute,
+            long const& string_length,
+            variant const& resource) noexcept
+            : nanodbc::attribute(attribute, string_length, resource) {};
+
+    private:
+        friend class nanodbc::statement::statement_impl;
+    };
+
+public:
+    /// \brief Provides support for retrieving output/return parameters.
+    /// \see binding
+    enum param_direction
+    {
+        PARAM_IN,    ///< Binding an input parameter.
+        PARAM_OUT,   ///< Binding an output parameter.
+        PARAM_INOUT, ///< Binding an input/output parameter.
+        /// \brief Binding a procedure's return value.
+        ///
+        /// This is parameter zero of a `{ ? = CALL proc(?) }` escape sequence.
+        PARAM_RETURN
+    };
+
+public:
+    /// \brief Creates a new un-prepared statement.
+    /// \see execute(), just_execute(), execute_direct(), just_execute_direct(), open(), prepare()
+    statement();
+
+    /// \brief Constructs a statement object and associates it to the given connection.
+    /// \param conn The connection to use.
+    /// \see open(), prepare()
+    explicit statement(class connection& conn);
+
+    /// \brief Constructs a statement object and associates it to the given connection,
+    ///        applying the given ODBC statement attributes.
+    /// \param conn The connection to use.
+    /// \param attributes Statement attributes to set before the statement is used.
+    /// \see open(), prepare()
+    explicit statement(class connection& conn, std::list<attribute> const& attributes);
+
+    /// \brief Constructs and prepares a statement using the given connection and query.
+    /// \param conn The connection to use.
+    /// \param query The SQL query statement.
+    /// \param timeout The number in seconds before query timeout. Default: 0 meaning no timeout.
+    /// \see execute(), just_execute(), execute_direct(), just_execute_direct(), open(), prepare()
+    statement(class connection& conn, string const& query, long timeout = 0);
+
+    /// \brief Copy constructor.
+    statement(const statement& rhs) noexcept;
+
+    /// \brief Move constructor.
+    statement(statement&& rhs) noexcept;
+
+    /// \brief Assignment.
+    statement& operator=(statement rhs) noexcept;
+
+    /// \brief Member swap.
+    void swap(statement& rhs) noexcept;
+
+    /// \brief Closes the statement.
+    /// \see close()
+    ~statement() noexcept;
+
+    /// \brief Creates a statement for the given connection.
+    /// \param conn The connection where the statement will be executed.
+    /// \throws database_error
+    void open(class connection& conn);
+
+    /// \brief Returns true if connection is open.
+    [[nodiscard]] bool open() const noexcept;
+
+    /// \brief Returns true if connected to the database.
+    [[nodiscard]] bool connected() const noexcept;
+
+    /// \brief Returns the associated connection object if any.
+    class connection& connection() noexcept;
+
+    /// \brief Returns the associated connection object if any.
+    const class connection& connection() const noexcept;
+
+    /// \brief Returns the native ODBC statement handle.
+    [[nodiscard]] void* native_statement_handle() const noexcept;
+
+    /// \brief Closes the statement and frees all associated resources.
+    void close();
+
+    /// \brief Cancels execution of the statement.
+    /// \throws database_error
+    void cancel();
+
+    /// \brief Opens and prepares the given statement to execute on the given connection.
+    /// \param conn The connection where the statement will be executed.
+    /// \param query The SQL query that will be executed.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \see open()
+    /// \throws database_error
+    void prepare(class connection& conn, string const& query, long timeout = 0);
+
+    /// \brief Prepares the given statement to execute its associated connection.
+    /// \note If the statement is not open throws programming_error.
+    /// \param query The SQL query that will be executed.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \see open()
+    /// \throws database_error
+    /// \throws programming_error
+    void prepare(string const& query, long timeout = 0);
+
+    /// \brief Sets the number in seconds before query timeout. Default is 0 indicating no timeout.
+    /// \throws database_error
+    void timeout(long timeout = 0);
+
+    /// \brief Opens, prepares, and executes the given query directly on the given connection.
+    /// \param conn The connection where the statement will be executed.
+    /// \param query The SQL query that will be executed.
+    /// \param batch_operations Numbers of rows to fetch per rowset, or the number of batch
+    ///        parameters to process.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \return A result set object.
+    /// \attention You will want to use transactions if you are doing batch operations because it
+    ///            will prevent auto commits occurring after each individual operation is executed.
+    /// \see open(), prepare(), execute(), result, transaction
+    class result execute_direct(
+        class connection& conn,
+        string const& query,
+        long batch_operations = 1,
+        long timeout = 0);
+
+    /// \brief Opens, prepares, and executes the given query directly on the given connection.
+    /// \param conn The connection where the statement will be executed.
+    /// \param query The SQL query that will be executed.
+    /// \param array_sizes More granular control of rows to fetch per rowset, and the number of
+    ///                    batch parameters to process.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \return A result set object.
+    /// \attention You will want to use transactions if you are doing batch operations because it
+    ///            will prevent auto commits occurring after each individual operation is executed.
+    /// \see open(), prepare(), execute(), result, transaction
+    class result execute_direct(
+        class connection& conn,
+        string const& query,
+        batch_ops const& array_sizes,
+        long timeout = 0);
+
+#if !defined(NANODBC_DISABLE_ASYNC)
+    /// \brief Prepare the given statement, in asynchronous mode.
+    /// \note If the statement is not open throws programming_error.
+    ///
+    /// This method will only be available if nanodbc is built against ODBC headers and library that
+    /// supports asynchronous mode. Such that the identifiers `SQL_ATTR_ASYNC_STMT_EVENT` and
+    /// `SQLCompleteAsync` are extant. Otherwise this method will be defined, but not implemented.
+    ///
+    /// Asynchronous features can be disabled entirely by defining `NANODBC_DISABLE_ASYNC` when
+    /// building nanodbc.
+    ///
+    /// \param event_handle The event handle the caller will wait before calling complete_prepare.
+    /// \param query The SQL query that will be prepared.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \throws database_error
+    /// \return Boolean: true if the event handle needs to be awaited, false is result is ready now.
+    /// \see complete_prepare()
+    bool async_prepare(string const& query, void* event_handle, long timeout = 0);
+
+    /// \brief Completes a previously initiated asynchronous query preparation.
+    ///
+    /// This method will only be available if nanodbc is built against ODBC headers and library that
+    /// supports asynchronous mode. Such that the identifiers `SQL_ATTR_ASYNC_STMT_EVENT` and
+    /// `SQLCompleteAsync` are extant. Otherwise this method will be defined, but not implemented.
+    ///
+    /// Asynchronous features can be disabled entirely by defining `NANODBC_DISABLE_ASYNC` when
+    /// building nanodbc.
+    ///
+    /// \throws database_error
+    /// \see async_prepare()
+    void complete_prepare();
+
+    /// \brief Opens, prepares, and executes query directly on the given connection, in async mode.
+    ///
+    /// This method will only be available if nanodbc is built against ODBC headers and library that
+    /// supports asynchronous mode. Such that the identifiers `SQL_ATTR_ASYNC_STMT_EVENT` and
+    /// `SQLCompleteAsync` are extant. Otherwise this method will be defined, but not implemented.
+    ///
+    /// Asynchronous features can be disabled entirely by defining `NANODBC_DISABLE_ASYNC` when
+    /// building nanodbc.
+    ///
+    /// \param conn The connection where the statement will be executed.
+    /// \param event_handle The event handle the caller will wait before calling complete_execute.
+    /// \param query The SQL query that will be executed.
+    /// \param batch_operations Rows to fetch per rowset or number of batch parameters to process.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \throws database_error
+    /// \return Boolean: true if event handle needs to be awaited, false if result ready now.
+    /// \attention You will want to use transactions if you are doing batch operations because it
+    ///            will prevent auto commits after each individual operation is executed.
+    /// \see complete_execute(), open(), prepare(), execute(), result, transaction
+    bool async_execute_direct(
+        class connection& conn,
+        void* event_handle,
+        string const& query,
+        long batch_operations = 1,
+        long timeout = 0);
+
+    /// \brief Execute the previously prepared query now, in asynchronous mode.
+    ///
+    /// This method will only be available if nanodbc is built against ODBC headers and library that
+    /// supports asynchronous mode. Such that the identifiers `SQL_ATTR_ASYNC_STMT_EVENT` and
+    /// `SQLCompleteAsync` are extant. Otherwise this method will be defined, but not implemented.
+    ///
+    /// Asynchronous features can be disabled entirely by defining `NANODBC_DISABLE_ASYNC` when
+    /// building nanodbc.
+    ///
+    /// \param event_handle The event handle the caller will wait before calling complete_execute.
+    /// \param batch_operations Rows to fetch per rowset or number of batch parameters to process.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \throws database_error
+    /// \return Boolean: true if event handle needs to be awaited, false if result is ready now.
+    /// \attention You will want to use transactions if you are doing batch operations because it
+    ///            will prevent auto commits after each individual operation is executed.
+    /// \see complete_execute(), open(), prepare(), result, transaction
+    bool async_execute(void* event_handle, long batch_operations = 1, long timeout = 0);
+
+    /// \brief Completes a previously initiated asynchronous query execution, returning the result.
+    ///
+    /// This method will only be available if nanodbc is built against ODBC headers and library that
+    /// supports asynchronous mode. Such that the identifiers `SQL_ATTR_ASYNC_STMT_EVENT` and
+    /// `SQLCompleteAsync` are extant. Otherwise this method will be defined, but not implemented.
+    ///
+    /// Asynchronous features can be disabled entirely by defining `NANODBC_DISABLE_ASYNC` when
+    /// building nanodbc.
+    ///
+    /// \throws database_error
+    /// \return A result set object.
+    /// \param batch_operations Rows to fetch per rowset or number of batch parameters to process.
+    /// \see async_execute(), async_execute_direct()
+    class result complete_execute(long batch_operations = 1);
+
+    /// undocumented - for internal use only (used from result_impl)
+    void enable_async(void* event_handle);
+
+    /// undocumented - for internal use only (used from result_impl)
+    void disable_async() const;
+#endif
+
+    /// \brief Execute the previously prepared query now without constructing result object.
+    /// \param conn The connection where the statement will be executed.
+    /// \param query The SQL query that will be executed.
+    /// \param batch_operations Rows to fetch per rowset, or number of batch parameters to process.
+    /// \param timeout Seconds before query timeout. Default is 0 indicating no timeout.
+    /// \throws database_error
+    /// \attention You will want to use transactions if you are doing batch operations because it
+    ///            will prevent auto commits after each individual operation is executed.
+    /// \see open(), prepare(), execute(), execute_direct(), result, transaction
+    void just_execute_direct(
+        class connection& conn,
+        string const& query,
+        long batch_operations = 1,
+        long timeout = 0);
+
+    /// \brief Execute the previously prepared query now.
+    /// \param batch_operations Rows to fetch per rowset, or number of batch parameters to process.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \throws database_error
+    /// \return A result set object.
+    /// \attention You will want to use transactions if you are doing batch operations because it
+    ///            will prevent auto commits after each individual operation is executed.
+    /// \see open(), prepare(), result, transaction
+    class result execute(long batch_operations = 1, long timeout = 0);
+
+    /// \brief Execute the previously prepared query now, sizing the parameter array and
+    ///        the rowset separately.
+    ///
+    /// The number of parameter sets to execute and the number of rows to fetch at a time
+    /// are unrelated: a query taking one set of parameters may still want its rows in
+    /// large blocks. The single argument overload sets both alike, which asks the driver
+    /// to read as many parameter sets as it was told to fetch rows.
+    ///
+    /// \param array_sizes Parameter array length and rowset size. A length of zero or less
+    ///                    leaves that one at 1.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \throws database_error
+    /// \return A result set object.
+    /// \see open(), prepare(), result, transaction, batch_ops
+    class result execute(batch_ops const& array_sizes, long timeout = 0);
+
+    /// \brief Execute the previously prepared query now without constructing result object.
+    /// \param batch_operations Rows to fetch per rowset, or number of batch parameters to process.
+    /// \param timeout The number in seconds before query timeout. Default 0 meaning no timeout.
+    /// \throws database_error
+    /// \attention You will want to use transactions if you are doing batch operations because it
+    ///            will prevent auto commits after each individual operation is executed.
+    /// \see open(), prepare(), execute(), result, transaction
+    void just_execute(long batch_operations = 1, long timeout = 0);
+
+    /// \brief Returns the input and output paramters of the specified stored procedure.
+    /// \param catalog The catalog name of the procedure.
+    /// \param schema Pattern to use for schema names.
+    /// \param procedure The name of the procedure.
+    /// \param column Pattern to use for column names.
+    /// \throws database_error
+    /// \return A result set object.
+    class result procedure_columns(
+        string const& catalog,
+        string const& schema,
+        string const& procedure,
+        string const& column);
+
+    /// \brief Returns rows affected by the request or -1 if affected rows is not available.
+    /// \throws database_error
+    [[nodiscard]] long affected_rows() const;
+
+    /// \brief Returns the number of columns in a result set.
+    /// \throws database_error
+    [[nodiscard]] short columns() const;
+
+    /// \brief Resets all currently bound parameters.
+    void reset_parameters() noexcept;
+
+    /// \brief Returns the number of parameters in the statement.
+    /// \throws database_error
+    short parameters() const;
+
+    /// \brief Returns parameter size for indicated parameter placeholder in a prepared statement.
+    unsigned long parameter_size(short param_index) const;
+
+    /// \brief Returns parameter scale for indicated parameter placeholder in a prepared statement.
+    short parameter_scale(short param_index) const;
+
+    /// \brief Returns parameter type for indicated parameter placeholder in a prepared statement.
+    short parameter_type(short param_index) const;
+
+    /// \brief Whether the parameter came back null.
+    ///
+    /// A parameter bound for output carries an indicator the driver writes when the
+    /// statement runs, saying whether a value came back at all. Reading it tells a null
+    /// apart from a buffer the driver left alone, which the value cannot.
+    ///
+    /// \param param_index Zero-based index of the parameter marker.
+    /// \param batch_index Which of the bound values to ask about, where several were.
+    /// \throws programming_error if nothing is bound to that parameter.
+    /// \throws index_range_error if there is no such value in the batch.
+    /// \see bind(), PARAM_OUT, PARAM_INOUT
+    bool parameter_is_null(short param_index, std::size_t batch_index = 0) const;
+
+    /// \addtogroup binding Binding parameters
+    /// \brief These functions are used to bind values to ODBC parameters.
+    ///
+    /// \attention When nanodbc is compiled as a library, bind() is only available for the
+    ///            types it is explicitly instantiated for in nanodbc.cpp. Using any other
+    ///            type compiles, because the declaration is visible here, but fails to
+    ///            link. The supported types are: bool, signed char, unsigned char, short,
+    ///            unsigned short, int, unsigned int, long int, unsigned long int,
+    ///            long long, unsigned long long, float, double,
+    ///            std::string::value_type, wide_string::value_type, date, time and
+    ///            timestamp. Binary data is bound through the
+    ///            std::vector<std::vector<std::uint8_t>> overloads, and strings through
+    ///            bind_strings().
+    ///
+    /// \attention bool is bound as ODBC's SQL_C_BIT, and only the overloads that carry no
+    ///            null information are available for it. The null_sentry overload takes
+    ///            `T const*` and the null flags overload takes `bool const*`, so for
+    ///            T=bool the two collapse into one signature that neither an explicit
+    ///            instantiation nor a call can choose between. Bind nullable booleans as a
+    ///            wider integral type instead.
+    ///
+    /// @{
+
+    /// \brief Binds given value to given parameter placeholder number in the prepared statement.
+    ///
+    /// If your prepared SQL query has any ? placeholders, this is how you bind values to them.
+    /// Placeholder numbers count from left to right and are 0-indexed.
+    ///
+    /// It is NOT possible to use these functions for batch operations as number of elements is not
+    /// specified here.
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param value Value to substitute into placeholder.
+    /// \param direction ODBC parameter direction.
+    /// \throws database_error
+    template <class T>
+    void bind(short param_index, T const* value, param_direction direction = PARAM_IN);
+
+    /// \brief Binds a value that may be absent, an absent one being bound as null.
+    ///
+    /// This is the same as bind() followed by bind_null() for the absent case, written so
+    /// that the caller need not tell the two apart. A copy of the value is taken, so the
+    /// optional is free to go out of scope before the statement is executed.
+    ///
+    /// \code
+    /// std::optional<int> const age = lookup();
+    /// stmt.bind(0, age); // the value, or null where there is none
+    /// \endcode
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param value The value to bind, or nothing to bind null.
+    /// \param direction ODBC parameter direction.
+    /// \throws database_error
+    /// \see bind(), bind_null()
+    template <class T>
+    void
+    bind(short param_index, std::optional<T> const& value, param_direction direction = PARAM_IN)
+    {
+        if (!value.has_value())
+        {
+            bind_null(param_index, 1);
+            return;
+        }
+        if constexpr (is_owning_string_v<T>)
+            bind(param_index, value->c_str(), direction);
+        else
+            bind(param_index, &*value, direction);
+    }
+
+    /// \addtogroup bind_multi Binding multiple non-string values
+    /// \brief Binds given values to given parameter placeholder number in the prepared statement.
+    ///
+    /// If your prepared SQL query has any parameter markers, ? (question  mark) placeholders,
+    /// this is how you bind values to them.
+    /// Parameter markers are numbered using Zero-based index from left to right.
+    ///
+    /// It is possible to use these functions for batch operations.
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param values Values to substitute into placeholder.
+    /// \param batch_size The number of values being bound.
+    /// \param null_sentry Value which should represent a null value.
+    /// \param nulls Flags for values that should be set to a null value.
+    /// \param param_direction ODBC parameter direction.
+    /// \throws database_error
+    ///
+    /// @{
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    template <class T>
+    void bind(
+        short param_index,
+        T const* values,
+        std::size_t batch_size,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    template <class T>
+    void bind(
+        short param_index,
+        T const* values,
+        std::size_t batch_size,
+        T const* null_sentry,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    template <class T>
+    void bind(
+        short param_index,
+        T const* values,
+        std::size_t batch_size,
+        bool const* nulls,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    void bind(
+        short param_index,
+        std::vector<std::vector<uint8_t>> const& values,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    void bind(
+        short param_index,
+        std::vector<std::vector<uint8_t>> const& values,
+        bool const* nulls,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple values.
+    /// \see bind_multi
+    void bind(
+        short param_index,
+        std::vector<std::vector<uint8_t>> const& values,
+        uint8_t const* null_sentry,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple values, holding a copy of them.
+    ///
+    /// The overloads taking a pointer bind the caller's buffer, which has to stay alive
+    /// and unchanged until the statement has been executed. These take a copy instead, so
+    /// the vector is free to go out of scope.
+    /// \see bind_multi
+    template <class T>
+    void
+    bind(short param_index, std::vector<T> const& values, param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple values, holding a copy of them.
+    /// \see bind_multi
+    template <class T>
+    void bind(
+        short param_index,
+        std::vector<T> const& values,
+        bool const* nulls,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds a batch of values, any of which may be absent and bound as null.
+    ///
+    /// Where the overload taking a flags array asks the caller to keep the values and the
+    /// flags in step, this reads both out of the one vector. The values are copied, so the
+    /// vector is free to go out of scope before the statement is executed.
+    ///
+    /// \code
+    /// std::vector<std::optional<int>> const ages{31, std::nullopt, 47};
+    /// stmt.bind(0, ages); // the middle row binds null
+    /// \endcode
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param values The values to bind, an absent one binding null.
+    /// \param direction ODBC parameter direction.
+    /// \throws database_error
+    /// \see bind_multi
+    template <class T>
+    void bind(
+        short param_index,
+        std::vector<std::optional<T>> const& values,
+        param_direction direction = PARAM_IN)
+    {
+        std::vector<T> column;
+        auto const nulls = detail::split_optional(values, column);
+        bind(param_index, column, nulls.get(), direction);
+    }
+
+    /// @}
+
+    /// \addtogroup bind_strings Binding multiple string values
+    /// \brief Binds given string values to parameter marker in prepared statement.
+    ///
+    /// If your prepared SQL query has any parameter markers, ? (question  mark) placeholders,
+    /// this is how you bind values to them.
+    /// Parameter markers are numbered using Zero-based index from left to right.
+    ///
+    /// It is possible to use these functions for batch operations.
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param values Array of values to substitute into parameter placeholders.
+    /// \param value_size Maximum length of string value in array.
+    /// \param batch_size Number of string values to bind. Otherwise template parameter BatchSize is
+    /// taken as the number of values.
+    /// \param null_sentry Value which should represent a null value.
+    /// \param nulls Flags for values that should be set to a null value.
+    /// \param param_direction ODBC parameter direction.
+    /// \throws database_error
+    ///
+    /// @{
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const* values,
+        std::size_t value_size,
+        std::size_t batch_size,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple string values.
+    ///
+    /// Size of the values vector indicates number of values to bind.
+    /// Longest string in the array determines maximum length of individual value.
+    ///
+    /// \see bind_strings
+    template <class T, typename = enable_if_string<T>>
+    void bind_strings(
+        short param_index,
+        std::vector<T> const& values,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <
+        std::size_t BatchSize,
+        std::size_t ValueSize,
+        class T,
+        typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const (&values)[BatchSize][ValueSize],
+        param_direction direction = PARAM_IN)
+    {
+        auto param_values = reinterpret_cast<T const*>(values);
+        bind_strings(param_index, param_values, ValueSize, BatchSize, direction);
+    }
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const* values,
+        std::size_t value_size,
+        std::size_t batch_size,
+        T const* null_sentry,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_string<T>>
+    void bind_strings(
+        short param_index,
+        std::vector<T> const& values,
+        typename T::value_type const* null_sentry,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <
+        std::size_t BatchSize,
+        std::size_t ValueSize,
+        class T,
+        typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const (&values)[BatchSize][ValueSize],
+        T const* null_sentry,
+        param_direction direction = PARAM_IN)
+    {
+        auto param_values = reinterpret_cast<T const*>(values);
+        bind_strings(param_index, param_values, ValueSize, BatchSize, null_sentry, direction);
+    }
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const* values,
+        std::size_t value_size,
+        std::size_t batch_size,
+        bool const* nulls,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <class T, typename = enable_if_string<T>>
+    void bind_strings(
+        short param_index,
+        std::vector<T> const& values,
+        bool const* nulls,
+        param_direction direction = PARAM_IN);
+
+    /// \brief Binds multiple string values.
+    /// \see bind_strings
+    template <
+        std::size_t BatchSize,
+        std::size_t ValueSize,
+        class T,
+        typename = enable_if_character<T>>
+    void bind_strings(
+        short param_index,
+        T const (&values)[BatchSize][ValueSize],
+        bool const* nulls,
+        param_direction direction = PARAM_IN)
+    {
+        auto param_values = reinterpret_cast<T const*>(values);
+        bind_strings(param_index, param_values, ValueSize, BatchSize, nulls, direction);
+    }
+
+    /// \brief Binds a batch of strings, any of which may be absent and bound as null.
+    ///
+    /// Where the overload taking a flags array asks the caller to keep the values and the
+    /// flags in step, this reads both out of the one vector. The strings are copied, so the
+    /// vector is free to go out of scope before the statement is executed.
+    ///
+    /// \code
+    /// std::vector<std::optional<nanodbc::string>> const names{
+    ///     NANODBC_TEXT("ada"), std::nullopt};
+    /// stmt.bind_strings(0, names); // the second row binds null
+    /// \endcode
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param values The strings to bind, an absent one binding null.
+    /// \param direction ODBC parameter direction.
+    /// \throws database_error
+    /// \see bind_strings
+    template <class T, typename = enable_if_string<T>>
+    void bind_strings(
+        short param_index,
+        std::vector<std::optional<T>> const& values,
+        param_direction direction = PARAM_IN)
+    {
+        std::vector<T> column;
+        auto const nulls = detail::split_optional(values, column);
+        bind_strings(param_index, column, nulls.get(), direction);
+    }
+
+    /// @}
+
+    /// \brief Binds null values to the parameter placeholder number in the prepared statement.
+    ///
+    /// If your prepared SQL query has any parameter markers, ? (question  mark) placeholders,
+    /// this is how you bind values to them.
+    /// Parameter markers are numbered using Zero-based index from left to right.
+    ///
+    /// It is possible to use this function for batch operations.
+    ///
+    /// \param param_index Zero-based index of parameter marker (placeholder position).
+    /// \param batch_size The number of elements being bound.
+    /// \throws database_error
+    void bind_null(short param_index, std::size_t batch_size = 1);
+
+    /// @}
+
+    /// \brief Sets descriptions for parameters in the prepared statement.
+    ///
+    /// If your prepared SQL query has any parameter markers, ? (question  mark)
+    /// placeholders this is how you can describe the SQL type, size and scale
+    /// for some or all of the parameters, prior to binding any data to the
+    /// parameters.  Calling this method is optional: if a parameter is not
+    /// described using a call to this method, then during a bind an attempt is
+    /// made to identify it using a call to the ODBC SQLDescribeParam API handle.
+    /// Once set, description is re-used for possibly repeated binds
+    /// execution and only cleared when the statement is cleared / destroyed.
+    /// Parameter markers are numbered using Zero-based index from left to right.
+    ///
+    /// \param idx Vector of zero-based indices of parameters we are describing.
+    /// \param type Vector of (short integer) types.
+    /// \param size Vector of (unsigned long) sizes.
+    /// \param scale Vector of (short integer) decimal precision / scale.
+    /// \throws programming_error
+    void describe_parameters(
+        const std::vector<short>& idx,
+        const std::vector<short>& type,
+        const std::vector<unsigned long>& size,
+        const std::vector<short>& scale);
+
+private:
+    using null_predicate_type = std::function<bool(std::size_t)>;
+    friend class nanodbc::result;
+#ifndef NANODBC_DISABLE_MSSQL_TVP
+    friend class nanodbc::table_valued_parameter::table_valued_parameter_impl;
+#endif
+
+private:
+    std::shared_ptr<statement_impl> impl_;
+};
+
+// clang-format off
+//  .d8888b.                                               888    d8b
+// d88P  Y88b                                              888    Y8P
+// 888    888                                              888
+// 888         .d88b.  88888b.  88888b.   .d88b.   .d8888b 888888 888  .d88b.  88888b.
+// 888        d88""88b 888 "88b 888 "88b d8P  Y8b d88P"    888    888 d88""88b 888 "88b
+// 888    888 888  888 888  888 888  888 88888888 888      888    888 888  888 888  888
+// Y88b  d88P Y88..88P 888  888 888  888 Y8b.     Y88b.    Y88b.  888 Y88..88P 888  888
+//  "Y8888P"   "Y88P"  888  888 888  888  "Y8888   "Y8888P  "Y888 888  "Y88P"  888  888
+// MARK: Connection -
+// clang-format on
+
+/// \brief Manages and encapsulates ODBC resources such as the connection and environment handles.
+class connection
+{
+
+private:
+    class connection_impl;
+    friend class nanodbc::transaction::transaction_impl;
+
+public:
+    class attribute : public nanodbc::attribute
+    {
+    public:
+        attribute(
+            long const& attribute,
+            long const& string_length,
+            variant const& resource) noexcept
+            : nanodbc::attribute(attribute, string_length, resource) {};
+
+    private:
+        friend class nanodbc::connection::connection_impl;
+    };
+
+public:
+    /// \brief Create new connection object, initially not connected.
+    connection();
+
+    /// Copy constructor.
+    connection(const connection& rhs) noexcept;
+
+    /// Move constructor.
+    connection(connection&& rhs) noexcept;
+
+    /// Assignment.
+    connection& operator=(connection rhs) noexcept;
+
+    /// Member swap.
+    void swap(connection&) noexcept;
+
+    /// \brief Create new connection object and immediately connect to the given data source.
+    ///
+    /// The function calls ODBC API SQLConnect.
+    ///
+    /// \param dsn The name of the data source name (DSN).
+    /// \param user The username for authenticating to the data source.
+    /// \param pass The password for authenticating to the data source.
+    /// \param timeout Seconds before connection timeout. Default 0 meaning no timeout.
+    /// \throws database_error
+    /// \see connected(), connect()
+    connection(string const& dsn, string const& user, string const& pass, long timeout = 0);
+
+    /// \brief Create new connection object and immediately connect using the given connection
+    /// string.
+    ///
+    /// The function calls ODBC API SQLDriverConnect.
+    ///
+    /// \param connection_string The connection string for establishing a connection.
+    /// \param timeout Seconds before connection timeout. Default is 0 indicating no timeout.
+    /// \throws database_error
+    /// \see connected(), connect()
+    explicit connection(string const& connection_string, long timeout = 0);
+
+    /// \brief Create new connection object, set the connection attributes passed as
+    /// arguments and connect to the given data source.
+    ///
+    /// The function calls ODBC API SQLConnect.  To set connection attributes,
+    /// SQLSetConnectAttr is called.
+    ///
+    /// \param dsn The name of the data source name (DSN).
+    /// \param user The username for authenticating to the data source.
+    /// \param pass The password for authenticating to the data source.
+    /// \param attributes A list of connection attributes to be set prior to connecting.
+    /// \throws database_error
+    /// \see connected(), connect(), attribute
+
+    connection(
+        string const& dsn,
+        string const& user,
+        string const& pass,
+        std::list<attribute> const& attributes);
+    /// \brief Create new connection object, set the connection attributes passed as
+    /// arguments and connect to the given connection string.
+    ///
+    /// The function calls ODBC API SQLDriverConnect.  To set connection attributes,
+    /// SQLSetConnectAttr is called.
+    ///
+    /// \param connection_string The connection string for establishing a connection.
+    /// \param attributes A list of connection attributes to be set prior to connecting.
+    /// \throws database_error
+    /// \see connected(), connect(), attribute
+    connection(string const& connection_string, std::list<attribute> const& attributes);
+    /// \brief Automatically disconnects from the database and frees all associated resources.
+    ///
+    /// Will not throw even if disconnecting causes some kind of error and raises an exception.
+    /// If you explicitly need to know if disconnect() succeeds, call it directly.
+    ~connection() noexcept;
+
+    /// \brief Allocate environment and connection handles.
+    ///
+    /// Allows on-demand allocation of handles to configure the ODBC environment
+    /// and attributes, before database connection is established.
+    /// Typically, user does not have to make this call explicitly.
+    ///
+    /// \throws database_error
+    /// \see deallocate()
+    void allocate();
+
+    /// \brief Release environment and connection handles.
+    /// \see allocate()
+    void deallocate();
+
+    /// \brief Connect to the given data source.
+    /// \param dsn The name of the data source.
+    /// \param user The username for authenticating to the data source.
+    /// \param pass The password for authenticating to the data source.
+    /// \param timeout Seconds before connection timeout. Default is 0 indicating no timeout.
+    /// \throws database_error
+    /// \see connected()
+    void connect(string const& dsn, string const& user, string const& pass, long timeout = 0);
+
+    /// \brief Connect using the given connection string.
+    /// \param connection_string The connection string for establishing a connection.
+    /// \param timeout Seconds before connection timeout. Default is 0 indicating no timeout.
+    /// \throws database_error
+    /// \see connected()
+    void connect(string const& connection_string, long timeout = 0);
+
+    /// \brief Set the connection attributes passed by the user, and connect to the given
+    /// data source.
+    /// \param dsn The name of the data source.
+    /// \param user The username for authenticating to the data source.
+    /// \param pass The password for authenticating to the data source.
+    /// \param attributes A list of connection attributes to be set prior to connecting.
+    /// \throws database_error
+    /// \see connected(), attribute
+    void connect(
+        string const& dsn,
+        string const& user,
+        string const& pass,
+        std::list<attribute> const& attributes);
+
+    /// \brief Set the connection attributes passed by the user, and connect to the given
+    /// connection string.
+    /// \param connection_string The connection string for establishing a connection.
+    /// \param attributes A list of connection attributes to be set prior to connecting.
+    /// \throws database_error
+    /// \see connected(), attribute
+    void connect(string const& connection_string, std::list<attribute> const& attributes);
+
+    /// \brief Asks the driver what it needs in order to connect.
+    ///
+    /// Wraps ODBC's SQLBrowseConnect, which is asked repeatedly. Each call is given what
+    /// is known so far and answers with the attributes it still wants, spelled as a
+    /// connection string of its own: the required ones first, then the optional, with the
+    /// values a driver can enumerate listed in braces. Filling those in and asking again
+    /// carries the exchange forward until the driver has enough, at which point it
+    /// connects, \a more_wanted is false and the returned string is empty.
+    ///
+    /// A driver need not support this, and one that does not raises.
+    ///
+    /// \param connection_string What is known so far, beginning with the driver or DSN.
+    /// \param more_wanted Set to whether the driver is asking for more.
+    /// \return The attributes wanted next, or nothing once connected.
+    /// \throws database_error
+    /// \see connect(), connected()
+    string browse_connect(string const& connection_string, bool& more_wanted);
+#if !defined(NANODBC_DISABLE_ASYNC)
+    /// \brief Initiate an asynchronous connection operation to the given data source.
+    ///
+    /// This method will only be available if nanodbc is built against ODBC headers and library that
+    /// supports asynchronous mode. Such that the identifiers `SQL_ATTR_ASYNC_DBC_EVENT` and
+    /// `SQLCompleteAsync` are extant. Otherwise this method will be defined, but not implemented.
+    ///
+    /// Asynchronous features can be disabled entierly by defining `NANODBC_DISABLE_ASYNC` when
+    /// building nanodbc.
+    ///
+    /// \param dsn The name of the data source.
+    /// \param user The username for authenticating to the data source.
+    /// \param pass The password for authenticating to the data source.
+    /// \param event_handle The event handle the caller will wait before calling async_complete.
+    /// \param timeout Seconds before connection timeout. Default is 0 indicating no timeout.
+    /// \throws database_error
+    /// \return Boolean: true if event handle needs to be awaited, false if connection is ready now.
+    /// \see connected()
+    bool async_connect(
+        string const& dsn,
+        string const& user,
+        string const& pass,
+        void* event_handle,
+        long timeout = 0);
+
+    /// \brief Initiate an asynchronous connection operation using the given connection string.
+    ///
+    /// This method will only be available if nanodbc is built against ODBC headers and library that
+    /// supports asynchronous mode. Such that the identifiers `SQL_ATTR_ASYNC_DBC_EVENT` and
+    /// `SQLCompleteAsync` are extant. Otherwise this method will be defined, but not implemented.
+    ///
+    /// Asynchronous features can be disabled entierly by defining `NANODBC_DISABLE_ASYNC` when
+    /// building nanodbc.
+    ///
+    /// \param connection_string The connection string for establishing a connection.
+    /// \param event_handle Event handle the caller will wait before calling async_complete.
+    /// \param timeout Seconds before connection timeout. Default is 0 indicating no timeout.
+    /// \throws database_error
+    /// \return Boolean: true if event handle needs to be awaited, false if connection is ready now.
+    /// \see connected()
+    bool async_connect(string const& connection_string, void* event_handle, long timeout = 0);
+
+    /// \brief Completes a previously initiated asynchronous connection operation.
+    ///
+    /// Asynchronous features can be disabled entierly by defining `NANODBC_DISABLE_ASYNC` when
+    /// building nanodbc.
+    void async_complete();
+#endif
+
+    /// \brief Returns true if connected to the database.
+    [[nodiscard]] bool connected() const noexcept;
+
+    /// \brief Disconnects from the database, but maintains environment and handle resources.
+    void disconnect();
+
+    /// \brief Returns the number of transactions currently held for this connection.
+    [[nodiscard]] std::size_t transactions() const noexcept;
+
+    /// \brief Returns the native ODBC database connection handle.
+    [[nodiscard]] void* native_dbc_handle() const noexcept;
+
+    /// \brief Returns the native ODBC environment handle.
+    [[nodiscard]] void* native_env_handle() const noexcept;
+
+    /// \brief Returns information from the ODBC connection as a string or fixed-size value.
+    /// The general information about the driver and data source associated
+    /// with a connection is obtained using `SQLGetInfo` function.
+    template <class T>
+    T get_info(short info_type) const;
+
+    /// \brief Returns name of the DBMS product.
+    /// Returns the ODBC information type SQL_DBMS_NAME of the DBMS product
+    /// accesssed by the driver via the current connection.
+    string dbms_name() const;
+
+    /// \brief Returns version of the DBMS product.
+    /// Returns the ODBC information type SQL_DBMS_VER of the DBMS product
+    /// accesssed by the driver via the current connection.
+    string dbms_version() const;
+
+    /// \brief Returns the name of the ODBC driver.
+    /// \throws database_error
+    string driver_name() const;
+
+    /// \brief Returns the version of the ODBC driver.
+    /// \throws database_error
+    string driver_version() const;
+
+    /// \brief Returns the name of the currently connected database.
+    /// Returns the current SQL_DATABASE_NAME information value associated with the connection.
+    string database_name() const;
+
+    /// \brief Returns the name of the current catalog.
+    /// Returns the current setting of the connection attribute SQL_ATTR_CURRENT_CATALOG.
+    string catalog_name() const;
+
+private:
+    std::size_t ref_transaction() noexcept;
+    std::size_t unref_transaction() noexcept;
+    bool rollback() const noexcept;
+    void rollback(bool onoff) noexcept;
+
+private:
+    std::shared_ptr<connection_impl> impl_;
+};
+
+// clang-format off
+// 8888888b.                            888 888
+// 888   Y88b                           888 888
+// 888    888                           888 888
+// 888   d88P .d88b.  .d8888b  888  888 888 888888
+// 8888888P" d8P  Y8b 88K      888  888 888 888
+// 888 T88b  88888888 "Y8888b. 888  888 888 888
+// 888  T88b Y8b.          X88 Y88b 888 888 Y88b.
+// 888   T88b "Y8888   88888P'  "Y88888 888  "Y888
+// MARK: Result -
+// clang-format on
+
+class catalog;
+class variant_row_cached_result;
+
+/// \brief A resource for managing result sets from statement execution.
+///
+/// \see statement::execute(), statement::execute_direct()
+/// \note result objects may be copied, however all copies will refer to the same result set.
+class result
+{
+public:
+    /// \brief Empty result set.
+    result() noexcept;
+
+    /// \brief Free result set.
+    ~result() noexcept;
+
+    /// \brief Copy constructor.
+    result(const result& rhs) noexcept;
+
+    /// \brief Move constructor.
+    result(result&& rhs) noexcept;
+
+    /// \brief Assignment.
+    result& operator=(result rhs) noexcept;
+
+    /// \brief Member swap.
+    void swap(result& rhs) noexcept;
+
+    /// \brief Returns the native ODBC statement handle.
+    [[nodiscard]] void* native_statement_handle() const noexcept;
+
+    /// \brief The rowset size for this result set.
+    [[nodiscard]] long rowset_size() const noexcept;
+
+    /// \brief Number of affected rows by the request or -1 if the affected rows is not available.
+    /// \throws database_error
+    [[nodiscard]] long affected_rows() const;
+
+    /// \brief Reports if number of affected rows is available.
+    /// \return true if number of affected rows is known, regardless of the value;
+    /// false if the number is not available.
+    /// \throws database_error {
+    /// \code{.cpp}
+    /// assert(r.has_affected_rows() == (r.affected_rows() >= 0));
+    /// \endcode
+    /// }
+    bool has_affected_rows() const;
+
+    /// \brief Rows in the current rowset or 0 if the number of rows is not available.
+    [[nodiscard]] long rows() const noexcept;
+
+    /// \brief Returns the number of columns in a result set.
+    /// \throws database_error
+    [[nodiscard]] short columns() const;
+
+    /// \brief Fetches the first row in the current result set.
+    /// \return true if there are more results or false otherwise.
+    /// \throws database_error
+    [[nodiscard]] bool first();
+
+    /// \brief Fetches the last row in the current result set.
+    /// \return true if there are more results or false otherwise.
+    /// \throws database_error
+    [[nodiscard]] bool last();
+
+    /// \brief Fetches the next row in the current result set.
+    /// \return true if there are more results or false otherwise.
+    /// \throws database_error
+    [[nodiscard]] bool next();
+
+#if !defined(NANODBC_DISABLE_ASYNC)
+    /// \brief Initiates an asynchronous fetch of the next row in the current result set.
+    /// \return true if the caller needs to wait for the event to be signalled, false if
+    ///         complete_next() can be called immediately.
+    /// \throws database_error
+    bool async_next(void* event_handle);
+
+    /// \brief Completes a previously-initiated async fetch for next row in the current result set.
+    /// \return true if there are more results or false otherwise.
+    /// \throws database_error
+    bool complete_next();
+#endif
+
+    /// \brief Fetches the prior row in the current result set.
+    /// \return true if there are more results or false otherwise.
+    /// \throws database_error
+    [[nodiscard]] bool prior();
+
+    /// \brief Moves to and fetches the specified row in the current result set.
+    /// \param row The row to fetch, counted from one.
+    /// \return true if there are results or false otherwise.
+    /// \throws database_error
+    /// \attention Fetching anywhere other than forward asks the driver for a cursor that
+    ///            scrolls, which ODBC does not give by default. Without one the call fails
+    ///            with HY106. \see statement::attribute, SQL_ATTR_CURSOR_TYPE
+    [[nodiscard]] bool move(long row);
+
+    /// \brief Skips a number of rows and then fetches the resulting row in the current result set.
+    /// \return true if there are results or false otherwise.
+    /// \throws database_error
+    [[nodiscard]] bool skip(long rows);
+
+    /// \brief Returns the row position in the current result set.
+    unsigned long position() const;
+
+    /// \brief Returns true if there are no more results in the current result set.
+    bool at_end() const noexcept;
+
+    /// \brief Unbind data buffers for all columns in the result set.
+    ///
+    /// Wraps unbind(short column)
+    /// \throws index_range_error
+    /// \throws database_error
+    void unbind();
+
+    /// \brief Unbind data buffers for specific columns in the result set.
+    ///
+    /// Wraps unbind(short column)
+    ///
+    /// \param column_name string Name of column we wish to unbind.
+    /// \throws index_range_error
+    /// \throws database_error
+    void unbind(string const& column_name);
+
+    /// \brief Unbind data buffers for specific columns in the result set.
+    ///
+    /// When a result is constructed, in order to optimize data retrieval,
+    /// we automatically try to bind buffers, except for columns that contain
+    /// long/blob data types.  This method gives the caller the option to unbind
+    /// a specific buffer.  Subsequently, during calls to get(), if there is no
+    /// bound data buffer, we will attempt to retrieve the data using a call
+    /// SQLGetData; this is similar to the route taken for columns hosting long
+    /// or bloby data types.  This is suboptimal from efficiency perspective,
+    /// however may be necessary of the driver we are communicating with does
+    /// not support out-of-order retrieval of long data.
+    ///
+    /// \param column short Zero-based index of column we wish to unbind.
+    /// \throws index_range_error
+    /// \throws database_error
+    void unbind(short column);
+
+    /// \addtogroup result_get Reading column values
+    /// \brief Reads values from columns of the current rowset.
+    ///
+    /// \attention When nanodbc is compiled as a library, get() and get_ref() are only
+    ///            available for the types they are explicitly instantiated for in
+    ///            nanodbc.cpp. Using any other type compiles, because the declaration is
+    ///            visible here, but fails to link. The supported types are:
+    ///            bool, signed char, unsigned char, short, unsigned short, int,
+    ///            unsigned int, long int, unsigned long int, long long int,
+    ///            unsigned long long int, float, double, std::string, wide_string,
+    ///            std::string::value_type, wide_string::value_type, date, time,
+    ///            timestamp, timestampoffset and std::vector<std::uint8_t> for binary
+    ///            data. Each is also available wrapped in std::optional, which is how a
+    ///            null column is read without an exception, and _variant_t on MSVC.
+    ///
+    /// @{
+
+    /// \brief Gets data from the given column of the current rowset.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column position.
+    /// \param result The column's value will be written to this parameter.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error
+    /// \throws null_access_error
+    template <class T>
+    void get_ref(short column, T& result) const;
+
+    /// \brief Gets data from the given column of the current rowset.
+    ///
+    /// If the data is null, fallback is returned instead.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column position.
+    /// \param fallback if value is null, return fallback instead.
+    /// \param result The column's value will be written to this parameter.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error
+    template <class T>
+    void get_ref(short column, T const& fallback, T& result) const;
+
+    /// \brief Gets data from the given column by name of the current rowset.
+    ///
+    /// \param column_name column's name.
+    /// \param result The column's value will be written to this parameter.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error
+    /// \throws null_access_error
+    template <class T>
+    void get_ref(string const& column_name, T& result) const;
+
+    /// \brief Gets data from the given column by name of the current rowset.
+    ///
+    /// If the data is null, fallback is returned instead.
+    ///
+    /// \param column_name column's name.
+    /// \param fallback if value is null, return fallback instead.
+    /// \param result The column's value will be written to this parameter.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error
+    template <class T>
+    void get_ref(string const& column_name, T const& fallback, T& result) const;
+
+    /// \brief Gets data from the given column of the current rowset.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column position.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error
+    /// \throws null_access_error
+    ///
+    /// T may be std::any, which is filled according to what the column says it holds
+    /// rather than what the caller asks for. A null column gives an any holding nothing.
+    /// \see column_datatype(), get_as()
+    template <class T>
+    [[nodiscard]] T get(short column) const;
+
+    /// \brief Gets data from the given column of the current rowset.
+    ///
+    /// If the data is null, fallback is returned instead.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column position.
+    /// \param fallback if value is null, return fallback instead.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error
+    template <class T>
+    [[nodiscard]] T get(short column, T const& fallback) const;
+
+    /// \brief Reads a column as whatever it holds, into a type able to hold any of them.
+    ///
+    /// Where get() reads a column as the type the caller names, converting where it can,
+    /// this reads it as the type the column says it is and hands back a T holding that.
+    /// T may be std::any, or a std::variant naming the alternatives to choose between.
+    ///
+    /// A null column gives a T built from nothing: an any holding nothing, or a variant
+    /// on its first alternative, which is what std::monostate is for.
+    ///
+    /// \code
+    /// using v_t = std::variant<std::monostate, nanodbc::string, int>;
+    /// auto v = results.get_as<v_t>(0);
+    /// \endcode
+    ///
+    /// \param column position.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error if the column holds something T cannot.
+    /// \see get(), column_datatype()
+    template <class T>
+    [[nodiscard]] T get_as(short column) const;
+
+    /// \brief Reads a column by name as whatever it holds.
+    /// \see get_as(short)
+    template <class T>
+    [[nodiscard]] T get_as(string const& column_name) const;
+
+    /// \brief Gets data from the given column by name of the current rowset.
+    ///
+    /// \param column_name column's name.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error
+    /// \throws null_access_error
+    template <class T>
+    [[nodiscard]] T get(string const& column_name) const;
+
+    /// \brief Gets data from the given column by name of the current rowset.
+    ///
+    /// If the data is null, fallback is returned instead.
+    ///
+    /// \param column_name column's name.
+    /// \param fallback if value is null, return fallback instead.
+    /// \throws database_error
+    /// \throws index_range_error
+    /// \throws type_incompatible_error
+    template <class T>
+    [[nodiscard]] T get(string const& column_name, T const& fallback) const;
+
+    /// @}
+
+    /// \brief Returns true if and only if the given column of the current rowset is null.
+    ///
+    /// A long column is not bound to a buffer, and most drivers leave its length/indicator
+    /// unwritten at fetch even where the ODBC specification says binding the indicator
+    /// alone is enough. A binary one is asked of the driver instead, which costs a call to
+    /// SQLGetData asking for none of the data: the value is left where it is, so a get() or
+    /// get_ref() afterwards still returns the whole of it, but it counts as visiting the
+    /// column, and SQL Server requires unbound columns be visited in ascending order and
+    /// refuses an earlier one afterwards with SQLSTATE 07009. Ask in the order you intend
+    /// to read.
+    ///
+    /// A character or fixed size column cannot be asked without spending the only read
+    /// there is, so for those this reports whatever the fetch knew until a get() or
+    /// get_ref() settles it. Where the driver declines to answer at all, the same applies
+    /// rather than raising.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \see get(), get_ref()
+    /// \param column position.
+    /// \throws database_error
+    /// \throws index_range_error
+    [[nodiscard]] bool is_null(short column) const;
+
+    /// \brief Returns true if and only if the given column by name of the current rowset is null.
+    ///
+    /// See is_null(short column) for details on a bug/limitation of some ODBC drivers.
+    /// \see is_null()
+    /// \param column_name column's name.
+    /// \throws database_error
+    /// \throws index_range_error
+    [[nodiscard]] bool is_null(string const& column_name) const;
+
+    /// \brief Returns true if we have bound a buffer to the given column.
+    ///
+    /// Generically, nanodbc will greedily bind buffers to columns in the result
+    /// set.  However, we have also given the user the ability to unbind buffers
+    /// via unbind() forcing nanodbc to retrieve data via SQLGetData.  This
+    /// method returns true if there is a buffer bound to the column.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column short position.
+    /// \throws index_range_error
+    bool is_bound(short column) const;
+
+    /// \brief Returns true if we have bound a buffer to the given column.
+    ///
+    /// See is_bound(short column) for details.
+    /// \see is_bound()
+    /// \param column_name column's name.
+    /// \throws index_range_error
+    bool is_bound(string const& column_name) const;
+
+    /// \brief Returns the column number of the specified column name.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column_name column's name.
+    /// \throws index_range_error
+    [[nodiscard]] short column(string const& column_name) const;
+
+    /// \brief Returns the name of the specified column.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column position.
+    /// \throws index_range_error
+    [[nodiscard]] string column_name(short column) const;
+
+    /// \brief Returns the size of the specified column.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column position.
+    /// \throws index_range_error
+    [[nodiscard]] long column_size(short column) const;
+
+    /// \brief Returns the size of the specified column by name.
+    [[nodiscard]] long column_size(string const& column_name) const;
+
+    /// \brief Returns the number of decimal digits of the specified column.
+    ///
+    /// Applies to exact numeric types (scale), datetime and interval types (prcision).
+    /// If the number cannot be determined or is not applicable, drivers typically return 0.
+    ///
+    /// Columns are numbered from left to right and 0-indexed.
+    /// \param column position.
+    /// \throws index_range_error
+    int column_decimal_digits(short column) const;
+
+    /// \brief Returns the number of decimal digits of the specified column by name.
+    int column_decimal_digits(string const& column_name) const;
+
+    /// \brief Returns a identifying integer value representing the SQL type of this column.
+    [[nodiscard]] int column_datatype(short column) const;
+
+    /// \brief Returns a identifying integer value representing the SQL type of this column by name.
+    [[nodiscard]] int column_datatype(string const& column_name) const;
+
+    /// \brief Returns data source dependent data type name of this column.
+    ///
+    /// The function calls SQLCoLAttribute with the field attribute SQL_DESC_TYPE_NAME to
+    /// obtain the data type name.
+    /// If the type is unknown, an empty string is returned.
+    /// \note Unlike other column metadata functions (eg. column_datatype()),
+    /// this function cost is an extra ODBC API call.
+    string column_datatype_name(short column) const;
+
+    /// \brief Returns data source dependent data type name of this column by name.
+    ///
+    /// The function calls SQLCoLAttribute with the field attribute SQL_DESC_TYPE_NAME to
+    /// obtain the data type name.
+    /// If the type is unknown, an empty string is returned.
+    /// \note Unlike other column metadata functions (eg. column_datatype()),
+    /// this function cost is an extra ODBC API call.
+    string column_datatype_name(string const& column_name) const;
+
+    /// \brief Returns a identifying integer value representing the C type of this column.
+    int column_c_datatype(short column) const;
+
+    /// \brief Returns a identifying integer value representing the C type of this column by name.
+    int column_c_datatype(string const& column_name) const;
+
+    /// \brief SQL_TRUE if the column is unsigned (or not numeric). SQL_FALSE if the column is
+    /// signed.
+    ///
+    /// Signedness of some of numeric types like SQL_TINYINT depends on backend or driver.
+    /// For example, if nmot unsigned, the MySQL TINYINT datatype can range from -127 to 127;
+    /// whereas the SQL Server TINYINT type always ranges 0 to 255. So, unless it is an unsigned
+    /// TINYINT, a MySQL TINYINT datatype should be converted to the SQL Server SMALLINT datatype.
+    bool column_unsigned(short column) const;
+
+    /// \brief SQL_TRUE if the column is unsigned (or not numeric). SQL_FALSE if the column is
+    /// signed.
+    bool column_unsigned(string const& column_name) const;
+
+    /// \brief Returns the next result, e.g. when stored procedure returns multiple result sets.
+    bool next_result();
+
+    /// \brief If and only if result object is valid, returns true.
+    [[nodiscard]] explicit operator bool() const noexcept;
+
+private:
+    result(statement statement, long rowset_size);
+
+private:
+    class result_impl;
+    friend class nanodbc::statement::statement_impl;
+    friend class nanodbc::catalog;
+#ifdef _MSC_VER
+    friend class nanodbc::variant_row_cached_result;
+#endif
+
+private:
+    std::shared_ptr<result_impl> impl_;
+};
+
+/// \brief Single pass input iterator that accesses successive rows in the attached result set.
+class result_iterator
+{
+public:
+    using iterator_category = std::input_iterator_tag; ///< Category of iterator.
+    using value_type = result;                         ///< Values returned by iterator access.
+    using pointer = result*;                           ///< Pointer to iteration values.
+    using reference = result&;                         ///< Reference to iteration values.
+    using difference_type = std::ptrdiff_t;            ///< Iterator difference.
+
+    /// Default iterator; an empty result set.
+    result_iterator() = default;
+
+    /// Create result iterator for a given result set.
+    explicit result_iterator(result& r)
+        : result_(r)
+    {
+        ++(*this);
+    }
+
+    /// Dereference.
+    reference operator*() noexcept { return result_; }
+
+    /// Access through dereference.
+    pointer operator->()
+    {
+        if (!result_)
+            throw std::runtime_error("result is empty");
+        return &(operator*());
+    }
+
+    /// Iteration.
+    result_iterator& operator++()
+    {
+        try
+        {
+            if (!result_.next())
+                result_ = result();
+        }
+        catch (...)
+        {
+            result_ = result();
+        }
+        return *this;
+    }
+
+    /// Iteration.
+    ///
+    /// \note Returns nothing, so `*it++` does not compile: copies of a result_iterator
+    ///       share one cursor, so none can name a row the iterator has moved past. Read
+    ///       through `*it` before advancing.
+    void operator++(int) { ++(*this); }
+
+    /// Iterators are equal if they a tied to the same native statemnt handle, or both empty.
+    bool operator==(result_iterator const& rhs) const noexcept
+    {
+        if (result_ && rhs.result_)
+            return result_.native_statement_handle() == rhs.result_.native_statement_handle();
+        else
+            return !result_ && !rhs.result_;
+    }
+
+    /// Iterators are not equal if they have different native statemnt handles.
+    bool operator!=(result_iterator const& rhs) const noexcept { return !(*this == rhs); }
+
+private:
+    result result_;
+};
+
+/// \brief Returns an iterator to the beginning of the given result set.
+inline result_iterator begin(result& r)
+{
+    return result_iterator(r);
+}
+
+/// \brief Returns an iterator to the end of a result set.
+///
+/// The default-constructed `nanodbc::result_iterator` is known as the end-of-result iterator.
+/// When a valid `nanodbc::result_iterator` reaches the end of the underlying result set,
+/// it becomes equal to the end-of-result iterator.
+/// Dereferencing or incrementing it further is undefined.
+inline result_iterator end(result& /*r*/) noexcept
+{
+    return {};
+}
+
+// clang-format off
+// 8888888b.                                     d8b          888
+// 888  "Y88b                                    Y8P          888
+// 888    888                                                 888
+// 888    888  .d88b.  .d8888b   .d8888b 888d888 888 88888b.  888888 .d88b.  888d888 .d8888b
+// 888    888 d8P  Y8b 88K      d88P"    888P"   888 888 "88b 888   d88""88b 888P"   88K
+// 888    888 88888888 "Y8888b. 888      888     888 888  888 888   888  888 888     "Y8888b.
+// 888  .d88P Y8b.          X88 Y88b.    888     888 888 d88P Y88b. Y88..88P 888          X88
+// 8888888P"   "Y8888   88888P'  "Y8888P 888     888 88888P"   "Y888 "Y88P"  888      88888P'
+//                                                   888
+//                                                   888
+//                                                   888
+// MARK: Descriptors -
+// clang-format on
+
+/// Provides access to metadata in the Implementation Row Descriptor (IRD)
+/// implicitly allocated for a prepared or executed statement.
+///
+/// The IRD contains information about the columns in a result set,
+/// such as their SQL data types, lengths, and nullability.
+class implementation_row_descriptor
+{
+public:
+    /// Initializes IRD access from statement of executed result set.
+    implementation_row_descriptor(result const& result);
+
+    /// Initializes IRD access from prepared or executed statement.
+    ///
+    /// For performance reasons, an application should ensure the statement
+    /// is executed before accessing any of the IRD fields.
+    /// Accessing (i.e. calls to SQLGetDescRec) the descriptor fields of
+    /// prepared only statement causes a roundtrip to SQL Server.
+    ///
+    /// \note Some fields of the descriptor are available on result set
+    /// retrieved from statements that generate server cursors or
+    /// on executed SQL Server `SELECT` statements containing a `FOR BROWSE`
+    /// clause (database-specific).
+    implementation_row_descriptor(statement const& statement);
+
+    /// Value of the header field `SQL_DESC_ALLOC_AUTO`.
+    auto alloc_type() const -> short;
+
+    /// Value of the header field `SQL_DESC_COUNT`.
+    auto count() const noexcept -> short;
+
+    // Descriptor record fields (records) accessors
+
+    /// Boolean based on value of the `SQL_DESC_AUTO_UNIQUE_VALUE` field.
+    auto auto_unique_value(short record) const -> bool;
+
+    /// Value of the `SQL_DESC_BASE_COLUMN_NAME` field.
+    auto base_column_name(short record) const -> string;
+
+    /// Value of the `SQL_DESC_BASE_TABLE_NAME` field.
+    auto base_table_name(short record) const -> string;
+
+    /// Boolean based on value of the `SQL_DESC_CASE_SENSITIVE` field.
+    auto case_sensitive(short record) const -> bool;
+
+    /// Value of the `SQL_DESC_CATALOG_NAME` field.
+    auto catalog_name(short record) const -> string;
+
+    /// Value of the `SQL_DESC_CONCISE_TYPE` field.
+    auto concise_type(short record) const -> short;
+
+    /// Value of the `SQL_DESC_DISPLAY_SIZE` field.
+    auto display_size(short record) const -> std::int64_t;
+
+    /// Value of the `SQL_DESC_FIXED_PREC_SCALE` field.
+    auto fixed_prec_scale(short record) const -> short;
+
+    /// Value of the `SQL_DESC_LABEL` field.
+    auto label(short record) const -> string;
+
+    /// Value of the `SQL_DESC_LENGTH` field.
+    auto length(short record) const -> std::uint64_t;
+
+    /// Value of the `SQL_DESC_LOCAL_TYPE_NAME` field.
+    auto local_type_name(short record) const -> string;
+
+    /// Value of the `SQL_DESC_NAME` field.
+    auto name(short record) const -> string;
+
+    /// Value of the `SQL_DESC_NULLABLE` field.
+    ///
+    /// \return Possible return values are `SQL_NULLABLE`, `SQL_NO_NULLS` or `SQL_NULLABLE_UNKNOWN`.
+    auto nullable(short record) const -> short;
+
+    /// Value of the `SQL_DESC_NUM_PREC_RADIX` field.
+    auto num_prec_radix(short record) const -> short;
+
+    /// Value of the `SQL_DESC_OCTET_LENGTH` field.
+    auto octet_length(short record) const -> std::int64_t;
+
+    /// Value of the `SQL_DESC_PRECISION` field.
+    auto precision(short record) const -> short;
+
+    /// Value of the `SQL_DESC_ROWVER` field.
+    auto rowver(short record) const -> short;
+
+    /// Value of the `SQL_DESC_SCALE` field.
+    auto scale(short record) const -> short;
+
+    /// Value of the `SQL_DESC_SCHEMA_NAME` field.
+    auto schema_name(short record) const -> string;
+
+    /// Value of the `SQL_DESC_SEARCHABLE` field.
+    ///
+    /// \return Possible return values are `SQL_PRED_NONE`, `SQL_PRED_CHAR`, `SQL_PRED_BASIC` or
+    /// `SQL_PRED_SEARCHABLE`.
+    auto searchable(short record) const -> short;
+
+    /// Value of the `SQL_DESC_TABLE_NAME` field.
+    auto table_name(short record) const -> string;
+
+    /// Value of the `SQL_DESC_TYPE` field.
+    auto type(short record) const -> short;
+
+    /// Value of the `SQL_DESC_TYPE_NAME` field.
+    auto type_name(short record) const -> string;
+
+    /// Boolean based on value of the `SQL_DESC_UNNAMED` field.
+    auto unnamed(short record) const -> bool;
+
+    ///  Boolean based on value of the `SQL_DESC_UNSIGNED` field.
+    auto unsigned_(short record) const -> bool;
+
+    /// Value of the `SQL_DESC_UPDATABLE` field.
+    ///
+    /// \return Possible return values are `SQL_ATTR_READ_ONLY`, `SQL_ATTR_WRITE` or
+    /// `SQL_ATTR_READWRITE_UNKNOWN`.
+    auto updatable(short record) const -> short;
+
+private:
+    // Convenience wrapper for SQLGetDescrField accesor.
+    struct sql_get_descr_field
+    {
+        sql_get_descr_field(
+            implementation_row_descriptor const& ird,
+            short record,
+            std::uint16_t field_identifier) noexcept;
+        operator std::int64_t() const;
+        operator std::uint64_t() const;
+        operator string() const;
+
+        implementation_row_descriptor const& ird_;
+        short record_;
+        std::uint16_t field_identifier_;
+    };
+    friend sql_get_descr_field;
+
+    void initialize_descriptor();
+    void throw_if_record_is_out_of_range(short record) const;
+
+    void* statement_handle_{nullptr};
+    short statement_columns_count_{0};
+    void* descriptor_handle_{nullptr};
+    short descriptor_records_count_{0};
+};
+
+// clang-format off
+//
+//  .d8888b.           888             888
+// d88P  Y88b          888             888
+// 888    888          888             888
+// 888         8888b.  888888  8888b.  888  .d88b.   .d88b.
+// 888            "88b 888        "88b 888 d88""88b d88P"88b
+// 888    888 .d888888 888    .d888888 888 888  888 888  888
+// Y88b  d88P 888  888 Y88b.  888  888 888 Y88..88P Y88b 888
+//  "Y8888P"  "Y888888  "Y888 "Y888888 888  "Y88P"   "Y88888
+//                                                      888
+//                                                 Y8b d88P
+//                                                  "Y88P"
+// MARK: Catalog -
+// clang-format on
+
+/// \brief A resource for get catalog information from connected data source.
+///
+/// Queries are performed using the Catalog Functions in ODBC.
+/// All provided operations are convenient wrappers around the ODBC API
+/// The original ODBC behaviour should not be affected by any added processing.
+class catalog
+{
+public:
+    /// \brief Result set for a list of tables in the data source.
+    class tables
+    {
+    public:
+        [[nodiscard]] bool next();    ///< Move to the next result in the result set.
+        string table_catalog() const; ///< Fetch table catalog.
+        string table_schema() const;  ///< Fetch table schema.
+        string table_name() const;    ///< Fetch table name.
+        string table_type() const;    ///< Fetch table type.
+        string table_remarks() const; ///< Fetch table remarks.
+
+    private:
+        friend class nanodbc::catalog;
+        explicit tables(result& find_result) noexcept;
+        result result_;
+    };
+
+    /// \brief Result set for a list of columns in one or more tables.
+    class columns
+    {
+    public:
+        [[nodiscard]] bool next();             ///< Move to the next result in the result set.
+        string table_catalog() const;          ///< Fetch table catalog.
+        string table_schema() const;           ///< Fetch table schema.
+        string table_name() const;             ///< Fetch table name.
+        string column_name() const;            ///< Fetch column name.
+        short data_type() const;               ///< Fetch column data type.
+        string type_name() const;              ///< Fetch column type name.
+        long column_size() const;              ///< Fetch column size.
+        long buffer_length() const;            ///< Fetch buffer length.
+        short decimal_digits() const;          ///< Fetch decimal digits.
+        short numeric_precision_radix() const; ///< Fetch numeric precission.
+        short nullable() const;                ///< True iff column is nullable.
+        string remarks() const;                ///< Fetch column remarks.
+        string column_default() const;         ///< Fetch column's default.
+        short sql_data_type() const;           ///< Fetch column's SQL data type.
+        short sql_datetime_subtype() const;    ///< Fetch datetime subtype of column.
+        long char_octet_length() const;        ///< Fetch char octet length.
+
+        /// \brief Ordinal position of the column in the table.
+        /// The first column in the table is number 1.
+        /// Returns ORDINAL_POSITION column value in result set returned by SQLColumns.
+        long ordinal_position() const;
+
+        /// \brief Fetch column is-nullable information.
+        ///
+        /// \note MSDN: This column returns a zero-length string if nullability is unknown.
+        ///       ISO rules are followed to determine nullability.
+        ///       An ISO SQL-compliant DBMS cannot return an empty string.
+        string is_nullable() const;
+
+    private:
+        friend class nanodbc::catalog;
+        explicit columns(result& find_result) noexcept;
+        result result_;
+    };
+
+    /// \brief Result set for a list of columns that compose the primary key of a single table.
+    class primary_keys
+    {
+    public:
+        [[nodiscard]] bool next();    ///< Move to the next result in the result set.
+        string table_catalog() const; ///< Fetch table catalog.
+        string table_schema() const;  ///< Fetch table schema.
+        string table_name() const;    ///< Fetch table name.
+        string column_name() const;   ///< Fetch column name.
+
+        /// \brief Column sequence number in the key (starting with 1).
+        /// Returns valye of KEY_SEQ column in result set returned by SQLPrimaryKeys.
+        short column_number() const;
+
+        /// \brief Primary key name.
+        /// NULL if not applicable to the data source.
+        /// Returns valye of PK_NAME column in result set returned by SQLPrimaryKeys.
+        string primary_key_name() const;
+
+    private:
+        friend class nanodbc::catalog;
+        explicit primary_keys(result& find_result) noexcept;
+        result result_;
+    };
+
+    /// \brief Result set for a list of tables and the privileges associated with each table.
+    class table_privileges
+    {
+    public:
+        [[nodiscard]] bool next();    ///< Move to the next result in the result set
+        string table_catalog() const; ///< Fetch table catalog.
+        string table_schema() const;  ///< Fetch table schema.
+        string table_name() const;    ///< Fetch table name.
+        string grantor() const;       ///< Fetch name of user who granted the privilege.
+        string grantee() const;       ///< Fetch name of user whom the privilege was granted.
+        string privilege() const;     ///< Fetch the table privilege.
+        /// Fetch indicator whether the grantee is permitted to grant the privilege to other users.
+        string is_grantable() const;
+
+    private:
+        friend class nanodbc::catalog;
+        explicit table_privileges(result& find_result) noexcept;
+        result result_;
+    };
+
+    /// \brief Result set for a list of procedures in the data source.
+    class procedures
+    {
+    public:
+        [[nodiscard]] bool next();        ///< Move to the next result in the result set.
+        string procedure_catalog() const; ///< Fetch procedure catalog.
+        string procedure_schema() const;  ///< Fetch procedure schema.
+        string procedure_name() const;    ///< Fetch procedure name.
+        string procedure_remarks() const; ///< Fetch procedure remarks.
+        short procedure_type() const;     ///< Fetch procedure type.
+
+    private:
+        friend class nanodbc::catalog;
+        explicit procedures(result& find_result) noexcept;
+        result result_;
+    };
+
+    /// \brief Result set for a list of procedures in the data source.
+    class procedure_columns
+    {
+    public:
+        [[nodiscard]] bool next();             ///< Move to the next result in the result set.
+        string procedure_catalog() const;      ///< Fetch procedure catalog.
+        string procedure_schema() const;       ///< Fetch procedure schema.
+        string procedure_name() const;         ///< Fetch procedure name.
+        string column_name() const;            ///< Fetch column name.
+        short column_type() const;             ///< Fetch column type.
+        short data_type() const;               ///< Fetch column data type.
+        string type_name() const;              ///< Fetch column type name.
+        long column_size() const;              ///< Fetch column size.
+        long buffer_length() const;            ///< Fetch buffer length.
+        short decimal_digits() const;          ///< Fetch decimal digits.
+        short numeric_precision_radix() const; ///< Fetch numeric precission.
+        short nullable() const;                ///< True iff column is nullable.
+        string remarks() const;                ///< Fetch column remarks.
+        string column_default() const;         ///< Fetch column's default.
+        short sql_data_type() const;           ///< Fetch column's SQL data type.
+        short sql_datetime_subtype() const;    ///< Fetch datetime subtype of column.
+        long char_octet_length() const;        ///< Fetch char octet length.
+
+        /// \brief Ordinal position of the column in the table.
+        /// The first column in the table is number 1.
+        /// Returns ORDINAL_POSITION column value in result set returned by SQLColumns.
+        long ordinal_position() const;
+
+        /// \brief Fetch column is-nullable information.
+        ///
+        /// \note MSDN: This column returns a zero-length string if nullability is unknown.
+        ///       ISO rules are followed to determine nullability.
+        ///       An ISO SQL-compliant DBMS cannot return an empty string.
+        string is_nullable() const;
+
+    private:
+        friend class nanodbc::catalog;
+        explicit procedure_columns(result& find_result) noexcept;
+        result result_;
+    };
+
+    /// \brief Creates catalog operating on database accessible through the specified connection.
+    explicit catalog(connection& conn) noexcept;
+
+    /// \brief Creates result set with catalogs, schemas, tables, or table types.
+    ///
+    /// Tables information is obtained by executing `SQLTable` function within
+    /// scope of the connected database accessible with the specified connection.
+    /// Since this function is implemented in terms of the `SQLTable`s, it returns
+    /// result set ordered by TABLE_TYPE, TABLE_CAT, TABLE_SCHEM, and TABLE_NAME.
+    ///
+    /// All arguments are treated as the Pattern Value Arguments.
+    /// Empty string argument is equivalent to passing the search pattern '%'.
+    catalog::tables find_tables(
+        string const& table = string(),
+        string const& type = string(),
+        string const& schema = string(),
+        string const& catalog = string());
+
+    /// \brief Creates result set with tables and the privileges associated with each table.
+    /// Tables information is obtained by executing `SQLTablePrivileges` function within
+    /// scope of the connected database accessible with the specified connection.
+    /// Since this function is implemented in terms of the `SQLTablePrivileges`s, it returns
+    /// result set ordered by TABLE_CAT, TABLE_SCHEM, TABLE_NAME, PRIVILEGE, and GRANTEE.
+    ///
+    /// \param catalog The table catalog. It cannot contain a string search pattern.
+    /// \param schema String search pattern for schema names, treated as the Pattern Value
+    /// Arguments.
+    /// \param table String search pattern for table names, treated as the Pattern Value Arguments.
+    ///
+    /// \note Due to the fact catalog cannot is not the Pattern Value Argument,
+    ///       order of parameters is different than in the other catalog look-up functions.
+    catalog::table_privileges find_table_privileges(
+        string const& catalog,
+        string const& table = string(),
+        string const& schema = string());
+
+    /// \brief Creates result set with columns in one or more tables.
+    ///
+    /// Columns information is obtained by executing `SQLColumns` function within
+    /// scope of the connected database accessible with the specified connection.
+    /// Since this function is implemented in terms of the `SQLColumns`, it returns
+    /// result set ordered by TABLE_CAT, TABLE_SCHEM, TABLE_NAME, and ORDINAL_POSITION.
+    ///
+    /// All arguments are treated as the Pattern Value Arguments.
+    /// Empty string argument is equivalent to passing the search pattern '%'.
+    catalog::columns find_columns(
+        string const& column = string(),
+        string const& table = string(),
+        string const& schema = string(),
+        string const& catalog = string());
+
+    /// \brief Creates result set with columns that compose the primary key of a single table.
+    ///
+    /// Returns result set with column names that make up the primary key for a table.
+    /// The primary key information is obtained by executing `SQLPrimaryKey` function within
+    /// scope of the connected database accessible with the specified connection.
+    ///
+    /// All arguments are treated as the Pattern Value Arguments.
+    /// Empty string argument is equivalent to passing the search pattern '%'.
+    catalog::primary_keys find_primary_keys(
+        string const& table,
+        string const& schema = string(),
+        string const& catalog = string());
+
+    /// \brief Creates result set with catalog, schema, procedure, and procedure types.
+    ///
+    /// Procedure information is obtained by executing `SQLProcedures` function within
+    /// scope of the connected database accessible with the specified connection.
+    /// Since this function is implemented in terms of the `SQLProcedures`s, it returns
+    /// result set ordered by PROCEDURE_CAT, PROCEDUORE_SCHEM, and PROCEDURE_NAME.
+    ///
+    /// All arguments are treated as the Pattern Value Arguments.
+    /// Empty string argument is equivalent to passing the search pattern '%'.
+
+    catalog::procedures find_procedures(
+        string const& procedure = string(),
+        string const& schema = string(),
+        string const& catalog = string());
+
+    /// \brief Creates result set with columns in one or more procedures.
+    ///
+    /// Columns information is obtained by executing `SQLProcedureColumns` function within
+    /// scope of the connected database accessible with the specified connection.
+    /// Since this function is implemented in terms of the `SQLProcedureColumns`, it returns
+    /// result set ordered by PROCEDURE_CAT, PROCEDURE_SCHEM, PROCEDURE_NAME, and
+    /// COLUMN_TYPE.
+    ///
+    /// All arguments are treated as the Pattern Value Arguments.
+    /// Empty string argument is equivalent to passing the search pattern '%'.
+    catalog::procedure_columns find_procedure_columns(
+        string const& column = string(),
+        string const& procedure = string(),
+        string const& schema = string(),
+        string const& catalog = string());
+
+    /// \brief Returns names of all catalogs (or databases) available in connected data source.
+    ///
+    /// Executes `SQLTables` function with `SQL_ALL_CATALOG` as catalog search pattern.
+    std::list<string> list_catalogs();
+
+    /// \brief Returns names of all schemas available in connected data source.
+    ///
+    /// Executes `SQLTables` function with `SQL_ALL_SCHEMAS` as schema search pattern.
+    std::list<string> list_schemas();
+
+    /// \brief Returns all available table types in the connected data source.
+    ///
+    /// Executes `SQLTables` function with `SQL_ALL_TABLE_TYPES` as the
+    /// table type search pattern.
+    std::list<string> list_table_types();
+
+private:
+    connection conn_;
+};
+
+/// @}
+
+// clang-format off
+// 8888888888                            8888888888                         888    d8b
+// 888                                   888                                888    Y8P
+// 888                                   888                                888
+// 8888888 888d888 .d88b.   .d88b.       8888888 888  888 88888b.   .d8888b 888888 888  .d88b.  88888b.  .d8888b
+// 888     888P"  d8P  Y8b d8P  Y8b      888     888  888 888 "88b d88P"    888    888 d88""88b 888 "88b 88K
+// 888     888    88888888 88888888      888     888  888 888  888 888      888    888 888  888 888  888 "Y8888b.
+// 888     888    Y8b.     Y8b.          888     Y88b 888 888  888 Y88b.    Y88b.  888 Y88..88P 888  888      X88
+// 888     888     "Y8888   "Y8888       888      "Y88888 888  888  "Y8888P  "Y888 888  "Y88P"  888  888  88888P'
+/// \brief Implementation details, not part of the interface.
+namespace detail
+{
+
+// Moves what a column held, which get<std::any>() worked out from the type the driver
+// reports, into whatever the caller asked to hold it.
+template <class T>
+struct hold_column_value;
+
+template <>
+struct hold_column_value<std::any>
+{
+    static std::any from(std::any value) noexcept { return value; }
+};
+
+template <class Alternative, class Variant>
+inline bool hold_alternative(Variant& variant, std::any const& value)
+{
+    if (auto const* held = std::any_cast<Alternative>(&value))
+    {
+        variant = *held;
+        return true;
+    }
+    return false;
+}
+
+template <class... Ts>
+struct hold_column_value<std::variant<Ts...>>
+{
+    static std::variant<Ts...> from(std::any const& value)
+    {
+        std::variant<Ts...> variant;
+        if (!value.has_value())
+            return variant; // the first alternative, which is what monostate is for
+
+        // A disjunction fold, which stops at the first alternative able to hold it.
+        bool const held = (hold_alternative<Ts>(variant, value) || ...);
+
+        // The column holds something none of the alternatives can, which the compiler
+        // cannot catch: what a column holds is only known once the driver has said.
+        if (!held)
+            throw type_incompatible_error();
+
+        return variant;
+    }
+};
+
+} // namespace detail
+
+template <class T>
+T result::get_as(short column) const
+{
+    return detail::hold_column_value<T>::from(get<std::any>(column));
+}
+
+template <class T>
+T result::get_as(string const& column_name) const
+{
+    return get_as<T>(this->column(column_name));
+}
+
+// MARK: Free Functions -
+// clang-format on
+
+/// \addtogroup mainf Free Functions
+/// \brief Convenience functions.
+///
+/// @{
+
+/// \brief Information on a configured ODBC driver.
+struct driver
+{
+    /// \brief Driver attributes.
+    struct attribute
+    {
+        nanodbc::string keyword; ///< Driver keyword attribute.
+        nanodbc::string value;   ///< Driver attribute value.
+    };
+
+    nanodbc::string name;            ///< Driver name.
+    std::list<attribute> attributes; ///< List of driver attributes.
+};
+
+/// \brief A data source name registered with the driver manager.
+struct datasource
+{
+    nanodbc::string name;   ///< DSN name.
+    nanodbc::string driver; ///< Driver description.
+};
+
+/// \brief Returns a list of ODBC drivers on your system.
+std::list<driver> list_drivers();
+
+/// \brief Returns a list of ODBC data sources on your system.
+std::list<datasource> list_datasources();
+
+/// \brief Immediately opens, prepares, and executes the given query directly on the given
+/// connection.
+/// \param conn The connection where the statement will be executed.
+/// \param query The SQL query that will be executed.
+/// \param batch_operations Numbers of rows to fetch per rowset.
+/// \param timeout The number in seconds before query timeout. Default is 0 indicating no timeout.
+/// \return A result set object.
+/// \attention You will want to use transactions if you are doing batch operations because it will
+///            prevent auto commits from occurring after each individual operation is executed.
+/// \see open(), prepare(), execute(), result, transaction
+result execute(connection& conn, string const& query, long batch_operations = 1, long timeout = 0);
+
+/// \brief Opens, prepares, and executes query directly without creating result object.
+/// \param conn The connection where the statement will be executed.
+/// \param query The SQL query that will be executed.
+/// \param batch_operations Rows to fetch per rowset, or number of batch parameters to process.
+/// \param timeout The number in seconds before query timeout. Default is 0 indicating no timeout.
+/// \attention You will want to use transactions if you are doing batch operations because it will
+///            prevent auto commits from occurring after each individual operation is executed.
+/// \see open(), prepare(), execute(), result, transaction
+void just_execute(
+    connection& conn,
+    string const& query,
+    long batch_operations = 1,
+    long timeout = 0);
+
+/// \brief Implementation details, not part of the interface.
+namespace detail
+{
+
+/// \brief Reads a member through a pointer to it.
+template <class Row, class Member, class Class>
+Member const& read_field(Row const& row, Member Class::* field)
+{
+    return row.*field;
+}
+
+/// \brief Reads a value by calling something with the row.
+template <class Row, class Accessor>
+auto read_field(Row const& row, Accessor const& accessor) -> decltype(accessor(row))
+{
+    return accessor(row);
+}
+
+/// \brief The type an accessor yields for a row, stripped of reference and const.
+template <class Row, class Accessor>
+struct field_type
+{
+    using type = std::decay_t<
+        decltype(read_field(std::declval<Row const&>(), std::declval<Accessor const&>()))>;
+};
+
+template <class T>
+struct is_optional : std::false_type
+{
+};
+
+template <class T>
+struct is_optional<std::optional<T>> : std::true_type
+{
+};
+
+template <class T>
+inline constexpr bool is_optional_v = is_optional<T>::value;
+
+// Four ways to bind a column, told apart by what the accessor yields.
+struct bind_as_value
+{
+};
+struct bind_as_string
+{
+};
+struct bind_as_optional_value
+{
+};
+struct bind_as_optional_string
+{
+};
+
+template <class T, bool IsOptional = is_optional_v<T>>
+struct bind_kind
+{
+    using type = std::conditional_t<is_owning_string_v<T>, bind_as_string, bind_as_value>;
+};
+
+template <class T>
+struct bind_kind<T, true>
+{
+    using type = std::conditional_t<
+        is_owning_string_v<typename T::value_type>,
+        bind_as_optional_string,
+        bind_as_optional_value>;
+};
+
+template <class Rows, class Accessor>
+void bind_column(
+    statement& stmt,
+    short param_index,
+    Rows const& rows,
+    Accessor const& accessor,
+    bind_as_value)
+{
+    using value_type = typename field_type<typename Rows::value_type, Accessor>::type;
+    std::vector<value_type> column;
+    column.reserve(rows.size());
+    for (auto const& row : rows)
+        column.push_back(read_field(row, accessor));
+    stmt.bind(param_index, column);
+}
+
+template <class Rows, class Accessor>
+void bind_column(
+    statement& stmt,
+    short param_index,
+    Rows const& rows,
+    Accessor const& accessor,
+    bind_as_string)
+{
+    using value_type = typename field_type<typename Rows::value_type, Accessor>::type;
+    std::vector<value_type> column;
+    column.reserve(rows.size());
+    for (auto const& row : rows)
+        column.push_back(read_field(row, accessor));
+    stmt.bind_strings(param_index, column);
+}
+
+// An absent value still occupies its place in the column, so that the values line up with
+// the flags marking which of them are null.
+template <class Rows, class Accessor, class Column>
+std::unique_ptr<bool[]> gather_optional(Rows const& rows, Accessor const& accessor, Column& column)
+{
+    auto nulls = std::make_unique<bool[]>(rows.size());
+    std::size_t i = 0;
+    for (auto const& row : rows)
+    {
+        auto const& value = read_field(row, accessor);
+        nulls[i++] = !value.has_value();
+        column.push_back(value ? *value : typename Column::value_type());
+    }
+    return nulls;
+}
+
+template <class Rows, class Accessor>
+void bind_column(
+    statement& stmt,
+    short param_index,
+    Rows const& rows,
+    Accessor const& accessor,
+    bind_as_optional_value)
+{
+    using optional_type = typename field_type<typename Rows::value_type, Accessor>::type;
+    std::vector<typename optional_type::value_type> column;
+    column.reserve(rows.size());
+    auto const nulls = gather_optional(rows, accessor, column);
+    stmt.bind(param_index, column, nulls.get());
+}
+
+template <class Rows, class Accessor>
+void bind_column(
+    statement& stmt,
+    short param_index,
+    Rows const& rows,
+    Accessor const& accessor,
+    bind_as_optional_string)
+{
+    using optional_type = typename field_type<typename Rows::value_type, Accessor>::type;
+    std::vector<typename optional_type::value_type> column;
+    column.reserve(rows.size());
+    auto const nulls = gather_optional(rows, accessor, column);
+    stmt.bind_strings(param_index, column, nulls.get());
+}
+
+template <class Rows, class Accessor>
+void bind_one(statement& stmt, short param_index, Rows const& rows, Accessor const& accessor)
+{
+    using value_type = typename field_type<typename Rows::value_type, Accessor>::type;
+    bind_column(stmt, param_index, rows, accessor, typename bind_kind<value_type>::type());
+}
+
+} // namespace detail
+
+/// \brief Binds a range of rows, a parameter at a time.
+///
+/// Parameters are bound column-wise, which is what the ODBC drivers expect, from rows held
+/// however the caller finds convenient. Each accessor names one parameter, in the order the
+/// placeholders appear: either a pointer to a member, or anything callable with a row.
+///
+/// \code
+/// struct person
+/// {
+///     long id;
+///     nanodbc::string name;
+/// };
+///
+/// std::vector<person> people = load();
+/// nanodbc::statement stmt(conn);
+/// prepare(stmt, NANODBC_TEXT("insert into people (id, name) values (?, ?)"));
+/// bind_rows(stmt, people, &person::id, &person::name);
+/// execute(stmt, people.size());
+/// \endcode
+///
+/// An accessor yielding std::optional binds an absent value as null.
+///
+/// The values are copied into the statement, so the rows are free to go out of scope
+/// before it is executed.
+///
+/// \param stmt The prepared statement to bind to.
+/// \param rows The rows to bind, a container with size() whose values the accessors read.
+/// \param accessors One per parameter marker, left to right.
+/// \throws database_error
+/// \see statement::bind(), statement::bind_strings(), execute()
+template <class Rows, class... Accessors>
+void bind_rows(statement& stmt, Rows const& rows, Accessors const&... accessors)
+{
+    short param_index = 0;
+    // A comma fold, which is ordered left to right, so the accessors line up with the
+    // parameter markers in the order they were named.
+    (detail::bind_one(stmt, param_index++, rows, accessors), ...);
+}
+
+/// \brief Execute the previously prepared query now.
+/// \param stmt The prepared statement that will be executed.
+/// \param batch_operations Rows to fetch per rowset, or the number of batch parameters to process.
+/// \throws database_error
+/// \return A result set object.
+/// \attention You will want to use transactions if you are doing batch operations because it will
+///            prevent auto commits from occurring after each individual operation is executed.
+/// \see open(), prepare(), execute(), result
+result execute(statement& stmt, long batch_operations = 1);
+
+/// \brief Execute the previously prepared query now and without creating result object.
+/// \param stmt The prepared statement that will be executed.
+/// \param batch_operations Rows to fetch per rowset, or the number of batch parameters to process.
+/// \throws database_error
+/// \attention You will want to use transactions if you are doing batch operations because it will
+///            prevent auto commits from occurring after each individual operation is executed.
+/// \see open(), prepare(), execute(), result
+void just_execute(statement& stmt, long batch_operations = 1);
+
+/// \brief Execute the previously prepared query now.
+///
+/// Executes within the context of a transaction object, commits directly after execution.
+/// \param stmt The prepared statement that will be executed in batch.
+/// \param batch_operations Rows to fetch per rowset, or the number of batch parameters to process.
+/// \throws database_error
+/// \return A result set object.
+/// \see open(), prepare(), execute(), result, transaction
+result transact(statement& stmt, long batch_operations);
+
+/// \brief Execute the previously prepared query now and without creating result object.
+///
+/// Executes within the context of a transaction object, commits directly after execution.
+/// \param stmt The prepared statement that will be executed in batch.
+/// \param batch_operations Rows to fetch per rowset, or the number of batch parameters to process.
+/// \throws database_error
+/// \see open(), prepare(), execute(), result, transaction
+void just_transact(statement& stmt, long batch_operations);
+
+/// \brief Prepares the given statement to execute on it associated connection.
+///
+/// If the statement is not open throws programming_error.
+/// \param stmt The prepared statement that will be executed in batch.
+/// \param query The SQL query that will be executed.
+/// \param timeout The number in seconds before query timeout. Default is 0 indicating no timeout.
+/// \see open()
+/// \throws database_error
+/// \throws programming_error
+void prepare(statement& stmt, string const& query, long timeout = 0);
+
+/// @}
+
+} // namespace nanodbc
+
+#endif

@@ -42,7 +42,6 @@ auto main_server::stop_service() -> fw::error
 {
     fw::error error_code{};
 
-
     error_code = feature_stop();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
@@ -275,17 +274,17 @@ auto main_server::primary_thread_start() -> fw::error
     auto string_ip = end_point.address().to_string();
     auto wstring_ip = fw::string_to_wstring(string_ip);
 
-    error_code = info_sql->server_info_select(wstring_ip);
-	ASSERT_RETURN_VALUE(!(error_code), error_code);
+    nanodbc::result result;
+    error_code = info_sql->server_info_select(wstring_ip, result);
+    ASSERT_RETURN_VALUE(!error_code, error_code);
 
-	while (SQLFetch(info_sql->get_stmt()) == SQL_SUCCESS)
-	{
-        server_no_ = info_sql->get_col_int();
-        server_type_ = info_sql->get_col_tiny();
-	}
+    while (result.next())
+    {
+        server_no_ = static_cast<uint16_t>(result.get<int32_t>(NANODBC_TEXT("server_no")));
+        server_type_ = result.get<uint8_t>(NANODBC_TEXT("type"));
+    }
 
-	FLOG_INFO("server_info :: server({}:{})", server_no_, server_type_);
-
+    FLOG_INFO("server_info :: server({}:{})", server_no_, server_type_);
 
     return error_code;
 }

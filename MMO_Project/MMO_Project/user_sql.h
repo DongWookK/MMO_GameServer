@@ -5,50 +5,41 @@
 class user_sql : public thread_sql
 {
 public:
+	explicit user_sql(nanodbc::connection conn) : thread_sql(std::move(conn)) {};
+
+public:
 	auto prepare() -> fw::error override
 	{
 		fw::error error_code{};
-		
-		error_code = prepare_user_login();
-		
+
+		error_code = try_sql("user_sql::prepare_user_login", [&] {
+			user_login_stmt_.prepare(conn_, NANODBC_TEXT("{CALL usp_user_login(?,?)}"));
+			});
+		ASSERT_RETURN_VALUE(!error_code, error_code);
 
 		return error_code;
 	}
 
-private:
-	auto prepare_user_login() -> fw::error
-	{
-		SQLWCHAR* query = (SQLWCHAR*)L"{CALL usp_user_login(?,?)}";
-		auto ret_ = SQLPrepareW(m_hStmt, query, SQL_NTS);
-		if (!SQL_SUCCEEDED(ret_)) 
-		{
-			// log ret
-			return error::code::sql_fail;
-		}
-
-		m_cbParam1 = 0;
-		m_cbParam2 = SQL_NTS;
-
-		BIND_PARAM(m_hStmt, 1, SQL_PARAM_INPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &m_bindUserId, &m_cbParam1);
-		BIND_PARAM(m_hStmt, 2, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 50, 0, m_bindUserName, 0, &m_cbParam2);
-
-		return error::code::ok;
-	}
-
 public:
-	auto exec_user_login(std::wstring_view ip) -> fw::error
+	auto exec_user_login(std::wstring_view user_name, int32_t& out_user_no) -> fw::error
 	{
+		const std::wstring user_name_str{ user_name };
+		int32_t user_no = 0;
 
+		auto error_code = try_sql("user_sql::exec_user_login", [&] {
+			user_login_stmt_.bind(0, user_name_str.c_str());
+			user_login_stmt_.bind(1, &user_no, nanodbc::statement::PARAM_OUT);
+
+			auto result = user_login_stmt_.execute();
+			// OUTPUT 파라미터는 모든 결과셋을 소비한 뒤에 채워진다
+			while (result.next_result()) {}
+			});
+		ASSERT_RETURN_VALUE(!error_code, error_code);
+
+		out_user_no = user_no;
+		return error_code;
 	}
 
 private:
-	SQLHSTMT m_hStmt;
-
-	// bind parameter
-	int      m_bindUserId = 0;
-	SQLWCHAR m_bindUserName[50] = { 0 };
-
-	// 데이터의 길이를 알려줄 지시자
-	SQLLEN   m_cbParam1 = 0; 
-	SQLLEN   m_cbParam2 = SQL_NTS;
+	nanodbc::statement user_login_stmt_{};
 };

@@ -133,11 +133,6 @@ namespace fw {
     }
 }
 
-#define BIND_PARAM(stmt, paramIndex, ioType, cType, sqlDataType, columnSize, decimalDigits, rgbValue, cbValue) \
-    ret_ = SQLBindParameter(stmt, paramIndex, ioType, cType, sqlDataType, columnSize, decimalDigits, rgbValue, 0, cbValue); \
-    if (!SQL_SUCCEEDED(ret_)) { ASSERT_DEBUG_BREAK(ret_); }
-
-
 namespace fw {
     template <typename Enum>
     constexpr auto to_underlying(Enum e) noexcept {

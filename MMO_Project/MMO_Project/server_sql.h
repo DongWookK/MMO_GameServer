@@ -5,80 +5,43 @@
 class server_sql : public thread_sql
 {
 public:
-	server_sql(SQLHDBC hdbc) : thread_sql(hdbc) {};
+    explicit server_sql(nanodbc::connection conn) : thread_sql(std::move(conn)) {};
 
 public:
-	auto prepare() -> fw::error override
-	{
-		fw::error error_code{};
+    auto prepare() -> fw::error override
+    {
+        fw::error error_code{};
 
-		error_code = prepare_server_info_select();
-		ASSERT_RETURN_VALUE(!error_code, error_code);
-		//error_code = prepare_load_server_dsn();
-		//ASSERT_RETURN_VALUE(!error_code, error_code);
+        error_code = prepare_server_info_select();
+        ASSERT_RETURN_VALUE(!error_code, error_code);
 
-		return error_code;
-	}
+        return error_code;
+    }
 
 private:
-	auto prepare_server_info_select() -> fw::error
-	{
-		ASSERT_RETURN_VALUE(stmt_ != SQL_NULL_HSTMT, error::code::sql_stmt_invalid);
+    auto prepare_server_info_select() -> fw::error
+    {
+        return try_sql("server_sql::prepare_server_info_select", [&]
+            {
+                server_info_select_stmt_.prepare(conn_, NANODBC_TEXT("{CALL usp_server_info_select(?)}"));
 
-		SQLWCHAR* query = (SQLWCHAR*)L"{CALL usp_server_info_select(?)}";
-		auto ret_ = SQLPrepareW(stmt_, query, SQL_NTS);
-		if (!SQL_SUCCEEDED(ret_))
-		{
-			log_error(stmt_, SQL_HANDLE_STMT, "db_manager::prepare");
-			return error::code::sql_fail;
-		}
-
-		sql_param_50 = SQL_NTS;
-		sql_param_int = 0;
-
-		BIND_PARAM(stmt_, 1, SQL_PARAM_INPUT, SQL_C_WCHAR, SQL_WVARCHAR, 50, 0, &ip_, 0, &sql_param_50);
-		BIND_PARAM(stmt_, 2, SQL_PARAM_OUTPUT, SQL_C_LONG, SQL_INTEGER, 0, 0, &server_no_, 0, &sql_param_int);
-
-		SQLBindCol(stmt_, 1, SQL_C_LONG, &col_int_val_, 0, &col_int_len_);
-		SQLBindCol(stmt_, 2, SQL_C_UTINYINT, &col_tiny_val_, 0, &col_tiny_len_);
-
-		return error::code::ok;
-	}
+                server_info_select_stmt_.bind_strings(0, ip_, std::size(ip_), 1);
+            });
+    }
 
 public:
-	auto server_info_select(std::wstring_view ip) -> fw::error
-	{
-		ASSERT_RETURN_VALUE(stmt_ != SQL_NULL_HSTMT, error::code::sql_stmt_invalid);
+    auto server_info_select(std::wstring_view ip, nanodbc::result& out_result) -> fw::error
+    {
+        wcsncpy_s(ip_, ip.data(), (std::min)(ip.size(), std::size(ip_) - 1));
 
-		wcsncpy_s(ip_, ip.data(), _TRUNCATE);
-		sql_param_50 = SQL_NTS;
-
-		auto ret_ = SQLExecute(stmt_);
-		if (!SQL_SUCCEEDED(ret_))
-		{
-			log_error(stmt_, SQL_HANDLE_STMT, "db_manager::execute");
-			return error::code::sql_fail;
-		}
-
-		return error::code::ok;
-	}
-
-public:
-	auto get_col_int() const -> int32_t { return col_int_val_; }
-	auto get_col_tiny() const -> uint8_t { return col_tiny_val_; }
+        return try_sql("server_sql::server_info_select", [&]
+            {
+                out_result = server_info_select_stmt_.execute();
+            });
+    }
 
 private:
-	// bind parameter
-	SQLINTEGER server_no_ = 0;
-	SQLWCHAR ip_[50] = { 0 };
+    nanodbc::statement server_info_select_stmt_{};
 
-	int32_t  col_int_val_ = 0;
-	SQLLEN   col_int_len_ = 0;
-
-	uint8_t  col_tiny_val_ = 0; // tinyint는 보통 1바이트 unsigned (uint8_t)
-	SQLLEN   col_tiny_len_ = 0;
-
-	// 데이터의 길이를 알려줄 지시자
-	SQLLEN   sql_param_int = 0;
-	SQLLEN   sql_param_50 = SQL_NTS;
+    wchar_t ip_[50] = { 0 };
 };

@@ -1,5 +1,4 @@
 #pragma once
-#pragma comment(lib, "odbc32.lib")
 #include "pch.h"
 #include "thread_sql.h"
 
@@ -8,23 +7,23 @@ public:
     using sqls_t = std::vector<std::unique_ptr<thread_sql>>;
 
 public:
-    db_manager();
+    db_manager() = default;
     ~db_manager();
 
     auto connect(const std::wstring& connectionString) -> bool;
     auto disconnect() -> void;
-    
+
     template<typename T, typename... Args>
     auto register_sql(Args&&... args) -> T*
     {
-        auto sql_ptr = std::make_unique<T>(conn_handle_, std::forward<Args>(args)...);
+        auto sql_ptr = std::make_unique<T>(conn_, std::forward<Args>(args)...);
         T* raw_ptr = sql_ptr.get();
         sqls_.push_back(std::move(sql_ptr));
         return raw_ptr;
     }
 
     template<typename T>
-    auto get_sql() -> T* 
+    auto get_sql() -> T*
     {
         for (auto& sql_ptr : sqls_) {
             if (auto derived = dynamic_cast<T*>(sql_ptr.get())) {
@@ -40,15 +39,9 @@ public:
     }
 
     auto prepare() -> fw::error;
-    auto get_connect_handle() const -> SQLHDBC;
-    bool execute_login_proc(int userId, const std::wstring& userName);
+    auto get_connection() -> nanodbc::connection& { return conn_; }
 
 private:
-    void print_error(SQLSMALLINT handleType, SQLHANDLE handle);
-
-private:
-    SQLHENV env_handle_;
-    SQLHDBC conn_handle_;   // 연결 핸들
-    bool    is_connected_;
+    nanodbc::connection conn_{};    // 워커 스레드당 1개 (nanodbc::connection 은 스레드 간 공유 X)
     sqls_t  sqls_{};
 };

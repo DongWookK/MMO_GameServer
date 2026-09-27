@@ -16,8 +16,7 @@
 #include "util.h"
 
 #include <windows.h>
-#include <sql.h>
-#include <sqlext.h>
+#include "db_nanodbc.h"
 
 #include "macro.h"
 #include "error.hpp"
