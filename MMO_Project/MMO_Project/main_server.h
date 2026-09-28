@@ -17,9 +17,9 @@ public:
 	using feature_list_t = std::vector<feature_s_ptr_t>;
 	using worker_context_t = boost::asio::io_context;
 	using work_guard_t = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
-	using db_conn_str_list_t = std::array<std::wstring, fw::to_underlying(common::sql_type::MAX)>;
-	using dbms_t = std::array<db_manager, fw::to_underlying(common::sql_type::MAX)>;
-	using sql_registers_t = std::array<std::function<void(db_manager&)>, fw::to_underlying(common::sql_type::MAX)>;
+	using db_conn_str_list_t = std::array<std::wstring, fw::to_underlying(common::sql_type::MAX) + 1>;
+	using dbms_t = std::array<db_manager, fw::to_underlying(common::sql_type::MAX) + 1>;
+	using sql_registers_t = std::array<std::function<void(db_manager&)>, fw::to_underlying(common::sql_type::MAX) + 1>;
 
 public:
 	auto start_service() -> fw::error;
@@ -61,6 +61,7 @@ private:
 	auto set_network_config() -> fw::error;
 
 	auto primary_thread_start() -> fw::error;
+	auto load_server_info() -> fw::error;
 	auto thread_manager_start() -> fw::error;
 
 private:

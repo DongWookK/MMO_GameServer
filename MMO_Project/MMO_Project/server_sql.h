@@ -15,6 +15,9 @@ public:
         error_code = prepare_server_info_select();
         ASSERT_RETURN_VALUE(!error_code, error_code);
 
+        error_code = prepare_server_dsn_select();
+        ASSERT_RETURN_VALUE(!error_code, error_code);
+
         return error_code;
     }
 
@@ -41,7 +44,32 @@ public:
     }
 
 private:
+    auto prepare_server_dsn_select() -> fw::error
+    {
+        return try_sql("server_sql::prepare_server_dsn_select", [&]
+            {
+                server_dsn_select_stmt_.prepare(conn_, NANODBC_TEXT("{CALL usp_server_dsn_select(?)}"));
+
+                server_dsn_select_stmt_.bind(0, &server_no_, nanodbc::statement::PARAM_IN);
+            });
+    }
+
+public:
+    auto server_dsn_select(uint16_t server_no, nanodbc::result& out_result) -> fw::error
+    {
+        server_no_ = server_no;
+
+        return try_sql("server_sql::server_dsn_select", [&]
+            {
+                out_result = server_dsn_select_stmt_.execute();
+            });
+    }
+
+private:
     nanodbc::statement server_info_select_stmt_{};
+    nanodbc::statement server_dsn_select_stmt_{};
+
 
     wchar_t ip_[50] = { 0 };
+    uint16_t server_no_{};
 };

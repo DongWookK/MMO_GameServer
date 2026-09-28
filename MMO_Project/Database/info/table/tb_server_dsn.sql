@@ -2,7 +2,7 @@
 (
 	[server_no] SMALLINT NOT NULL,
 	[type] TINYINT NOT NULL,
-	[dsn] VARCHAR(50) NOT NULL,
+	[dsn] NVARCHAR(200) NOT NULL,
 	CONSTRAINT pk_tb_server_dsn PRIMARY KEY CLUSTERED (server_no, type)
 )
 GO;

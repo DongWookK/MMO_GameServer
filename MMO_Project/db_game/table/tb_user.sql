@@ -1,6 +1,6 @@
 ﻿CREATE TABLE [dbo].[tb_user]
 (
-	[user_no] INT NOT NULL IDENTITY(0,0),
+	[user_no] INT NOT NULL IDENTITY(1,1),
     [user_name] NVARCHAR(20) NOT NULL,
 	[login_time] DATETIME2 NULL,
 	[logout_time] DATETIME2 NULL,

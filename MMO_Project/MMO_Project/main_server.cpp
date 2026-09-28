@@ -10,6 +10,7 @@
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "server_sql.h"
+#include "user_sql.h"
 
 main_server::~main_server() = default;
 
@@ -251,21 +252,53 @@ auto main_server::primary_thread_start() -> fw::error
 {
     fw::error error_code{};
     
+#pragma region info
     constexpr auto info_db = fw::to_underlying(common::sql_type::info);
+    sql_reigsters_[info_db] = [](db_manager& info_db) -> void
+        {
+            info_db.register_sql<server_sql>();
+            // ...
+        };
 
     if (!dbms_[info_db].connect(db_conn_str_list_[info_db])) {
         FLOG_CRITICAL("PRIMARY Thread :: DB Connection Failed");
         ASSERT_RETURN_VALUE(false, error::code::sql_stmt_invalid);
     }
 
-    sql_reigsters_[info_db] = [](db_manager& info_db) -> void{
-            info_db.register_sql<server_sql>();
-        };
-
     sql_reigsters_[info_db](dbms_[info_db]);
 
     error_code = dbms_[info_db].prepare();
     ASSERT_RETURN_VALUE(!error_code, error_code);
+
+    load_server_info();
+
+#pragma endregion
+
+#pragma region game
+    constexpr auto game_db = fw::to_underlying(common::sql_type::game);
+    sql_reigsters_[game_db] = [](db_manager& game_db) -> void 
+        {
+            game_db.register_sql<user_sql>();
+            // ...
+        };
+
+
+    if (!dbms_[game_db].connect(db_conn_str_list_[game_db])) {
+        FLOG_CRITICAL("PRIMARY Thread :: DB Connection Failed");
+        ASSERT_RETURN_VALUE(false, error::code::sql_stmt_invalid);
+    }
+
+    sql_reigsters_[game_db](dbms_[game_db]);
+    error_code = dbms_[game_db].prepare();
+    ASSERT_RETURN_VALUE(!error_code, error_code);
+#pragma endregion
+
+    return error_code;
+}
+
+auto main_server::load_server_info() -> fw::error
+{
+    auto error_code = fw::error{};
 
     auto info_sql = main_server::instance()->get_sql<server_sql>(common::sql_type::info);
     ASSERT_RETURN_VALUE(info_sql != nullptr, error::code::sql_fail);
@@ -280,12 +313,21 @@ auto main_server::primary_thread_start() -> fw::error
 
     while (result.next())
     {
-        server_no_ = static_cast<uint16_t>(result.get<int32_t>(NANODBC_TEXT("server_no")));
-        server_type_ = result.get<uint8_t>(NANODBC_TEXT("type"));
+        server_no_ = static_cast<uint16_t>(result.get<int32_t>(0));
+        server_type_ = result.get<uint8_t>(1);
     }
 
     FLOG_INFO("server_info :: server({}:{})", server_no_, server_type_);
 
+    error_code = info_sql->server_dsn_select(server_no_, result);
+    ASSERT_RETURN_VALUE(!error_code, error_code);
+
+    while (result.next())
+    {
+        auto type = result.get<uint8_t>(0);
+        db_conn_str_list_[type] = result.get<std::wstring>(1);
+    }
+    
     return error_code;
 }
 
