@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "db_manager.h"
+#include "thread_local.h"
 
 class worker
 {
@@ -9,7 +10,7 @@ public:
 	using db_conn_str_list_t = std::array<std::wstring, fw::to_underlying(common::sql_type::MAX) + 1>;
 	using sql_register_t = std::function<void(db_manager&)>;
 	using sql_register_list_t = std::array<sql_register_t, fw::to_underlying(common::sql_type::MAX) + 1>;
-	using sqls_t = std::array<db_manager, fw::to_underlying(common::sql_type::MAX) + 1>;
+	using sqls_t = fw::tls::db_list_t;
 
 public:
 	worker();

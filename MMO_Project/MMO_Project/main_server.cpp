@@ -4,6 +4,7 @@
 #include <boost/asio/executor_work_guard.hpp>
 #include "main_server.h"
 #include "thread_manager.h"
+#include "thread_local.h"
 #include "network_manager.h"
 #include "user_manager.h"
 #include "troc_user.h"
@@ -251,7 +252,9 @@ auto main_server::set_network_config() -> fw::error
 auto main_server::primary_thread_start() -> fw::error
 {
     fw::error error_code{};
-    
+
+    fw::tls::db_list = &dbms_;
+
 #pragma region info
     constexpr auto info_db = fw::to_underlying(common::sql_type::info);
     sql_reigsters_[info_db] = [](db_manager& info_db) -> void

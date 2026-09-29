@@ -29,6 +29,11 @@ auto worker::allocate_job(io_context_t& io_context
 			io_context.run();
 
 			FLOG_INFO("Thread {} Stopped", std::this_thread::get_id()._Get_underlying_id());
+			
+#pragma region reset
+			// todo : 나중에 해제하는것들 함수화
+			fw::tls::db_list = nullptr;
+#pragma endregion
 		}
 		catch (const std::exception& e) {
 			FLOG_CRITICAL("Thread {} Error - {}", std::this_thread::get_id()._Get_underlying_id(), e.what());
@@ -53,7 +58,10 @@ auto worker::db_setup(const db_conn_str_list_t& db_conn_str_list, const sql_regi
 
 		auto error_code = sql.prepare();
 		ASSERT_RETURN_VALUE(!error_code, error_code);
+
 	}
+
+	fw::tls::db_list = &db_;
 
 	return error::code::ok;
 }
