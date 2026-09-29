@@ -35,6 +35,10 @@ auto user_manager::user_login(session_s_ptr_t session) -> user_s_ptr_t
 {
 	auto error = fw::error{};
 
+	// db proc
+	
+	
+
 	auto user = user_pool_.AcquireObject();
 	ASSERT_RETURN_VALUE(nullptr != user, nullptr);
 

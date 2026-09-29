@@ -6,11 +6,8 @@
 
 HANDLER_TR_DEFINE(troc_user, TestEcho)
 {
+    ASSERT_RETURN_VALUE(!sess, error::code::session_invalid);
     fw::error error{};
-
-    if (!sess) {
-        return fw::error{ 111 };
-    }
 
     flatbuffers::FlatBufferBuilder builder;
 
@@ -22,11 +19,9 @@ HANDLER_TR_DEFINE(troc_user, TestEcho)
 
 HANDLER_TR_DEFINE(troc_user, UserLoginReq)
 {
-    fw::error error{};
+    ASSERT_RETURN_VALUE(!sess, error::code::session_invalid);
 
-    if (!sess) {
-        return fw::error{ 111 };
-    }
+    fw::error error{};
 
     auto user = user_manager::instance()->user_login(sess);
     ASSERT_RETURN_VALUE(nullptr != user, error::code::user_login_fail);
@@ -40,11 +35,9 @@ HANDLER_TR_DEFINE(troc_user, UserLoginReq)
 
 HANDLER_TR_DEFINE(troc_user, UserLogoutReq)
 {
-    fw::error error{};
+    ASSERT_RETURN_VALUE(!sess, error::code::session_invalid);
 
-    if (!sess) {
-        return fw::error{ 111 };
-    }
+    fw::error error{};
 
     error = user_manager::instance()->user_logout(sess);
     ASSERT_RETURN_VALUE(!(error), error::code::user_login_fail);
