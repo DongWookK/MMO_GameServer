@@ -14,14 +14,17 @@ auto worker::set_index(size_t index) -> void
 	index_ = index;
 }
 
-auto worker::allocate_job(io_context_t& io_context, const std::wstring& db_connection_str, std::function<fw::error(db_manager&)> on_init) -> void
+auto worker::allocate_job(io_context_t& io_context
+						  , const db_conn_str_list_t& db_conn_str_list
+						  , const sql_register_list_t& sql_register_list) -> void
 {
-	thread_ = std::jthread([this, &io_context, db_connection_str, on_init]() {
+	thread_ = std::jthread([this, &io_context, db_conn_str_list, sql_register_list]() {
 		try {
-			FLOG_INFO("Thread {} Started", std::this_thread::get_id()._Get_underlying_id());
 
-			auto error_code = db_setup(db_connection_str, on_init);
+			auto error_code = db_setup(db_conn_str_list, sql_register_list);
 			ASSERT_RETURN(!error_code);
+
+			FLOG_INFO("Thread {} ready to Start", std::this_thread::get_id()._Get_underlying_id());
 
 			io_context.run();
 
@@ -35,20 +38,22 @@ auto worker::allocate_job(io_context_t& io_context, const std::wstring& db_conne
 	return;
 }
 
-auto worker::db_setup(const std::wstring& db_connection_str, std::function<fw::error(db_manager&)> on_init) -> fw::error
+auto worker::db_setup(const db_conn_str_list_t& db_conn_str_list, const sql_register_list_t& sql_register_list) -> fw::error
 {
-	if (!db_.connect(db_connection_str)) {
-		FLOG_CRITICAL("WORKER ({}) DB Connection Failed", index_);
-		ASSERT_RETURN_VALUE(false, error::code::sql_stmt_invalid);
+	for (uint8_t type = 0; type < fw::to_underlying(common::sql_type::MAX) + 1; ++type)
+	{
+		auto& sql = db_[type];
+		if (!db_[type].connect(db_conn_str_list[type]))
+		{
+			FLOG_CRITICAL("WORKER ({}) DB Connection Failed", index_);
+			ASSERT_RETURN_VALUE(false, error::code::sql_stmt_invalid);
+		}
+		
+		sql_register_list[type](sql);
+
+		auto error_code = sql.prepare();
+		ASSERT_RETURN_VALUE(!error_code, error_code);
 	}
 
-	auto error_code = fw::error{};
-	
-	error_code = on_init(db_);
-	ASSERT_RETURN_VALUE(!error_code, error_code);
-	
-	error_code = db_.prepare();
-	ASSERT_RETURN_VALUE(!error_code, error_code);
-
-	return error_code;
+	return error::code::ok;
 }

@@ -335,12 +335,7 @@ auto main_server::thread_manager_start() -> fw::error
 {
     auto error_code = fw::error{};
     
-    error_code = thread_manager_->start(db_conn_str_list_[fw::to_underlying(common::sql_type::info)], [](db_manager& db_manager) ->fw::error
-        {
-            db_manager.register_sql<server_sql>();
-
-            return error::code::ok;
-        });
+    error_code = thread_manager_->start(db_conn_str_list_, sql_reigsters_);
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
