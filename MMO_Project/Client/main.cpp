@@ -2,6 +2,9 @@
 #include "pch.h"
 #include <thread>
 #include <atomic>
+#include <sstream>
+#include <windows.h>
+#include "enum_error_generated.h"
 
 using namespace boost;
 using namespace std;
@@ -22,6 +25,57 @@ struct PacketHeader {
 // 수신 스레드 제어용 플래그 및 스레차 객체
 std::atomic<bool> is_receiving{ false };
 std::thread recv_thread;
+
+std::atomic<int32_t> last_user_no{ 0 };
+std::string to_console(const std::string& acp_str)
+{
+    if (acp_str.empty()) return {};
+
+    int wsize = MultiByteToWideChar(CP_ACP, 0, acp_str.data(), static_cast<int>(acp_str.size()), nullptr, 0);
+    std::wstring wstr(wsize, L'\0');
+    MultiByteToWideChar(CP_ACP, 0, acp_str.data(), static_cast<int>(acp_str.size()), wstr.data(), wsize);
+
+    int size = WideCharToMultiByte(CP_UTF8, 0, wstr.data(), wsize, nullptr, 0, nullptr, nullptr);
+    std::string out(size, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, wstr.data(), wsize, out.data(), size, nullptr, nullptr);
+    return out;
+}
+
+bool read_line_utf8(std::string& out)
+{
+    out.clear();
+
+    HANDLE in = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode = 0;
+    if (!GetConsoleMode(in, &mode))
+    {
+        // 콘솔이 아닌 경우 (파이프/리다이렉트 입력) : 이미 UTF-8 이라고 가정
+        return static_cast<bool>(std::getline(std::cin, out));
+    }
+
+    std::wstring wline;
+    wchar_t buf[256];
+    DWORD read = 0;
+    while (ReadConsoleW(in, buf, static_cast<DWORD>(std::size(buf)), &read, nullptr) && read > 0)
+    {
+        wline.append(buf, read);
+        if (wline.back() == L'\n') break;
+    }
+
+    if (wline.empty()) return false;
+
+    while (!wline.empty() && (wline.back() == L'\n' || wline.back() == L'\r'))
+    {
+        wline.pop_back();
+    }
+
+    if (wline.empty()) return true;
+
+    int size_needed = WideCharToMultiByte(CP_UTF8, 0, wline.data(), static_cast<int>(wline.size()), nullptr, 0, nullptr, nullptr);
+    out.resize(size_needed);
+    WideCharToMultiByte(CP_UTF8, 0, wline.data(), static_cast<int>(wline.size()), out.data(), size_needed, nullptr, nullptr);
+    return true;
+}
 
 /* ------------------------------------------------
     Generic Write & Read
@@ -49,7 +103,7 @@ void send_packet(asio::ip::tcp::socket& sock, game::tr_type packet_type, PacketB
     asio::write(sock, buffers, ec);
 
     if (ec) {
-        std::cout << "\n[Send Failed] Type: " << header.type << ", Error: " << ec.message() << endl;
+        std::cout << "\n[Send Failed] Type: " << header.type << ", Error: " << to_console(ec.message()) << endl;
     }
     else {
         std::cout << "\n[Send Success] Sent " << header.size << " bytes (Type: " << header.type << ")" << endl;
@@ -68,7 +122,7 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
             std::cout << "\n[Server Closed Connection]" << endl;
         }
         else {
-            std::cout << "\n[Read Header Failed] Error: " << ec.message() << endl;
+            std::cout << "\n[Read Header Failed] Error: " << to_console(ec.message()) << endl;
         }
         return false;
     }
@@ -85,12 +139,13 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
     if (body_size > 0) {
         asio::read(sock, asio::buffer(body_buf.data(), body_size), ec);
         if (ec) {
-            std::cout << "\n[Read Body Failed] Error: " << ec.message() << endl;
+            std::cout << "\n[Read Body Failed] Error: " << to_console(ec.message()) << endl;
             return false;
         }
     }
 
-    std::cout << "\n[Recv Success] Type: " << header.type << ", Total Size: " << header.size << " bytes" << endl;
+    std::cout << "\n[Recv Success] Type: " << game::EnumNametr_type(static_cast<game::tr_type>(header.type))
+              << "(" << header.type << "), Total Size: " << header.size << " bytes" << endl;
 
     // FlatBuffers Verifier 생성 (수신된 body_buf의 안전성 검사)
     flatbuffers::Verifier verifier(body_buf.data(), body_buf.size());
@@ -119,20 +174,40 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
 
         auto login_pkt = flatbuffers::GetRoot<game::UserLoginAck>(body_buf.data());
         if (login_pkt) {
-            std::cout << " > LoginAck User No: " << login_pkt->user_no() << endl;
+            last_user_no = login_pkt->user_no();
+            std::cout << " > LoginAck User Name: " << (login_pkt->user_name() ? login_pkt->user_name()->str() : "(null)")
+                      << ", User No: " << login_pkt->user_no() << endl;
         }
     } break;
 
     case game::tr_type::UserLogoutAck:
     {
         if (!verifier.VerifyBuffer<game::UserLogoutAck>(nullptr)) {
-            std::cout << " > [Error] Invalid LoginAck FlatBuffer payload!" << endl;
+            std::cout << " > [Error] Invalid LogoutAck FlatBuffer payload!" << endl;
             return false;
         }
 
-        auto login_pkt = flatbuffers::GetRoot<game::UserLogoutAck>(body_buf.data());
-        if (login_pkt) {
-            std::cout << " > LoginAck User No: " << login_pkt->user_no() << endl;
+        auto logout_pkt = flatbuffers::GetRoot<game::UserLogoutAck>(body_buf.data());
+        if (logout_pkt) {
+            last_user_no = 0;
+            std::cout << " > LogoutAck User No: " << logout_pkt->user_no() << endl;
+        }
+    } break;
+
+    case game::tr_type::Nak:
+    {
+        if (!verifier.VerifyBuffer<game::Nak>(nullptr)) {
+            std::cout << " > [Error] Invalid Nak FlatBuffer payload!" << endl;
+            return false;
+        }
+
+        auto nak_pkt = flatbuffers::GetRoot<game::Nak>(body_buf.data());
+        if (nak_pkt) {
+            const auto req_type = static_cast<game::tr_type>(nak_pkt->req_type());
+            const auto error_code = static_cast<::error::code>(nak_pkt->error_code());
+
+            std::cout << " > Nak Request: " << game::EnumNametr_type(req_type) << "(" << nak_pkt->req_type() << ")"
+                      << ", Error: " << ::error::EnumNamecode(error_code) << "(" << nak_pkt->error_code() << ")" << endl;
         }
     } break;
 
@@ -174,13 +249,15 @@ void stop_receive_thread()
 ------------------------------------------------*/
 int main()
 {
+    SetConsoleOutputCP(CP_UTF8);
+
 #pragma region get_endpoint
     boost::system::error_code ec;
     asio::ip::address ip_address = asio::ip::make_address_v4(raw_ip_address, ec);
 
     if (ec.value() != 0)
     {
-        std::cout << "Failed to parse IP address. Error Code = " << ec.value() << ". Message: " << ec.message() << endl;
+        std::cout << "Failed to parse IP address. Error Code = " << ec.value() << ". Message: " << to_console(ec.message()) << endl;
         return ec.value();
     }
 
@@ -194,19 +271,32 @@ int main()
 
     if (ec.value() != 0)
     {
-        std::cout << "Failed to open socket. Error Code = " << ec.value() << ". Message: " << ec.message() << endl;
+        std::cout << "Failed to open socket. Error Code = " << ec.value() << ". Message: " << to_console(ec.message()) << endl;
         return ec.value();
     }
 #pragma endregion
 
-    std::string message{};
+    std::string line{};
     bool out = true;
-    cout << "client ready (commands: connect, send_echo, send_login, send_logout, disconnect)" << endl;
+    cout << "client ready (commands: connect, send_echo, send_login [user_name], send_logout, disconnect)" << endl;
 
     while (out)
     {
         cout << "> ";
-        cin >> message;
+        if (!read_line_utf8(line))
+        {
+            line = "disconnect";
+        }
+
+        std::istringstream iss(line);
+        std::string message{};
+        std::string arg{};
+        iss >> message >> arg;
+
+        if (message.empty())
+        {
+            continue;
+        }
 
         if ("connect" == message)
         {
@@ -221,7 +311,7 @@ int main()
             }
             catch (system::system_error& e)
             {
-                std::cout << "Error occured! Error Code = " << e.code() << ". Message: " << e.what() << endl;
+                std::cout << "Error occured! Error Code = " << e.code() << ". Message: " << to_console(e.what()) << endl;
             }
         }
         else if ("disconnect" == message)
@@ -242,15 +332,18 @@ int main()
         }
         else if ("send_login" == message)
         {
-            send_packet(sock, game::tr_type::UserLoginReq, [](flatbuffers::FlatBufferBuilder& builder) {
-                uint32_t user_no = 12345;
-                return game::CreateUserLoginReq(builder, std::to_underlying(game::tr_type::UserLoginReq), user_no);
+            const std::string user_name = arg.empty() ? "test_user" : arg;
+
+            send_packet(sock, game::tr_type::UserLoginReq, [&user_name](flatbuffers::FlatBufferBuilder& builder) {
+                auto name = builder.CreateString(user_name);
+                return game::CreateUserLoginReq(builder, std::to_underlying(game::tr_type::UserLoginReq), name);
                 });
         }
         else if ("send_logout" == message)
         {
-            send_packet(sock, game::tr_type::UserLogoutReq, [](flatbuffers::FlatBufferBuilder& builder) {
-                uint32_t user_no = 12345;
+            const int32_t user_no = last_user_no;
+
+            send_packet(sock, game::tr_type::UserLogoutReq, [user_no](flatbuffers::FlatBufferBuilder& builder) {
                 return game::CreateUserLogoutReq(builder, std::to_underlying(game::tr_type::UserLogoutReq), user_no);
                 });
         }

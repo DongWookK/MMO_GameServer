@@ -27,15 +27,17 @@ public:
 	using user_no_t = int32_t;
 
 	struct tag_user_no{};
-	struct tag_key{};
+	struct tag_session{};
 
 	typedef multi_index_container<
 		user_s_ptr_t,
 		indexed_by<
-		ordered_unique<tag<tag_key>,const_mem_fun<user, const size_t, &user::get_index>>,
+		hashed_unique<tag<tag_session>, const_mem_fun<user, const size_t, &user::get_session_index>>,
 		hashed_non_unique<tag<tag_user_no>, const_mem_fun<user, const int32_t, &user::get_user_no>>
 		>
 	> login_user_container;
+
+	static constexpr size_t max_user_name_len = 20;
 
 	auto setup() -> fw::error override;
 	auto start() -> fw::error override;
@@ -48,6 +50,7 @@ public:
 	auto find_user(session_s_ptr_t session) const -> user_s_ptr_t;
 
 private:
+	static auto is_valid_user_name(std::wstring_view user_name) -> bool;
 
 private:
 	pool_t user_pool_{};

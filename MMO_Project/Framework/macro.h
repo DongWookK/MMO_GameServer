@@ -24,7 +24,12 @@ Crash Define
 }
 
 #if defined(_MSC_VER)
-#define DEBUG_BREAK() __debugbreak()
+#define DEBUG_BREAK()                   \
+    do {                                \
+        if (::IsDebuggerPresent()) {    \
+            __debugbreak();             \
+        }                               \
+    } while (0)
 #endif
 
 #define ASSERT_DEBUG_BREAK(expr)			\

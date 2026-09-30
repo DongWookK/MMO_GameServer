@@ -240,6 +240,11 @@ auto main_server::set_network_config() -> fw::error
         {
             spdlog::info("user disconnected session({})", session->get_index());
 
+            if (user_manager::instance()->find_user(session) == nullptr)
+            {
+                return fw::error{};
+            }
+
             auto error = user_manager::instance()->user_logout(session);
             ASSERT_RETURN_VALUE(!error, error);
 
