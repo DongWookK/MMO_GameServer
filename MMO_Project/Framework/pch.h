@@ -12,6 +12,7 @@
 #define SPDLOG_WCHAR_TO_UTF8_SUPPORT
 #include <spdlog/spdlog.h>
 #include <iostream>
+#include <chrono>
 #include <utility>
 #include "util.h"
 

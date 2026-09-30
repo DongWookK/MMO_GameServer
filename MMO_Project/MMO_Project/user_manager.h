@@ -24,6 +24,7 @@ public:
 	using object_t = pool_t::Object;
 	using user_s_ptr_t = object_t;
 	using session_s_ptr_t = std::shared_ptr<session>;
+	using user_no_t = int32_t;
 
 	struct tag_user_no{};
 	struct tag_key{};
@@ -42,7 +43,7 @@ public:
 	auto teardown() -> fw::error override;
 
 public:
-	auto user_login(session_s_ptr_t session) -> user_s_ptr_t;
+	auto user_login(session_s_ptr_t session, std::wstring_view user_name) -> fw::expected<user_s_ptr_t>;
 	auto user_logout(session_s_ptr_t session) -> fw::error;
 	auto find_user(session_s_ptr_t session) const -> user_s_ptr_t;
 

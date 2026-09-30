@@ -1,6 +1,8 @@
 #pragma once
 #include "pch.h"
 #include "user_manager.h"
+#include "user_sql.h"
+#include "thread_local.h"
 
 auto user_manager::setup() -> fw::error
 {
@@ -31,23 +33,27 @@ auto user_manager::teardown() -> fw::error
 	return fw::error{};
 }
 
-auto user_manager::user_login(session_s_ptr_t session) -> user_s_ptr_t
+auto user_manager::user_login(session_s_ptr_t session, std::wstring_view user_name) -> fw::expected<user_s_ptr_t>
 {
 	auto error = fw::error{};
 
-	// db proc
-	
-	
+	auto sql = fw::get_sql<user_sql>();
+	ASSERT_RETURN_VALUE(sql != nullptr, fw::unexpected(error::code::sql_stmt_invalid));
+
+	user_no_t user_no{};
+	error = sql->user_login(user_name, user_no);
+	ASSERT_RETURN_VALUE(!error, fw::unexpected(error));
+	ASSERT_RETURN_VALUE(user_no != user_no_t{}, fw::unexpected(error::code::user_login_fail));
 
 	auto user = user_pool_.AcquireObject();
-	ASSERT_RETURN_VALUE(nullptr != user, nullptr);
+	ASSERT_RETURN_VALUE(nullptr != user, fw::unexpected(error::code::object_acquire_fail));
 
 	user->set_session(session);
-	ASSERT_RETURN_VALUE(user_list_.insert(user).second, nullptr);
+	user->set_user_no(user_no);
 
-	auto it = user_list_.insert(user).first;
-	ASSERT_RETURN_VALUE(user_list_.end() != it, nullptr);
-	
+	auto [it, inserted] = user_list_.insert(user);
+	ASSERT_RETURN_VALUE(inserted, fw::unexpected(error::code::user_login_fail));
+
 	return *it;
 }
 

@@ -10,6 +10,7 @@ public:
 public:
 	auto set_index(size_t i) -> void;
 	auto set_session(session_s_ptr_t session) -> void;
+	auto set_user_no(user_no_t user_no) -> void;
 
 	auto get_index() const -> const size_t;
 	auto get_user_no() const -> const user_no_t;

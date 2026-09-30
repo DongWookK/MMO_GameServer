@@ -12,6 +12,11 @@ auto user::set_session(session_s_ptr_t session) -> void
 	session_ = session;
 }
 
+auto user::set_user_no(user_no_t user_no) -> void
+{
+	user_no_ = user_no;
+}
+
 auto user::get_index() const -> const size_t
 {
 	return index_;

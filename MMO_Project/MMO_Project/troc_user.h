@@ -10,6 +10,7 @@ DECLARE_PACKET_TRAITS(game::tr_type::UserLoginReq, UserLoginReq);
 DECLARE_PACKET_TRAITS(game::tr_type::UserLoginAck, UserLoginAck);
 DECLARE_PACKET_TRAITS(game::tr_type::UserLogoutReq, UserLogoutReq);
 DECLARE_PACKET_TRAITS(game::tr_type::UserLogoutAck, UserLogoutAck);
+DECLARE_PACKET_TRAITS(game::tr_type::Nak, Nak);
 
 class troc_user : public feature, singleton<troc_user>
 {

@@ -6,45 +6,57 @@
 
 HANDLER_TR_DEFINE(troc_user, TestEcho)
 {
-    ASSERT_RETURN_VALUE(!sess, error::code::session_invalid);
-    fw::error error{};
+    ASSERT_RETURN_VALUE(sess != nullptr, error::code::session_invalid);
+    fw::error error_code{};
 
     flatbuffers::FlatBufferBuilder builder;
 
-    auto offset = game::CreateTestEcho(builder,std::to_underlying(PacketTraits<game::TestEcho>::type),builder.CreateString(pkt->data()));
+    auto offset = game::CreateTestEcho(builder
+                                       , std::to_underlying(PacketTraits<game::TestEcho>::type)
+                                       , builder.CreateString(pkt->data()));
     sess->send_packet(builder, offset);
 
-    return error;
+    return error_code;
 }
 
 HANDLER_TR_DEFINE(troc_user, UserLoginReq)
 {
-    ASSERT_RETURN_VALUE(!sess, error::code::session_invalid);
+    ASSERT_RETURN_VALUE(sess != nullptr, error::code::session_invalid);
 
-    fw::error error{};
+    fw::error error_code{};
+    DEFER_NAK(UserLoginReq, error_code);
 
-    auto user = user_manager::instance()->user_login(sess);
-    ASSERT_RETURN_VALUE(nullptr != user, error::code::user_login_fail);
+    const auto user_name = fw::to_wstring(pkt->user_name());
+    auto login_result = user_manager::instance()->user_login(sess, user_name);
+    ASSERT_RETURN_ERROR(login_result.has_value(), error_code, login_result.error());
+
+    const auto& user = *login_result;
 
     flatbuffers::FlatBufferBuilder builder;
-    auto offset = game::CreateUserLoginAck(builder, std::to_underlying(PacketTraits<game::UserLoginAck>::type), user->get_user_no());
+    auto offset = game::CreateUserLoginAck(builder
+                                           , std::to_underlying(PacketTraits<game::UserLoginAck>::type)
+                                           , fw::create_string(builder, user_name)
+                                           , user->get_user_no());
     sess->send_packet(builder, offset);
 
-    return error;
+    return error_code;
 }
 
 HANDLER_TR_DEFINE(troc_user, UserLogoutReq)
 {
-    ASSERT_RETURN_VALUE(!sess, error::code::session_invalid);
+    ASSERT_RETURN_VALUE(sess != nullptr, error::code::session_invalid);
 
-    fw::error error{};
+    fw::error error_code{};
+    DEFER_NAK(UserLogoutReq, error_code);
 
-    error = user_manager::instance()->user_logout(sess);
-    ASSERT_RETURN_VALUE(!(error), error::code::user_login_fail);
+    error_code = user_manager::instance()->user_logout(sess);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     flatbuffers::FlatBufferBuilder builder;
-    auto offset = game::CreateUserLoginAck(builder, std::to_underlying(PacketTraits<game::UserLogoutAck>::type), 123);
+    auto offset = game::CreateUserLogoutAck(builder
+                                            , std::to_underlying(PacketTraits<game::UserLogoutAck>::type)
+                                            , 0);
     sess->send_packet(builder, offset);
 
-    return error;
+    return error_code;
 }
