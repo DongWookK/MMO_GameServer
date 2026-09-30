@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <expected>
 #include <type_traits>
 
 namespace fw {
@@ -105,6 +106,19 @@ namespace fw {
         requires std::is_enum_v<EnumType>
     constexpr bool operator==(EnumType lhs, const error& rhs) noexcept {
         return rhs == lhs;
+    }
+
+    template <typename T>
+    using expected = std::expected<T, error>;
+
+    template <typename EnumType>
+        requires std::is_enum_v<EnumType>
+    constexpr auto unexpected(EnumType code) noexcept -> std::unexpected<error> {
+        return std::unexpected<error>(error{ code });
+    }
+
+    constexpr auto unexpected(const error& e) noexcept -> std::unexpected<error> {
+        return std::unexpected<error>(e);
     }
 
 }

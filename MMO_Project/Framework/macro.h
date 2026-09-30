@@ -2,6 +2,7 @@
 #include "stdint.h"
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <flatbuffers/flatbuffers.h>
 
 /*---------------------------------------------
 Crash Define
@@ -93,6 +94,68 @@ For Code
 }
 #endif
 
+#ifdef NDEBUG
+#define ASSERT_RETURN_ERROR(expr, error_var, error_code)             \
+{                                                                   \
+    if (!(expr)) {                                                  \
+        spdlog::log(                                                \
+            spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION},\
+            spdlog::level::err,                                     \
+            "ASSERT Failed: ({})", #expr                            \
+        );                                                          \
+        (error_var) = (error_code);                                 \
+        return (error_var);                                         \
+    }                                                               \
+}
+#else
+#define ASSERT_RETURN_ERROR(expr, error_var, error_code)             \
+{                                                                   \
+    if (!(expr)) {                                                  \
+        spdlog::log(                                                \
+            spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION},\
+            spdlog::level::err,                                     \
+            "ASSERT Failed: ({})", #expr                            \
+        );                                                          \
+        DEBUG_BREAK();                                              \
+        (error_var) = (error_code);                                 \
+        return (error_var);                                         \
+    }                                                               \
+}
+#endif
+
+/*---------------------------------------------
+Defer
+---------------------------------------------*/
+namespace fw {
+    template <typename Fn>
+    class scope_exit {
+    public:
+        explicit scope_exit(Fn&& fn) noexcept : fn_(std::move(fn)) {}
+        ~scope_exit() noexcept
+        {
+            if (!active_) return;
+
+            try { fn_(); }
+            catch (const std::exception& e) { spdlog::error("defer failed : {}", e.what()); }
+            catch (...) { spdlog::error("defer failed : unknown exception"); }
+        }
+
+        scope_exit(const scope_exit&) = delete;
+        scope_exit& operator=(const scope_exit&) = delete;
+
+        auto release() noexcept -> void { active_ = false; }
+
+    private:
+        Fn   fn_;
+        bool active_ = true;
+    };
+}
+
+#define FW_CONCAT_IMPL(a, b) a##b
+#define FW_CONCAT(a, b) FW_CONCAT_IMPL(a, b)
+#define DEFER(...) \
+    auto FW_CONCAT(defer_, __LINE__) = fw::scope_exit([&]() { __VA_ARGS__; })
+
 /*---------------------------------------------
 For Log
 ---------------------------------------------*/
@@ -160,5 +223,17 @@ namespace fw {
         MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.size()), &wstr[0], size_needed);
 
         return wstr;
+    }
+
+    inline auto to_wstring(const flatbuffers::String* s) -> std::wstring
+    {
+        if (!s) return {};
+        return fw::string_to_wstring(s->str());
+    }
+
+    inline auto create_string(flatbuffers::FlatBufferBuilder& builder, std::wstring_view ws)
+        -> flatbuffers::Offset<flatbuffers::String>
+    {
+        return builder.CreateString(fw::wstring_to_string(std::wstring{ ws }));
     }
 }
