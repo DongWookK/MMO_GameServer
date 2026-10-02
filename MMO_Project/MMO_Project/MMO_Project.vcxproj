@@ -171,6 +171,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="gobject.cpp" />
+    <ClCompile Include="character.cpp" />
+    <ClCompile Include="item_info.cpp" />
+    <ClCompile Include="item_status.cpp" />
+    <ClCompile Include="pc.cpp" />
+    <ClCompile Include="npc.cpp" />
+    <ClCompile Include="monster.cpp" />
+    <ClCompile Include="item.cpp" />
+    <ClCompile Include="drop_item.cpp" />
+    <ClCompile Include="teleport.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="main_server.cpp" />
     <ClCompile Include="user.cpp" />
@@ -178,6 +188,17 @@
     <ClCompile Include="troc_user.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="item_info.h" />
+    <ClInclude Include="item_status.h" />
+    <ClInclude Include="vec3.h" />
+    <ClInclude Include="gobject.h" />
+    <ClInclude Include="character.h" />
+    <ClInclude Include="pc.h" />
+    <ClInclude Include="npc.h" />
+    <ClInclude Include="monster.h" />
+    <ClInclude Include="item.h" />
+    <ClInclude Include="drop_item.h" />
+    <ClInclude Include="teleport.h" />
     <ClInclude Include="logger.h" />
     <ClInclude Include="macro_server.h" />
     <ClInclude Include="main_server.h" />
