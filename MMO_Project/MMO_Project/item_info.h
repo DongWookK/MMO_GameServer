@@ -7,8 +7,10 @@ public:
 	using no_t = uint32_t;
 	using type_t = common::item_type;
 
-public:
+private:
 	item_info() = default;
+
+public:
 	explicit item_info(no_t item_no, type_t type);
 
 	static auto get_default() -> const item_info&;
