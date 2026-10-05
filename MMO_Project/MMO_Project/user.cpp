@@ -49,3 +49,8 @@ auto user::get_pc() const -> const pc_s_ptr_t&
 {
 	return pc_;
 }
+
+auto user::get_session() const -> const session_s_ptr_t&
+{
+	return session_;
+}

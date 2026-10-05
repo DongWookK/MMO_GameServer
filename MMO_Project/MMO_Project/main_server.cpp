@@ -12,6 +12,7 @@
 #include <fstream>
 #include "server_sql.h"
 #include "user_sql.h"
+#include "pc_sql.h"
 
 main_server::~main_server() = default;
 
@@ -287,6 +288,7 @@ auto main_server::primary_thread_start() -> fw::error
     sql_reigsters_[game_db] = [](db_manager& game_db) -> void 
         {
             game_db.register_sql<user_sql>();
+            game_db.register_sql<pc_sql>();
             // ...
         };
 

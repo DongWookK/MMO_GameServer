@@ -62,5 +62,10 @@
   <ItemGroup>
     <Build Include="stored_procedure\usp_user_login.sql" />
     <Build Include="table\tb_user.sql" />
+    <Build Include="table\tb_pc.sql" />
+    <Build Include="stored_procedure\usp_pc_login_select.sql" />
+    <Build Include="stored_procedure\usp_pc_create_insert.sql" />
+    <Build Include="stored_procedure\usp_pc_list_select.sql" />
+    <Build Include="stored_procedure\usp_pc_save_update.sql" />
   </ItemGroup>
 </Project>

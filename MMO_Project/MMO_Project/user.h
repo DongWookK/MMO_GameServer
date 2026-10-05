@@ -21,6 +21,7 @@ public:
 	auto get_session_index() const -> const size_t;
 	auto get_user_no() const -> const user_no_t;
 	auto get_pc() const -> const pc_s_ptr_t&;
+	auto get_session() const -> const session_s_ptr_t&;
 
 private:
 	size_t index_{};

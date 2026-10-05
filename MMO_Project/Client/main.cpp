@@ -5,6 +5,7 @@
 #include <sstream>
 #include <windows.h>
 #include "enum_error_generated.h"
+#include "enum_common_generated.h"
 
 using namespace boost;
 using namespace std;
@@ -27,6 +28,8 @@ std::atomic<bool> is_receiving{ false };
 std::thread recv_thread;
 
 std::atomic<int32_t> last_user_no{ 0 };
+
+std::atomic<int64_t> last_pc_no{ 0 };
 std::string to_console(const std::string& acp_str)
 {
     if (acp_str.empty()) return {};
@@ -211,6 +214,67 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
         }
     } break;
 
+    case game::tr_type::PcCreateAck:
+    {
+        if (!verifier.VerifyBuffer<game::PcCreateAck>(nullptr)) {
+            std::cout << " > [Error] Invalid PcCreateAck FlatBuffer payload!" << endl;
+            return false;
+        }
+
+        auto create_pkt = flatbuffers::GetRoot<game::PcCreateAck>(body_buf.data());
+        if (create_pkt) {
+            last_pc_no = create_pkt->pc_no();
+            std::cout << " > PcCreateAck Pc No: " << create_pkt->pc_no()
+                      << ", Name: " << (create_pkt->pc_name() ? create_pkt->pc_name()->str() : "(null)")
+                      << ", Type: " << common::EnumNamepc_type(static_cast<common::pc_type>(create_pkt->pc_type())) << endl;
+        }
+    } break;
+
+    case game::tr_type::PcListNotify:
+    {
+        if (!verifier.VerifyBuffer<game::PcListNotify>(nullptr)) {
+            std::cout << " > [Error] Invalid PcListNotify FlatBuffer payload!" << endl;
+            return false;
+        }
+
+        auto list_pkt = flatbuffers::GetRoot<game::PcListNotify>(body_buf.data());
+        if (list_pkt) {
+            const auto count = list_pkt->pc_list() ? list_pkt->pc_list()->size() : 0;
+            std::cout << " > PcListNotify Count: " << count << endl;
+            if (list_pkt->pc_list()) {
+                for (const auto summary : *list_pkt->pc_list()) {
+                    std::cout << "   - Pc No: " << summary->pc_no()
+                              << ", Name: " << (summary->pc_name() ? summary->pc_name()->str() : "(null)")
+                              << ", Type: " << common::EnumNamepc_type(static_cast<common::pc_type>(summary->pc_type()))
+                              << ", Lv: " << summary->level() << endl;
+                    last_pc_no = summary->pc_no();
+                }
+            }
+        }
+    } break;
+
+    case game::tr_type::PcSelectAck:
+    {
+        if (!verifier.VerifyBuffer<game::PcSelectAck>(nullptr)) {
+            std::cout << " > [Error] Invalid PcSelectAck FlatBuffer payload!" << endl;
+            return false;
+        }
+
+        auto select_pkt = flatbuffers::GetRoot<game::PcSelectAck>(body_buf.data());
+        if (select_pkt) {
+            std::cout << " > PcSelectAck Object Id: " << select_pkt->object_id()
+                      << ", Pc No: " << select_pkt->pc_no()
+                      << ", Name: " << (select_pkt->pc_name() ? select_pkt->pc_name()->str() : "(null)")
+                      << ", Type: " << common::EnumNamepc_type(static_cast<common::pc_type>(select_pkt->pc_type()))
+                      << ", Lv: " << select_pkt->level() << ", Exp: " << select_pkt->exp()
+                      << ", HP: " << select_pkt->hp() << ", MP: " << select_pkt->mp();
+            if (auto pos = select_pkt->pos()) {
+                std::cout << ", Pos: (" << pos->x() << ", " << pos->y() << ", " << pos->z() << ")";
+            }
+            std::cout << endl;
+        }
+    } break;
+
     default:
     {
         std::cout << " > Unknown Packet Type: " << header.type << endl;
@@ -278,7 +342,8 @@ int main()
 
     std::string line{};
     bool out = true;
-    cout << "client ready (commands: connect, send_echo, send_login [user_name], send_logout, disconnect)" << endl;
+    cout << "client ready (commands: connect, send_echo, send_login [user_name], send_logout, "
+            "send_pc_create [pc_name] [pc_type], send_pc_select [pc_no], disconnect)" << endl;
 
     while (out)
     {
@@ -291,7 +356,8 @@ int main()
         std::istringstream iss(line);
         std::string message{};
         std::string arg{};
-        iss >> message >> arg;
+        std::string arg2{};
+        iss >> message >> arg >> arg2;
 
         if (message.empty())
         {
@@ -345,6 +411,24 @@ int main()
 
             send_packet(sock, game::tr_type::UserLogoutReq, [user_no](flatbuffers::FlatBufferBuilder& builder) {
                 return game::CreateUserLogoutReq(builder, std::to_underlying(game::tr_type::UserLogoutReq), user_no);
+                });
+        }
+        else if ("send_pc_create" == message)
+        {
+            const std::string pc_name = arg.empty() ? "test_pc" : arg;
+            const uint8_t pc_type = arg2.empty() ? 0 : static_cast<uint8_t>(std::atoi(arg2.c_str()));
+
+            send_packet(sock, game::tr_type::PcCreateReq, [&pc_name, pc_type](flatbuffers::FlatBufferBuilder& builder) {
+                auto name = builder.CreateString(pc_name);
+                return game::CreatePcCreateReq(builder, std::to_underlying(game::tr_type::PcCreateReq), name, pc_type);
+                });
+        }
+        else if ("send_pc_select" == message)
+        {
+            const int64_t pc_no = arg.empty() ? static_cast<int64_t>(last_pc_no) : std::atoll(arg.c_str());
+
+            send_packet(sock, game::tr_type::PcSelectReq, [pc_no](flatbuffers::FlatBufferBuilder& builder) {
+                return game::CreatePcSelectReq(builder, std::to_underlying(game::tr_type::PcSelectReq), pc_no);
                 });
         }
         else
