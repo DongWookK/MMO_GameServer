@@ -175,6 +175,9 @@
     <ClCompile Include="character.cpp" />
     <ClCompile Include="item_info.cpp" />
     <ClCompile Include="item_status.cpp" />
+    <ClCompile Include="map_manager.cpp" />
+    <ClCompile Include="game_map.cpp" />
+    <ClCompile Include="nav_mesh.cpp" />
     <ClCompile Include="pc.cpp" />
     <ClCompile Include="npc.cpp" />
     <ClCompile Include="monster.cpp" />
@@ -190,6 +193,9 @@
   <ItemGroup>
     <ClInclude Include="item_info.h" />
     <ClInclude Include="item_status.h" />
+    <ClInclude Include="map_manager.h" />
+    <ClInclude Include="game_map.h" />
+    <ClInclude Include="nav_mesh.h" />
     <ClInclude Include="vec3.h" />
     <ClInclude Include="gobject.h" />
     <ClInclude Include="character.h" />

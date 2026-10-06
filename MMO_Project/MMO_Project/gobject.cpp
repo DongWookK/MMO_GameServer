@@ -8,7 +8,7 @@ gobject::gobject(common::object_type type)
 {
 }
 
-auto gobject::spawn(map_id_t map_id, const vec3& pos, float heading) -> fw::error
+auto gobject::spawn(map_no_t map_id, const vec3& pos, float heading) -> fw::error
 {
 	ASSERT_RETURN_VALUE(!spawned_, error::code::object_spawn_fail);
 	ASSERT_RETURN_VALUE(map_id != invalid_map_id, error::code::object_spawn_fail);

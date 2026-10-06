@@ -7,11 +7,11 @@ class gobject : public std::enable_shared_from_this<gobject>
 {
 public:
 	using object_id_t = uint64_t;
-	using map_id_t = uint32_t;
+	using map_no_t = uint32_t;
 	using sector_id_t = uint32_t;
 
 	static constexpr object_id_t invalid_object_id = 0;
-	static constexpr map_id_t invalid_map_id = 0;
+	static constexpr map_no_t invalid_map_id = 0;
 	static constexpr sector_id_t invalid_sector_id = (std::numeric_limits<sector_id_t>::max)();
 
 public:
@@ -24,7 +24,7 @@ public:
 	gobject& operator=(gobject&&) = delete;
 
 public:
-	auto spawn(map_id_t map_id, const vec3& pos, float heading) -> fw::error;
+	auto spawn(map_no_t map_id, const vec3& pos, float heading) -> fw::error;
 	auto despawn() -> fw::error;
 
 	virtual auto is_movable() const -> bool { return false; }
@@ -34,7 +34,7 @@ public:
 	auto get_object_type() const -> common::object_type { return object_type_; }
 	auto is_spawned() const -> bool { return spawned_; }
 
-	auto get_map_id() const -> map_id_t { return map_id_; }
+	auto get_map_id() const -> map_no_t { return map_id_; }
 	auto get_pos() const -> const vec3& { return pos_; }
 	auto get_heading() const -> float { return heading_; }
 	auto get_sector_id() const -> sector_id_t { return sector_id_; }
@@ -55,7 +55,7 @@ private:
 	const common::object_type object_type_;
 
 	bool        spawned_ = false;
-	map_id_t    map_id_ = invalid_map_id;
+	map_no_t    map_id_ = invalid_map_id;
 	vec3        pos_{};
 	float       heading_ = 0.f;
 	sector_id_t sector_id_ = invalid_sector_id;

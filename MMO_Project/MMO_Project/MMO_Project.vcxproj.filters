@@ -41,6 +41,9 @@
     <Filter Include="Source Files\server\logger">
       <UniqueIdentifier>{7ebbfb62-66a1-4d65-85b5-56db10ce724d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\map">
+      <UniqueIdentifier>{da9af885-3cff-4e56-9dfc-71dc367832c1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gobject.cpp">
@@ -87,6 +90,15 @@
     </ClCompile>
     <ClCompile Include="item_status.cpp">
       <Filter>Source Files\item</Filter>
+    </ClCompile>
+    <ClCompile Include="map_manager.cpp">
+      <Filter>Source Files\map</Filter>
+    </ClCompile>
+    <ClCompile Include="game_map.cpp">
+      <Filter>Source Files\map</Filter>
+    </ClCompile>
+    <ClCompile Include="nav_mesh.cpp">
+      <Filter>Source Files\map</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -152,6 +164,15 @@
     </ClInclude>
     <ClInclude Include="item_status.h">
       <Filter>Source Files\item</Filter>
+    </ClInclude>
+    <ClInclude Include="map_manager.h">
+      <Filter>Source Files\map</Filter>
+    </ClInclude>
+    <ClInclude Include="game_map.h">
+      <Filter>Source Files\map</Filter>
+    </ClInclude>
+    <ClInclude Include="nav_mesh.h">
+      <Filter>Source Files\map</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
