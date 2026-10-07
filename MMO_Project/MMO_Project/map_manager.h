@@ -12,6 +12,8 @@ public:
 
 	static constexpr std::wstring_view nav_dir_name = L"nav";
 
+	static constexpr map_no_t default_map_no = 1;
+
 public:
 	map_manager()
 		: feature("map_manager")
@@ -26,6 +28,9 @@ public:
 
 public:
 	auto find_map(map_no_t map_no) const -> game_map*;
+
+	auto enter_map(const game_map::gobject_s_ptr_t& object, map_no_t map_no, const vec3& pos, float heading) -> fw::error;
+	auto exit_map(const game_map::gobject_s_ptr_t& object) -> fw::error;
 
 private:
 	static auto get_nav_dir() -> std::filesystem::path;

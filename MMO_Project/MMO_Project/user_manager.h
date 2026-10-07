@@ -120,6 +120,7 @@ public:
 
 private:
 	auto pc_save(const user_s_ptr_t& user, const pc_s_ptr_t& pc) -> fw::error;
+	auto rollback_pc_select(const user_s_ptr_t& user, const pc_s_ptr_t& pc) -> void;
 
 	// lock_ 을 이미 잡은 상태에서만 호출
 	auto find_user_nolock(size_t session_index) const -> user_s_ptr_t;

@@ -79,5 +79,7 @@
     <Build Include="info\stored_proceduere\usp_server_dsn_select.sql" />
     <Build Include="info\table\dt_map.sql" />
     <Build Include="info\stored_proceduere\usp_map_info_select.sql" />
+    <Build Include="info\table\dt_map_point.sql" />
+    <Build Include="info\stored_proceduere\usp_map_point_select.sql" />
   </ItemGroup>
 </Project>

@@ -15,6 +15,9 @@ public:
         error_code = prepare_map_info_select();
         ASSERT_RETURN_VALUE(!error_code, error_code);
 
+        error_code = prepare_map_point_select();
+        ASSERT_RETURN_VALUE(!error_code, error_code);
+
         return error_code;
     }
 
@@ -37,5 +40,24 @@ public:
     }
 
 private:
+    auto prepare_map_point_select() -> fw::error
+    {
+        return try_sql("map_info_sql::prepare_map_point_select", [&]
+            {
+                map_point_select_stmt_.prepare(conn_, NANODBC_TEXT("{CALL usp_map_point_select}"));
+            });
+    }
+
+public:
+    auto map_point_select(nanodbc::result& out_result) -> fw::error
+    {
+        return try_sql("map_info_sql::map_point_select", [&]
+            {
+                out_result = map_point_select_stmt_.execute();
+            });
+    }
+
+private:
     nanodbc::statement map_info_select_stmt_{};
+    nanodbc::statement map_point_select_stmt_{};
 };

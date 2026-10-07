@@ -271,6 +271,7 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
             if (auto pos = select_pkt->pos()) {
                 std::cout << ", Pos: (" << pos->x() << ", " << pos->y() << ", " << pos->z() << ")";
             }
+            std::cout << ", Map: " << select_pkt->map_no();
             std::cout << endl;
         }
     } break;

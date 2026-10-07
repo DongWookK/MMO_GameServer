@@ -3,6 +3,7 @@
 #include "user_manager.h"
 #include "user_sql.h"
 #include "pc_sql.h"
+#include "map_manager.h"
 #include "thread_local.h"
 #include <cwctype>
 
@@ -104,6 +105,16 @@ auto user_manager::user_logout(session_s_ptr_t session) -> fw::error
 			FLOG_ERROR("user_logout :: pc save fail pc({}) user({}) error({})"
 				, ingame_pc->get_pc_no(), user->get_user_no(), save_error.value());
 		}
+
+		if (ingame_pc->is_spawned())
+		{
+			auto leave_error = map_manager::instance()->exit_map(ingame_pc);
+			if (leave_error)
+			{
+				FLOG_ERROR("user_logout :: leave map fail pc({}) user({}) error({})"
+					, ingame_pc->get_pc_no(), user->get_user_no(), leave_error.value());
+			}
+		}
 	}
 
 	{
@@ -141,6 +152,7 @@ auto user_manager::pc_save(const user_s_ptr_t& user, const pc_s_ptr_t& pc) -> fw
 	param.exp = pc->get_exp();
 	param.hp = pc->get_hp();
 	param.mp = pc->get_mp();
+	param.map_no = static_cast<int32_t>(pc->get_map_id());
 	param.location_x = pos.x;
 	param.location_y = pos.y;
 	param.location_z = pos.z;
@@ -366,6 +378,7 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 	ASSERT_RETURN_VALUE(!error, fw::unexpected(error));
 
 	pc_s_ptr_t new_pc{};
+	gobject::map_no_t map_no = gobject::invalid_map_id;
 	try
 	{
 		if (result.next())
@@ -383,6 +396,8 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 			new_pc->set_hp(hp);
 			new_pc->set_max_mp(mp);
 			new_pc->set_mp(mp);
+
+			map_no = static_cast<gobject::map_no_t>(result.get<int32_t>(NANODBC_TEXT("map_no")));
 
 			// DB FLOAT == double
 			new_pc->set_pos(vec3{
@@ -405,27 +420,66 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 
 	new_pc->set_owner(user);
 
-	std::unique_lock lock(lock_);
-
-	if (find_user_nolock(session->get_index()) != user)
 	{
-		FLOG_WARN("pc_select :: user logged out during select pc({}) user({})", pc_no, user->get_user_no());
+		std::unique_lock lock(lock_);
+
+		if (find_user_nolock(session->get_index()) != user)
+		{
+			FLOG_WARN("pc_select :: user logged out during select pc({}) user({})", pc_no, user->get_user_no());
+			return fw::unexpected(error::code::user_not_exist);
+		}
+
+		if (user->get_pc() != nullptr)
+		{
+			FLOG_WARN("pc_select :: already selected pc({}) user({})", user->get_pc()->get_pc_no(), user->get_user_no());
+			return fw::unexpected(error::code::pc_already_selected);
+		}
+
+		auto [it, inserted] = pc_list_.insert(new_pc);
+		ASSERT_RETURN_VALUE(inserted, fw::unexpected(error::code::pc_already_in_game));
+
+		user->set_pc(new_pc);
+	}
+
+	error = map_manager::instance()->enter_map(new_pc, map_no, new_pc->get_pos(), new_pc->get_heading());
+	if (error)
+	{
+		FLOG_ERROR("pc_select :: enter map fail pc({}) user({}) map({}) error({})", pc_no, user->get_user_no(), map_no, error.value());
+		rollback_pc_select(user, new_pc);
+		return fw::unexpected(error);
+	}
+
+	bool still_selected = false;
+	{
+		std::shared_lock lock(lock_);
+		still_selected = (find_user_nolock(session->get_index()) == user && user->get_pc() == new_pc);
+	}
+
+	if (!still_selected)
+	{
+		FLOG_WARN("pc_select :: user logged out during enter map pc({}) user({})", pc_no, user->get_user_no());
+		if (new_pc->is_spawned())
+		{
+			map_manager::instance()->exit_map(new_pc);
+		}
+		rollback_pc_select(user, new_pc);
 		return fw::unexpected(error::code::user_not_exist);
 	}
 
-	if (user->get_pc() != nullptr)
-	{
-		FLOG_WARN("pc_select :: already selected pc({}) user({})", user->get_pc()->get_pc_no(), user->get_user_no());
-		return fw::unexpected(error::code::pc_already_selected);
-	}
-
-	auto [it, inserted] = pc_list_.insert(new_pc);
-	ASSERT_RETURN_VALUE(inserted, fw::unexpected(error::code::pc_already_in_game));
-
-	user->set_pc(new_pc);
-
-	// todo : 맵/섹터 구현 후 여기서 spawn
+	FLOG_INFO("pc_select :: pc({}) object({}) enter map({}) pos({}, {}, {})", pc_no, new_pc->get_object_id(), new_pc->get_map_id(),
+		new_pc->get_pos().x, new_pc->get_pos().y, new_pc->get_pos().z);
 	return new_pc;
+}
+
+auto user_manager::rollback_pc_select(const user_s_ptr_t& user, const pc_s_ptr_t& pc) -> void
+{
+	std::unique_lock lock(lock_);
+
+	pc_list_.get<tag_object_id>().erase(pc->get_object_id());
+	if (user->get_pc() == pc)
+	{
+		user->set_pc(nullptr);
+	}
 }
 
 auto user_manager::is_valid_name(std::wstring_view name, size_t max_len) -> bool

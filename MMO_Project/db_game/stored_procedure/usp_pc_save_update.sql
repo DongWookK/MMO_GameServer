@@ -3,6 +3,7 @@ title   : usp_pc_save_update
 desc    : 캐릭터 상태 저장 (로그아웃 / 접속 종료 시)
 
 2026.10.05 | 김동욱 | 최초 생성
+2026.10.08 | 김동욱 | map_no 추가
 
 return  : 0 = 성공
           1 = 저장할 캐릭터 없음 (pc_no / user_no 불일치)
@@ -14,6 +15,7 @@ CREATE PROCEDURE [dbo].[usp_pc_save_update]
     , @p_exp        BIGINT
     , @p_hp         INT
     , @p_mp         INT
+    , @p_map_no     INT
     , @p_location_x FLOAT
     , @p_location_y FLOAT
     , @p_location_z FLOAT
@@ -29,6 +31,7 @@ BEGIN
         , exp = @p_exp
         , hp = @p_hp
         , mp = @p_mp
+        , map_no = @p_map_no
         , location_x = @p_location_x
         , location_y = @p_location_y
         , location_z = @p_location_z

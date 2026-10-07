@@ -27,6 +27,7 @@ public:
         int64_t exp{};
         int32_t hp{};
         int32_t mp{};
+        int32_t map_no{};
         double  location_x{};
         double  location_y{};
         double  location_z{};
@@ -144,7 +145,7 @@ private:
     {
         return try_sql("pc_sql::prepare_pc_save_update", [&]
             {
-                pc_save_update_stmt_.prepare(conn_, NANODBC_TEXT("{? = CALL usp_pc_save_update(?,?,?,?,?,?,?,?,?)}"));
+                pc_save_update_stmt_.prepare(conn_, NANODBC_TEXT("{? = CALL usp_pc_save_update(?,?,?,?,?,?,?,?,?,?)}"));
 
                 pc_save_update_stmt_.bind(0, &save_return_, nanodbc::statement::PARAM_RETURN);
                 pc_save_update_stmt_.bind(1, &save_.user_no);
@@ -153,9 +154,10 @@ private:
                 pc_save_update_stmt_.bind(4, &save_.exp);
                 pc_save_update_stmt_.bind(5, &save_.hp);
                 pc_save_update_stmt_.bind(6, &save_.mp);
-                pc_save_update_stmt_.bind(7, &save_.location_x);
-                pc_save_update_stmt_.bind(8, &save_.location_y);
-                pc_save_update_stmt_.bind(9, &save_.location_z);
+                pc_save_update_stmt_.bind(7, &save_.map_no);
+                pc_save_update_stmt_.bind(8, &save_.location_x);
+                pc_save_update_stmt_.bind(9, &save_.location_y);
+                pc_save_update_stmt_.bind(10, &save_.location_z);
             });
     }
 

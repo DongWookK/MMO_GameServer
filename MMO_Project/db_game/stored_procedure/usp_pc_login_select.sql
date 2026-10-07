@@ -3,6 +3,7 @@ title   : usp_pc_login_select
 desc    : 캐릭터 선택, 게임 접속
 
 2026.10.05 | 김동욱 | 최초 생성
+2026.10.08 | 김동욱 | map_no 추가
 */ -----------------------------------------------------------
 CREATE PROCEDURE [dbo].[usp_pc_login_select]
     @p_user_no  INT
@@ -18,6 +19,7 @@ BEGIN
         , exp
         , hp
         , mp
+        , map_no
         , location_x
         , location_y
         , location_z

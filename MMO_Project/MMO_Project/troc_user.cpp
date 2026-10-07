@@ -141,7 +141,8 @@ HANDLER_TR_DEFINE(troc_user, PcSelectReq)
                                           , pc->get_exp()
                                           , pc->get_hp()
                                           , pc->get_mp()
-                                          , &pkt_pos);
+                                          , &pkt_pos
+                                          , pc->get_map_id());
     sess->send_packet(builder, offset);
 
     return error_code;
