@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "map_manager.h"
+#include "map_info_manager.h"
 
 auto map_manager::setup() -> fw::error
 {
@@ -8,18 +9,18 @@ auto map_manager::setup() -> fw::error
 
 	std::unique_lock lock(lock_);
 
-	for (const map_define& define : map_defines)
+	for (const auto& [map_no, info] : map_info_manager::instance()->get_map_infos())
 	{
-		auto map = std::make_unique<game_map>(define.map_id, define.name);
+		auto map = std::make_unique<game_map>(info);
 
 		auto error = map->load(nav_dir);
 		if (error)
 		{
-			FLOG_CRITICAL("map_manager :: map({}:{}) load failed. nav_dir({})", define.map_id, define.name, nav_dir.string());
+			FLOG_CRITICAL("map_manager :: map({}:{}) load failed. nav_dir({}) filename({})", map_no, fw::wstring_to_string(info.name), nav_dir.string(), fw::wstring_to_string(info.filename));
 			return error;
 		}
 
-		maps_.emplace(define.map_id, std::move(map));
+		maps_.emplace(map_no, std::move(map));
 	}
 
 	FLOG_INFO("map_manager :: {} map(s) loaded from {}", maps_.size(), nav_dir.string());
@@ -43,11 +44,11 @@ auto map_manager::teardown() -> fw::error
 	return fw::error{};
 }
 
-auto map_manager::find_map(map_no_t map_id) const -> game_map*
+auto map_manager::find_map(map_no_t map_no) const -> game_map*
 {
 	std::shared_lock lock(lock_);
 
-	auto it = maps_.find(map_id);
+	auto it = maps_.find(map_no);
 	return it != maps_.end() ? it->second.get() : nullptr;
 }
 

@@ -1,29 +1,30 @@
 #pragma once
 #include "pch.h"
-#include "gobject.h"
+#include "map_info_manager.h"
 #include "nav_mesh.h"
 
 class game_map
 {
 public:
-	using map_no_t = gobject::map_no_t;
+	using map_no_t = map_info::map_no_t;
 
 public:
-	game_map(map_no_t map_id, std::string_view name);
+	explicit game_map(const map_info& info);
 
 	game_map(const game_map&) = delete;
 	game_map& operator=(const game_map&) = delete;
 
 public:
-	// nav_dir / <name>.navmesh 로드
+	// nav_dir / <filename>.navmesh 로드
 	auto load(const std::filesystem::path& nav_dir) -> fw::error;
 
-	auto get_map_id() const -> map_no_t { return map_id_; }
-	auto get_name() const -> const std::string& { return name_; }
+	auto get_info() const -> const map_info& { return info_.get(); }
+	auto get_map_no() const -> map_no_t { return info_.get().map_no; }
+	auto get_type() const -> common::map_type { return info_.get().type; }
+	auto get_name() const -> const std::wstring& { return info_.get().name; }
 	auto get_nav() const -> const nav_mesh& { return nav_; }
 
 private:
-	const map_no_t map_id_;
-	const std::string name_;
+	std::reference_wrapper<const map_info> info_;
 	nav_mesh nav_;
 };

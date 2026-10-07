@@ -7,6 +7,7 @@
 #include "thread_local.h"
 #include "network_manager.h"
 #include "user_manager.h"
+#include "map_info_manager.h"
 #include "map_manager.h"
 #include "troc_user.h"
 #include <nlohmann/json.hpp>
@@ -14,6 +15,7 @@
 #include "server_sql.h"
 #include "user_sql.h"
 #include "pc_sql.h"
+#include "map_info_sql.h"
 
 main_server::~main_server() = default;
 
@@ -117,6 +119,7 @@ auto main_server::core_teardown() -> fw::error
 
 auto main_server::load_feature() -> void
 {
+    feature_list_.push_back(map_info_manager::instance());
     feature_list_.push_back(map_manager::instance());
     feature_list_.push_back(user_manager::instance());
     feature_list_.push_back(std::make_shared<troc_user>());
@@ -268,6 +271,7 @@ auto main_server::primary_thread_start() -> fw::error
     sql_reigsters_[info_db] = [](db_manager& info_db) -> void
         {
             info_db.register_sql<server_sql>();
+            info_db.register_sql<map_info_sql>();
             // ...
         };
 

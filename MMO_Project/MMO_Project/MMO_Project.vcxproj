@@ -175,6 +175,7 @@
     <ClCompile Include="character.cpp" />
     <ClCompile Include="item_info.cpp" />
     <ClCompile Include="item_status.cpp" />
+    <ClCompile Include="map_info_manager.cpp" />
     <ClCompile Include="map_manager.cpp" />
     <ClCompile Include="game_map.cpp" />
     <ClCompile Include="nav_mesh.cpp" />
@@ -193,6 +194,7 @@
   <ItemGroup>
     <ClInclude Include="item_info.h" />
     <ClInclude Include="item_status.h" />
+    <ClInclude Include="map_info_manager.h" />
     <ClInclude Include="map_manager.h" />
     <ClInclude Include="game_map.h" />
     <ClInclude Include="nav_mesh.h" />
@@ -215,6 +217,7 @@
     <ClInclude Include="troc_user.h" />
     <ClInclude Include="user_sql.h" />
     <ClInclude Include="pc_sql.h" />
+    <ClInclude Include="map_info_sql.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

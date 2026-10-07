@@ -44,6 +44,18 @@
     <Filter Include="Source Files\map">
       <UniqueIdentifier>{da9af885-3cff-4e56-9dfc-71dc367832c1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\map\object">
+      <UniqueIdentifier>{915c5cad-1147-4c9b-8846-2c9f5e3b5657}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\user\manager">
+      <UniqueIdentifier>{efc69d93-f0ad-48a9-aa06-da7e613fa262}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\map\troc">
+      <UniqueIdentifier>{8469404a-3f2c-4e91-a60e-e2b5db430082}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\map\manager">
+      <UniqueIdentifier>{945b3e2a-afe1-451b-bc9d-32617c657af1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gobject.cpp">
@@ -62,9 +74,6 @@
       <Filter>Source Files\user\troc</Filter>
     </ClCompile>
     <ClCompile Include="user.cpp">
-      <Filter>Source Files\user\object</Filter>
-    </ClCompile>
-    <ClCompile Include="user_manager.cpp">
       <Filter>Source Files\user\object</Filter>
     </ClCompile>
     <ClCompile Include="pc.cpp">
@@ -91,14 +100,20 @@
     <ClCompile Include="item_status.cpp">
       <Filter>Source Files\item</Filter>
     </ClCompile>
-    <ClCompile Include="map_manager.cpp">
-      <Filter>Source Files\map</Filter>
+    <ClCompile Include="user_manager.cpp">
+      <Filter>Source Files\user\manager</Filter>
     </ClCompile>
     <ClCompile Include="game_map.cpp">
-      <Filter>Source Files\map</Filter>
+      <Filter>Source Files\map\object</Filter>
     </ClCompile>
     <ClCompile Include="nav_mesh.cpp">
-      <Filter>Source Files\map</Filter>
+      <Filter>Source Files\map\object</Filter>
+    </ClCompile>
+    <ClCompile Include="map_manager.cpp">
+      <Filter>Source Files\map\manager</Filter>
+    </ClCompile>
+    <ClCompile Include="map_info_manager.cpp">
+      <Filter>Source Files\map\manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -135,9 +150,6 @@
     <ClInclude Include="user.h">
       <Filter>Source Files\user\object</Filter>
     </ClInclude>
-    <ClInclude Include="user_manager.h">
-      <Filter>Source Files\user\object</Filter>
-    </ClInclude>
     <ClInclude Include="server_sql.h">
       <Filter>Source Files\server</Filter>
     </ClInclude>
@@ -165,14 +177,23 @@
     <ClInclude Include="item_status.h">
       <Filter>Source Files\item</Filter>
     </ClInclude>
-    <ClInclude Include="map_manager.h">
-      <Filter>Source Files\map</Filter>
+    <ClInclude Include="user_manager.h">
+      <Filter>Source Files\user\manager</Filter>
     </ClInclude>
     <ClInclude Include="game_map.h">
-      <Filter>Source Files\map</Filter>
+      <Filter>Source Files\map\object</Filter>
     </ClInclude>
     <ClInclude Include="nav_mesh.h">
-      <Filter>Source Files\map</Filter>
+      <Filter>Source Files\map\object</Filter>
+    </ClInclude>
+    <ClInclude Include="map_manager.h">
+      <Filter>Source Files\map\manager</Filter>
+    </ClInclude>
+    <ClInclude Include="map_info_sql.h">
+      <Filter>Source Files\map\manager</Filter>
+    </ClInclude>
+    <ClInclude Include="map_info_manager.h">
+      <Filter>Source Files\map\manager</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
