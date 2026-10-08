@@ -6,6 +6,7 @@
 #include "thread_manager.h"
 #include "thread_local.h"
 #include "network_manager.h"
+#include "timer_manager.h"
 #include "user_manager.h"
 #include "map_info_manager.h"
 #include "map_manager.h"
@@ -81,6 +82,8 @@ auto main_server::core_setup() -> fw::error
     error_code = set_network_config();
     ASSERT_RETURN_VALUE(!error_code, error_code);
 
+    fw::timer_manager::instance()->setup(io_context_.get());
+
     return error_code;
 }
 
@@ -104,6 +107,7 @@ auto main_server::core_stop() -> fw::error
 {
     fw::error error_code{};
 
+    fw::timer_manager::instance()->stop();
     work_guard_.reset(); // thread run 탈출하게 허용
 
     error_code = thread_manager_->stop();

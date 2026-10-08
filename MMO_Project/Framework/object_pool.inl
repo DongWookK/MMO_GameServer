@@ -114,6 +114,8 @@ namespace fw
 	template <typename T>
 	typename CObjectPool<T>::Object CObjectPool<T>::AcquireObject()
 	{
+		std::lock_guard aLock(__mLocker);
+
 		if (IsFull())
 		{
 			if (__mIsExpandable)

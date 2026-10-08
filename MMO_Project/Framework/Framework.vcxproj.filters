@@ -32,6 +32,9 @@
     <Filter Include="util">
       <UniqueIdentifier>{2ce5afb0-d655-465c-8215-c826bbbda7ce}</UniqueIdentifier>
     </Filter>
+    <Filter Include="timer">
+      <UniqueIdentifier>{555a7ea8-dc59-4e2d-a779-f671868c6366}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="thread_local.h">
@@ -81,6 +84,9 @@
     </ClInclude>
     <ClInclude Include="pch.h">
       <Filter>util</Filter>
+    </ClInclude>
+    <ClInclude Include="timer_manager.h">
+      <Filter>timer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -191,6 +197,9 @@
     </ClCompile>
     <ClCompile Include="nanodbc_impl.cpp">
       <Filter>database</Filter>
+    </ClCompile>
+    <ClCompile Include="timer_manager.cpp">
+      <Filter>timer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -4,6 +4,7 @@
 #include "user_sql.h"
 #include "pc_sql.h"
 #include "map_manager.h"
+#include "timer_manager.h"
 #include "thread_local.h"
 #include <cwctype>
 
@@ -17,6 +18,19 @@ auto user_manager::setup() -> fw::error
 		1000,													// 4. pInitSize
 		false													// 5. pIsExpandable
 	);
+	ASSERT_RETURN_VALUE(!error_code, error_code);
+
+	error_code = pc_pool_.AllocateChunk<pc>(
+		[]() { return std::make_unique<pc>(); },
+		[](pc* p, size_t i) { p->set_pool_index(static_cast<gobject::pool_index_t>(i)); return 0; },
+		[](pc* p) {
+			fw::timer_manager::instance()->cancel_all(p->get_object_id().value);	// 이 사용자의 남은 타이머가 다음 사용자에게 울리지 않도록
+			p->on_release();
+		},
+		pc_pool_size,
+		false
+	);
+	ASSERT_RETURN_VALUE(!error_code, error_code);
 
 	return error_code;
 }
@@ -115,6 +129,9 @@ auto user_manager::user_logout(session_s_ptr_t session) -> fw::error
 					, ingame_pc->get_pc_no(), user->get_user_no(), leave_error.value());
 			}
 		}
+
+		// 로그아웃한 pc 의 타이머는 더 실행하지 않는다 (풀 반환 시에도 한 번 더 정리)
+		fw::timer_manager::instance()->cancel_all(ingame_pc->get_object_id().value);
 	}
 
 	{
@@ -388,7 +405,14 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 			const auto hp = result.get<int32_t>(NANODBC_TEXT("hp"));
 			const auto mp = result.get<int32_t>(NANODBC_TEXT("mp"));
 
-			new_pc = std::make_shared<pc>(pc_no, pc_name, pc_type);
+			new_pc = pc_pool_.AcquireObject();
+			if (new_pc == nullptr)
+			{
+				FLOG_ERROR("pc_select :: pc pool exhausted pc({}) user({})", pc_no, user->get_user_no());
+				return fw::unexpected(error::code::object_acquire_fail);
+			}
+
+			new_pc->init(pc_no, pc_name, pc_type);
 			new_pc->set_level(result.get<int32_t>(NANODBC_TEXT("level")));
 			new_pc->set_exp(result.get<int64_t>(NANODBC_TEXT("exp")));
 
@@ -466,7 +490,7 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 		return fw::unexpected(error::code::user_not_exist);
 	}
 
-	FLOG_INFO("pc_select :: pc({}) object({}) enter map({}) pos({}, {}, {})", pc_no, new_pc->get_object_id(), new_pc->get_map_id(),
+	FLOG_INFO("pc_select :: pc({}) object({}) enter map({}) pos({}, {}, {})", pc_no, new_pc->get_object_id().value, new_pc->get_map_id(),
 		new_pc->get_pos().x, new_pc->get_pos().y, new_pc->get_pos().z);
 	return new_pc;
 }

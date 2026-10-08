@@ -23,3 +23,15 @@ auto character::set_mp(int32_t mp) -> void
 {
 	mp_ = std::clamp(mp, 0, max_mp_);
 }
+
+auto character::on_release() -> void
+{
+	level_ = 1;
+	hp_ = 0;
+	max_hp_ = 0;
+	mp_ = 0;
+	max_mp_ = 0;
+	move_speed_ = 0.f;
+
+	gobject::on_release();
+}

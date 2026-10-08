@@ -53,7 +53,7 @@ auto game_map::enter(const gobject_s_ptr_t& object, const vec3& pos, float headi
 	if (!nav_.find_nearest_point(pos, spawn_pos))
 	{
 		spawn_pos = get_random_pc_spawn_pos();
-		FLOG_WARN("game_map :: map({}) object({}) pos({}, {}, {}) is not on navmesh -> spawn point({}, {}, {})", get_map_no(), object->get_object_id(),
+		FLOG_WARN("game_map :: map({}) object({}) pos({}, {}, {}) is not on navmesh -> spawn point({}, {}, {})", get_map_no(), object->get_object_id().value,
 			pos.x, pos.y, pos.z, spawn_pos.x, spawn_pos.y, spawn_pos.z);
 	}
 

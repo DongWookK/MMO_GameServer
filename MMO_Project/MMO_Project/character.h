@@ -25,6 +25,8 @@ public:
 	auto set_mp(int32_t mp) -> void;
 	auto set_move_speed(float move_speed) -> void { move_speed_ = move_speed; }
 
+	auto on_release() -> void override;
+
 protected:
 	explicit character(common::object_type type) : gobject(type) {}
 

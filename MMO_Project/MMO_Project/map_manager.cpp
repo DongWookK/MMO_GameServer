@@ -74,7 +74,7 @@ auto map_manager::enter_map(const game_map::gobject_s_ptr_t& object, map_no_t ma
 
 	if (map_no != gobject::invalid_map_id)
 	{
-		FLOG_WARN("map_manager :: object({}) map({}) can not enter -> default map({})", object->get_object_id(), map_no, default_map_no);
+		FLOG_WARN("map_manager :: object({}) map({}) can not enter -> default map({})", object->get_object_id().value, map_no, default_map_no);
 	}
 
 	return default_map->enter(object, default_map->get_random_pc_spawn_pos(), heading);

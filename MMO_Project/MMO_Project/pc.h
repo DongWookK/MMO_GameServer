@@ -15,7 +15,10 @@ public:
 	static constexpr pc_no_t invalid_pc_no = 0;
 
 public:
-	pc(pc_no_t pc_no, std::wstring_view name, pc_type_t pc_type);
+	pc();
+
+	auto init(pc_no_t pc_no, std::wstring_view name, pc_type_t pc_type) -> void;
+	auto on_release() -> void override;
 
 public:
 	auto get_pc_no() const -> pc_no_t { return pc_no_; }
@@ -29,9 +32,9 @@ public:
 	auto set_owner(const std::shared_ptr<user>& owner) -> void { owner_ = owner; }
 
 private:
-	const pc_no_t pc_no_;
-	const std::wstring name_;
-	const pc_type_t pc_type_;
+	pc_no_t pc_no_ = invalid_pc_no;
+	std::wstring name_{};
+	pc_type_t pc_type_{};
 	exp_t exp_ = 0;
 	user_w_ptr_t owner_{};
 };

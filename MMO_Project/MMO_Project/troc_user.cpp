@@ -133,7 +133,7 @@ HANDLER_TR_DEFINE(troc_user, PcSelectReq)
     flatbuffers::FlatBufferBuilder builder;
     auto offset = game::CreatePcSelectAck(builder
                                           , std::to_underlying(PacketTraits<game::PcSelectAck>::type)
-                                          , pc->get_object_id()
+                                          , pc->get_object_id().value
                                           , pc->get_pc_no()
                                           , fw::create_string(builder, pc->get_name())
                                           , std::to_underlying(pc->get_pc_type())

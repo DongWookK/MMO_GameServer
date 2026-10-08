@@ -31,7 +31,10 @@ public:
 	using user_s_ptr_t = object_t;
 	using session_s_ptr_t = std::shared_ptr<session>;
 	using pc_s_ptr_t = user::pc_s_ptr_t;
+	using pc_pool_t = fw::CObjectPool<pc>;
 	using user_no_t = int32_t;
+
+	static constexpr size_t pc_pool_size = 1000;
 
 	struct tag_user_no{};
 	struct tag_session{};
@@ -129,7 +132,8 @@ private:
 
 private:
 	mutable std::shared_mutex lock_{};
-	
+
+	pc_pool_t pc_pool_{};
 	pool_t user_pool_{};
 	login_user_container user_list_{};
 	pc_container pc_list_{};
