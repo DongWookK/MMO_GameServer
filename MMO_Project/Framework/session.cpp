@@ -71,6 +71,13 @@ auto ring_buffer::read_contiguose(void* dest, size_t offset, size_t len) -> void
 	}
 }
 
+auto ring_buffer::clear() -> void
+{
+	head_ = 0;
+	tail_ = 0;
+	size_ = 0;
+}
+
 /*-----------------------------------------------------
 *		session
 -------------------------------------------------------*/
@@ -89,7 +96,9 @@ auto session::on_accept() -> void
 {
 	FLOG_INFO("client connected :: session index ({})", index_);
 
-	read_from_socket(); // 비동기 수신 루프 시작
+	asio::post(strand_, [this, self = shared_from_this()]() {
+		read_from_socket();
+		});
 }
 
 auto session::reset() -> void
@@ -99,6 +108,12 @@ auto session::reset() -> void
 	{
 		socket_.close(ec);
 	}
+
+	ring_buffer_.clear();
+	send_queue_ = {};
+	is_writing_ = false;
+	disconnect_handler_ = nullptr;
+	disconnected_.store(false);
 }
 
 auto session::read_from_socket() -> void
@@ -179,22 +194,20 @@ void session::send(uint16_t packet_type, const uint8_t* data, size_t size) {
 	buffer.insert(buffer.end(), header_ptr, header_ptr + sizeof(packet_header));
 	buffer.insert(buffer.end(), data, data + size);
 
-	bool write_in_progress = false;
-	{
+	asio::post(strand_, [this, self = shared_from_this(), buffer = std::move(buffer)]() mutable {
+		if (disconnected_.load())
+		{
+			return;
+		}
+
 		send_queue_.push(std::move(buffer));
 
-		if (!is_writing_) {
+		if (!is_writing_)
+		{
 			is_writing_ = true;
-			write_in_progress = false;
+			do_write();
 		}
-		else {
-			write_in_progress = true;
-		}
-	}
-
-	if (!write_in_progress) {
-		do_write();
-	}
+		});
 }
 
 void session::do_write() {
@@ -234,6 +247,13 @@ auto session::set_disconnect_handler(disconnect_handler_t handler) -> void
 
 auto session::disconnect(const boost::system::error_code& ec) -> void
 {
+	asio::dispatch(strand_, [this, self = shared_from_this(), ec]() {
+		close_socket(ec);
+		});
+}
+
+auto session::close_socket(const boost::system::error_code& ec) -> void
+{
 	bool expected = false;
 
 	if (!disconnected_.compare_exchange_strong(expected, true))
@@ -263,6 +283,8 @@ auto session::disconnect(const boost::system::error_code& ec) -> void
 
 	if (disconnect_handler_)
 	{
-		disconnect_handler_(shared_from_this());
+		packet_dispatcher::instance()->post(shared_from_this(), [handler = disconnect_handler_, self = shared_from_this()]() {
+			handler(self);
+			});
 	}
 }

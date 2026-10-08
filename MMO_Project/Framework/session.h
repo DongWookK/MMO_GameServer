@@ -24,6 +24,7 @@ public:
     auto peek(void* dest, size_t len) const -> bool;	// 버퍼에서 데이터를 복사
     auto consume(size_t len) -> void;					// 파싱 완료 후 사용한 바이트만큼 헤드 이동 (Pop)
 	auto read_contiguose(void* dest, size_t offset, size_t len) -> void;
+    auto clear() -> void;
 
 private:
     std::vector<char> buffer_{};
@@ -39,9 +40,13 @@ struct PacketTraits;
 class session : public std::enable_shared_from_this<session>
 {
     using disconnect_handler_t = std::function<void(std::shared_ptr<session>)>;
+    using strand_t = asio::strand<asio::io_context::executor_type>;
 
 public:
-	explicit session(asio::io_context& io_context) : socket_(io_context) {}
+	explicit session(asio::io_context& io_context)
+        : strand_(asio::make_strand(io_context))
+        , socket_(strand_)
+    {}
 
 	auto set_index(size_t index) -> void;
 	auto get_index() const -> size_t;
@@ -54,6 +59,7 @@ public:
 
 private:
 	auto read_from_socket() -> void;
+	auto close_socket(const boost::system::error_code& ec) -> void;
 	auto process_packet() -> void;
 	auto on_packet_received(const packet_header& header, const uint8_t* body_ptr, size_t body_size) -> void;
 
@@ -66,15 +72,17 @@ public:
 
     void send(uint16_t packet_type, const flatbuffers::FlatBufferBuilder& builder);
     void send(uint16_t packet_type, const uint8_t* data, size_t size);
+
+private:
     auto do_write() -> void;
 
 private:
+    strand_t strand_;
 	tcp_t::socket socket_;
 	size_t index_{ 0 };
-	
+
     ring_buffer ring_buffer_{};
 
-    // todo - thread safe? atomic, concurrent queue,vector 활용 고민해볼것
     std::queue<std::vector<uint8_t>> send_queue_;
     bool is_writing_{};
 

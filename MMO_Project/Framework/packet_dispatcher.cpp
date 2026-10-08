@@ -29,11 +29,22 @@ auto packet_dispatcher::dispatch(const std::shared_ptr<session>& sess, uint16_t 
         return;
     }
 
-    uint64_t sess_id = sess->get_index();
-    size_t strand_idx = sess_id % strands_.size();
     auto body_copy = std::make_shared<std::vector<uint8_t>>(body_data, body_data + body_size);
-    
-    boost::asio::post(*strands_[strand_idx], [handler, sess, body_copy]() {
+
+    boost::asio::post(*get_strand(sess), [handler, sess, body_copy]() {
         handler(sess, body_copy->data(), body_copy->size());
         });
+}
+
+auto packet_dispatcher::post(const std::shared_ptr<session>& sess, std::function<void()> task) -> void
+{
+    ASSERT_RETURN(sess != nullptr);
+    ASSERT_RETURN(!strands_.empty());
+
+    boost::asio::post(*get_strand(sess), std::move(task));
+}
+
+auto packet_dispatcher::get_strand(const std::shared_ptr<session>& sess) const -> const strands_s_ptr_t&
+{
+    return strands_[sess->get_index() % strands_.size()];
 }

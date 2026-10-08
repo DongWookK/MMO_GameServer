@@ -49,6 +49,11 @@ public:
     auto set_strands(boost::asio::io_context* io_context, size_t strand_count) -> void;
     auto dispatch(const std::shared_ptr<session>& sess, uint16_t packet_id, const uint8_t* body_data, size_t body_size) -> void;
 
+    auto post(const std::shared_ptr<session>& sess, std::function<void()> task) -> void;
+
+private:
+    auto get_strand(const std::shared_ptr<session>& sess) const -> const strands_s_ptr_t&;
+
 private:
     std::vector<strands_s_ptr_t> strands_{};
     std::vector<raw_handler_t> handlers_;
