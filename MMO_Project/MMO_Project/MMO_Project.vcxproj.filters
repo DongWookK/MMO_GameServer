@@ -73,6 +73,9 @@
     <ClCompile Include="troc_user.cpp">
       <Filter>Source Files\user\troc</Filter>
     </ClCompile>
+    <ClCompile Include="troc_move.cpp">
+      <Filter>Source Files\map\troc</Filter>
+    </ClCompile>
     <ClCompile Include="user.cpp">
       <Filter>Source Files\user\object</Filter>
     </ClCompile>
@@ -137,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="troc_user.h">
       <Filter>Source Files\user\troc</Filter>
+    </ClInclude>
+    <ClInclude Include="troc_move.h">
+      <Filter>Source Files\map\troc</Filter>
     </ClInclude>
     <ClInclude Include="macro_server.h">
       <Filter>Source Files\server\util</Filter>

@@ -190,6 +190,7 @@
     <ClCompile Include="user.cpp" />
     <ClCompile Include="user_manager.cpp" />
     <ClCompile Include="troc_user.cpp" />
+    <ClCompile Include="troc_move.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="item_info.h" />
@@ -215,6 +216,7 @@
     <ClInclude Include="user.h" />
     <ClInclude Include="user_manager.h" />
     <ClInclude Include="troc_user.h" />
+    <ClInclude Include="troc_move.h" />
     <ClInclude Include="user_sql.h" />
     <ClInclude Include="pc_sql.h" />
     <ClInclude Include="map_info_sql.h" />

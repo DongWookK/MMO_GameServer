@@ -276,6 +276,23 @@ bool read_from_socket(asio::ip::tcp::socket& sock)
         }
     } break;
 
+    case game::tr_type::MoveNotify:
+    {
+        if (!verifier.VerifyBuffer<game::MoveNotify>(nullptr)) {
+            std::cout << " > [Error] Invalid MoveNotify FlatBuffer payload!" << endl;
+            return false;
+        }
+
+        auto move_pkt = flatbuffers::GetRoot<game::MoveNotify>(body_buf.data());
+        std::cout << " > MoveNotify Object Id: " << move_pkt->object_id() << ", Speed: " << move_pkt->speed() << ", Path:";
+        if (auto path = move_pkt->path()) {
+            for (const auto* point : *path) {
+                std::cout << " (" << point->x() << ", " << point->y() << ", " << point->z() << ")";
+            }
+        }
+        std::cout << endl;
+    } break;
+
     default:
     {
         std::cout << " > Unknown Packet Type: " << header.type << endl;
@@ -344,7 +361,7 @@ int main()
     std::string line{};
     bool out = true;
     cout << "client ready (commands: connect, send_echo, send_login [user_name], send_logout, "
-            "send_pc_create [pc_name] [pc_type], send_pc_select [pc_no], disconnect)" << endl;
+            "send_pc_create [pc_name] [pc_type], send_pc_select [pc_no], send_move <x> <y> <z>, disconnect)" << endl;
 
     while (out)
     {
@@ -358,7 +375,8 @@ int main()
         std::string message{};
         std::string arg{};
         std::string arg2{};
-        iss >> message >> arg >> arg2;
+        std::string arg3{};
+        iss >> message >> arg >> arg2 >> arg3;
 
         if (message.empty())
         {
@@ -422,6 +440,14 @@ int main()
             send_packet(sock, game::tr_type::PcCreateReq, [&pc_name, pc_type](flatbuffers::FlatBufferBuilder& builder) {
                 auto name = builder.CreateString(pc_name);
                 return game::CreatePcCreateReq(builder, std::to_underlying(game::tr_type::PcCreateReq), name, pc_type);
+                });
+        }
+        else if ("send_move" == message)
+        {
+            const game::Vec3 dest{ static_cast<float>(std::atof(arg.c_str())), static_cast<float>(std::atof(arg2.c_str())), static_cast<float>(std::atof(arg3.c_str())) };
+
+            send_packet(sock, game::tr_type::MoveReq, [&dest](flatbuffers::FlatBufferBuilder& builder) {
+                return game::CreateMoveReq(builder, std::to_underlying(game::tr_type::MoveReq), &dest);
                 });
         }
         else if ("send_pc_select" == message)

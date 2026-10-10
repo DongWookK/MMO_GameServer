@@ -11,6 +11,7 @@
 #include "map_info_manager.h"
 #include "map_manager.h"
 #include "troc_user.h"
+#include "troc_move.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include "server_sql.h"
@@ -127,6 +128,7 @@ auto main_server::load_feature() -> void
     feature_list_.push_back(map_manager::instance());
     feature_list_.push_back(user_manager::instance());
     feature_list_.push_back(std::make_shared<troc_user>());
+    feature_list_.push_back(std::make_shared<troc_move>());
 
     return;
 }

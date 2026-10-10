@@ -81,6 +81,7 @@ public:
 	auto find_pc_by_object_id(gobject::object_id_t object_id) const -> pc_s_ptr_t;
 	auto find_pc_by_pc_no(pc::pc_no_t pc_no) const -> pc_s_ptr_t;
 	auto find_pc_by_name(std::wstring_view pc_name) const -> pc_s_ptr_t;
+	auto find_pc_by_session(session_s_ptr_t session) const -> pc_s_ptr_t;	// 세션이 선택한(게임 중인) pc
 
 	template <typename T>
 	auto broadcast(flatbuffers::FlatBufferBuilder& builder, flatbuffers::Offset<T> offset) -> void

@@ -113,6 +113,9 @@ auto user_manager::user_logout(session_s_ptr_t session) -> fw::error
 
 	if (ingame_pc != nullptr)
 	{
+		// 이동 중이면 현재 위치를 확정하고 멈춘 뒤 저장
+		ingame_pc->stop_move(character::clock_t::now());
+
 		auto save_error = pc_save(user, ingame_pc);
 		if (save_error)
 		{
@@ -130,7 +133,6 @@ auto user_manager::user_logout(session_s_ptr_t session) -> fw::error
 			}
 		}
 
-		// 로그아웃한 pc 의 타이머는 더 실행하지 않는다 (풀 반환 시에도 한 번 더 정리)
 		fw::timer_manager::instance()->cancel_all(ingame_pc->get_object_id().value);
 	}
 
@@ -247,6 +249,19 @@ auto user_manager::find_pc_by_name(std::wstring_view pc_name) const -> pc_s_ptr_
 	}
 
 	return *it;
+}
+
+auto user_manager::find_pc_by_session(session_s_ptr_t session) const -> pc_s_ptr_t
+{
+	if (session == nullptr)
+	{
+		return nullptr;
+	}
+
+	std::shared_lock lock(lock_);
+
+	auto user = find_user_nolock(session->get_index());
+	return user != nullptr ? user->get_pc() : nullptr;	// user::pc_ 는 lock_ 안에서 복사
 }
 
 auto user_manager::pc_list(session_s_ptr_t session) -> fw::expected<std::vector<pc_summary>>
@@ -420,6 +435,7 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 			new_pc->set_hp(hp);
 			new_pc->set_max_mp(mp);
 			new_pc->set_mp(mp);
+			new_pc->set_move_speed(character::default_move_speed);
 
 			map_no = static_cast<gobject::map_no_t>(result.get<int32_t>(NANODBC_TEXT("map_no")));
 
