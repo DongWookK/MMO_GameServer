@@ -129,6 +129,42 @@ For Code
 #endif
 
 /*---------------------------------------------
+For Coroutine
+---------------------------------------------*/
+#ifdef NDEBUG
+#define CO_ASSERT_DEBUG_BREAK()
+#else
+#define CO_ASSERT_DEBUG_BREAK() DEBUG_BREAK()
+#endif
+
+#define CO_ASSERT_RETURN_VALUE(expr, error_code)                     \
+{                                                                   \
+    if (!(expr)) {                                                  \
+        spdlog::log(                                                \
+            spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION},\
+            spdlog::level::err,                                     \
+            "ASSERT Failed: ({})", #expr                            \
+        );                                                          \
+        CO_ASSERT_DEBUG_BREAK();                                    \
+        co_return error_code;                                       \
+    }                                                               \
+}
+
+#define CO_ASSERT_RETURN_ERROR(expr, error_var, error_code)          \
+{                                                                   \
+    if (!(expr)) {                                                  \
+        spdlog::log(                                                \
+            spdlog::source_loc{__FILE__, __LINE__, SPDLOG_FUNCTION},\
+            spdlog::level::err,                                     \
+            "ASSERT Failed: ({})", #expr                            \
+        );                                                          \
+        CO_ASSERT_DEBUG_BREAK();                                    \
+        (error_var) = (error_code);                                 \
+        co_return;                                                  \
+    }                                                               \
+}
+
+/*---------------------------------------------
 Defer
 ---------------------------------------------*/
 namespace fw {

@@ -3,6 +3,7 @@
 #include "game_generated.h"
 #include "enum_game_generated.h"
 #include "packet_dispatcher.h"
+#include "coroutine.h"
 
 // game::TestEcho 타입이 정의된 헤더(game_generated.h) 뒤에 배치
 DECLARE_PACKET_TRAITS(game::tr_type::TestEcho, TestEcho);
@@ -43,4 +44,6 @@ public:
 
 private:
     auto send_pc_list_notify(const std::shared_ptr<session>& sess) -> void;
+
+    auto co_pc_select(std::shared_ptr<session> sess, int64_t pc_no) -> fw::awaitable<void>;
 };

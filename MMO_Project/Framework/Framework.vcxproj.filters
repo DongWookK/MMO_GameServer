@@ -88,6 +88,9 @@
     <ClInclude Include="timer_manager.h">
       <Filter>timer</Filter>
     </ClInclude>
+    <ClInclude Include="coroutine.h">
+      <Filter>thread</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="thread_local.cpp">
@@ -200,6 +203,9 @@
     </ClCompile>
     <ClCompile Include="timer_manager.cpp">
       <Filter>timer</Filter>
+    </ClCompile>
+    <ClCompile Include="coroutine.cpp">
+      <Filter>thread</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

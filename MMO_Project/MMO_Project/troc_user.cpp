@@ -120,11 +120,18 @@ HANDLER_TR_DEFINE(troc_user, PcSelectReq)
 {
     ASSERT_RETURN_VALUE(sess != nullptr, error::code::session_invalid);
 
+    fw::co_executor::co_start(sess, co_pc_select(sess, pkt->pc_no()), "PcSelectReq");
+
+    return fw::error{};
+}
+
+auto troc_user::co_pc_select(std::shared_ptr<session> sess, int64_t pc_no) -> fw::awaitable<void>
+{
     fw::error error_code{};
     DEFER_NAK(PcSelectReq, error_code);
 
-    auto select_result = user_manager::instance()->pc_select(sess, pkt->pc_no());
-    ASSERT_RETURN_ERROR(select_result.has_value(), error_code, select_result.error());
+    auto select_result = co_await user_manager::instance()->pc_select(sess, pc_no);
+    CO_ASSERT_RETURN_ERROR(select_result.has_value(), error_code, select_result.error());
 
     const auto& pc = *select_result;
     const auto& pos = pc->get_pos();
@@ -144,6 +151,4 @@ HANDLER_TR_DEFINE(troc_user, PcSelectReq)
                                           , &pkt_pos
                                           , pc->get_map_id());
     sess->send_packet(builder, offset);
-
-    return error_code;
 }

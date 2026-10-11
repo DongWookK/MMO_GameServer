@@ -159,6 +159,7 @@
     <ClInclude Include="error.hpp" />
     <ClInclude Include="packet_dispatcher.h" />
     <ClInclude Include="timer_manager.h" />
+    <ClInclude Include="coroutine.h" />
     <ClInclude Include="session.h" />
     <ClInclude Include="feature.h" />
     <ClInclude Include="macro.h" />
@@ -260,6 +261,7 @@
     <ClCompile Include="object_pool.inl" />
     <ClCompile Include="packet_dispatcher.cpp" />
     <ClCompile Include="timer_manager.cpp" />
+    <ClCompile Include="coroutine.cpp" />
     <ClCompile Include="session.cpp" />
     <ClCompile Include="thread_local.cpp" />
     <ClCompile Include="thread_manager.cpp" />

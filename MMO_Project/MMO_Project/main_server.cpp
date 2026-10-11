@@ -7,6 +7,7 @@
 #include "thread_local.h"
 #include "network_manager.h"
 #include "timer_manager.h"
+#include "coroutine.h"
 #include "user_manager.h"
 #include "map_info_manager.h"
 #include "map_manager.h"
@@ -110,8 +111,12 @@ auto main_server::core_stop() -> fw::error
 
     fw::timer_manager::instance()->stop();
     work_guard_.reset(); // thread run 탈출하게 허용
+    db_work_guard_.reset();
 
     error_code = thread_manager_->stop();
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
+
+    error_code = db_thread_manager_->stop();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;
@@ -232,6 +237,19 @@ auto main_server::set_thread_config() -> fw::error
     packet_dispatcher::instance()->set_strands(io_context_.get(), thread_count);
     error_code = thread_manager_->setup();
     ASSERT_RETURN_VALUE(!(error_code), error_code);
+
+    const auto db_thread_count = (std::max)(thread_count / 2, 1u);
+
+    db_io_context_ = std::make_unique<worker_context_t>();
+    db_work_guard_ = std::make_unique<work_guard_t>(db_io_context_->get_executor());
+    db_thread_manager_ = std::make_unique<fw::thread_manager>(db_io_context_.get(), db_thread_count);
+
+    error_code = db_thread_manager_->setup();
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
+
+    FLOG_INFO("thread config :: worker({}) db_worker({})", thread_count, db_thread_count);
+
+    fw::co_executor::instance()->setup(db_io_context_.get());
 
     return error_code;
 }
@@ -358,6 +376,9 @@ auto main_server::thread_manager_start() -> fw::error
     auto error_code = fw::error{};
     
     error_code = thread_manager_->start(db_conn_str_list_, sql_reigsters_);
+    ASSERT_RETURN_VALUE(!(error_code), error_code);
+
+    error_code = db_thread_manager_->start(db_conn_str_list_, sql_reigsters_);
     ASSERT_RETURN_VALUE(!(error_code), error_code);
 
     return error_code;

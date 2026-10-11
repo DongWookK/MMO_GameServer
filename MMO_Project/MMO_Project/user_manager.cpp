@@ -367,11 +367,51 @@ auto user_manager::pc_create(session_s_ptr_t session, std::wstring_view pc_name,
 	return pc_no;
 }
 
-auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::expected<pc_s_ptr_t>
+auto user_manager::pc_load_select(user_no_t user_no, pc::pc_no_t pc_no) -> fw::expected<pc_load_row>
+{
+	auto sql = fw::get_sql<pc_sql>();
+	ASSERT_RETURN_VALUE(sql != nullptr, fw::unexpected(error::code::sql_stmt_invalid));
+
+	nanodbc::result result;
+	auto error = sql->pc_login_select(user_no, pc_no, result);
+	ASSERT_RETURN_VALUE(!error, fw::unexpected(error));
+
+	try
+	{
+		if (!result.next())
+		{
+			return fw::unexpected(error::code::pc_not_exist);
+		}
+
+		pc_load_row row{};
+		row.pc_name = result.get<std::wstring>(NANODBC_TEXT("pc_name"));
+		row.pc_type = static_cast<common::pc_type>(result.get<uint8_t>(NANODBC_TEXT("pc_type")));
+		row.level = result.get<int32_t>(NANODBC_TEXT("level"));
+		row.exp = result.get<int64_t>(NANODBC_TEXT("exp"));
+		row.hp = result.get<int32_t>(NANODBC_TEXT("hp"));
+		row.mp = result.get<int32_t>(NANODBC_TEXT("mp"));
+		row.map_no = static_cast<gobject::map_no_t>(result.get<int32_t>(NANODBC_TEXT("map_no")));
+
+		// DB FLOAT == double
+		row.pos = vec3{
+			static_cast<float>(result.get<double>(NANODBC_TEXT("location_x"))),
+			static_cast<float>(result.get<double>(NANODBC_TEXT("location_y"))),
+			static_cast<float>(result.get<double>(NANODBC_TEXT("location_z"))) };
+
+		return row;
+	}
+	catch (const std::exception& e)
+	{
+		FLOG_ERROR("pc_load_select :: result read fail pc({}) user({}) -> {}", pc_no, user_no, e.what());
+		return fw::unexpected(error::code::sql_fail);
+	}
+}
+
+auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::awaitable<fw::expected<pc_s_ptr_t>>
 {
 	auto error = fw::error{};
 
-	ASSERT_RETURN_VALUE(session != nullptr, fw::unexpected(error::code::session_invalid));
+	CO_ASSERT_RETURN_VALUE(session != nullptr, fw::unexpected(error::code::session_invalid));
 
 	user_s_ptr_t user{};
 	pc_s_ptr_t selected_pc{};
@@ -387,78 +427,54 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 	if (user == nullptr)
 	{
 		FLOG_WARN("pc_select :: not login session({})", session->get_index());
-		return fw::unexpected(error::code::user_not_exist);
+		co_return fw::unexpected(error::code::user_not_exist);
 	}
 
 	if (selected_pc != nullptr)
 	{
 		FLOG_WARN("pc_select :: already selected pc({}) user({})", selected_pc->get_pc_no(), user->get_user_no());
-		return fw::unexpected(error::code::pc_already_selected);
+		co_return fw::unexpected(error::code::pc_already_selected);
 	}
 
 	if (find_pc_by_pc_no(pc_no) != nullptr)
 	{
 		FLOG_WARN("pc_select :: pc({}) already in game user({})", pc_no, user->get_user_no());
-		return fw::unexpected(error::code::pc_already_in_game);
+		co_return fw::unexpected(error::code::pc_already_in_game);
 	}
 
-	auto sql = fw::get_sql<pc_sql>();
-	ASSERT_RETURN_VALUE(sql != nullptr, fw::unexpected(error::code::sql_stmt_invalid));
+	const auto user_no = user->get_user_no();
 
-	nanodbc::result result;
-	error = sql->pc_login_select(user->get_user_no(), pc_no, result);
-	ASSERT_RETURN_VALUE(!error, fw::unexpected(error));
+	co_await fw::co_executor::instance()->to_db();
+	auto load_result = pc_load_select(user_no, pc_no);
+	co_await fw::co_executor::to_session(session);
 
-	pc_s_ptr_t new_pc{};
-	gobject::map_no_t map_no = gobject::invalid_map_id;
-	try
+	if (!load_result.has_value())
 	{
-		if (result.next())
-		{
-			const auto pc_name = result.get<std::wstring>(NANODBC_TEXT("pc_name"));
-			const auto pc_type = static_cast<common::pc_type>(result.get<uint8_t>(NANODBC_TEXT("pc_type")));
-			const auto hp = result.get<int32_t>(NANODBC_TEXT("hp"));
-			const auto mp = result.get<int32_t>(NANODBC_TEXT("mp"));
-
-			new_pc = pc_pool_.AcquireObject();
-			if (new_pc == nullptr)
-			{
-				FLOG_ERROR("pc_select :: pc pool exhausted pc({}) user({})", pc_no, user->get_user_no());
-				return fw::unexpected(error::code::object_acquire_fail);
-			}
-
-			new_pc->init(pc_no, pc_name, pc_type);
-			new_pc->set_level(result.get<int32_t>(NANODBC_TEXT("level")));
-			new_pc->set_exp(result.get<int64_t>(NANODBC_TEXT("exp")));
-
-			new_pc->set_max_hp(hp);
-			new_pc->set_hp(hp);
-			new_pc->set_max_mp(mp);
-			new_pc->set_mp(mp);
-			new_pc->set_move_speed(character::default_move_speed);
-
-			map_no = static_cast<gobject::map_no_t>(result.get<int32_t>(NANODBC_TEXT("map_no")));
-
-			// DB FLOAT == double
-			new_pc->set_pos(vec3{
-				static_cast<float>(result.get<double>(NANODBC_TEXT("location_x"))),
-				static_cast<float>(result.get<double>(NANODBC_TEXT("location_y"))),
-				static_cast<float>(result.get<double>(NANODBC_TEXT("location_z"))) });
-		}
-	}
-	catch (const std::exception& e)
-	{
-		FLOG_ERROR("pc_select :: result read fail pc({}) user({}) -> {}", pc_no, user->get_user_no(), e.what());
-		return fw::unexpected(error::code::sql_fail);
+		FLOG_WARN("pc_select :: load fail pc({}) user({}) error({})", pc_no, user_no, load_result.error().value());
+		co_return fw::unexpected(load_result.error());
 	}
 
+	const pc_load_row& row = *load_result;
+
+	pc_s_ptr_t new_pc = pc_pool_.AcquireObject();
 	if (new_pc == nullptr)
 	{
-		FLOG_WARN("pc_select :: pc not exist pc({}) user({})", pc_no, user->get_user_no());
-		return fw::unexpected(error::code::pc_not_exist);
+		FLOG_ERROR("pc_select :: pc pool exhausted pc({}) user({})", pc_no, user_no);
+		co_return fw::unexpected(error::code::object_acquire_fail);
 	}
 
+	new_pc->init(pc_no, row.pc_name, row.pc_type);
+	new_pc->set_level(row.level);
+	new_pc->set_exp(row.exp);
+	new_pc->set_max_hp(row.hp);
+	new_pc->set_hp(row.hp);
+	new_pc->set_max_mp(row.mp);
+	new_pc->set_mp(row.mp);
+	new_pc->set_move_speed(character::default_move_speed);
+	new_pc->set_pos(row.pos);
 	new_pc->set_owner(user);
+
+	const gobject::map_no_t map_no = row.map_no;
 
 	{
 		std::unique_lock lock(lock_);
@@ -466,17 +482,17 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 		if (find_user_nolock(session->get_index()) != user)
 		{
 			FLOG_WARN("pc_select :: user logged out during select pc({}) user({})", pc_no, user->get_user_no());
-			return fw::unexpected(error::code::user_not_exist);
+			co_return fw::unexpected(error::code::user_not_exist);
 		}
 
 		if (user->get_pc() != nullptr)
 		{
 			FLOG_WARN("pc_select :: already selected pc({}) user({})", user->get_pc()->get_pc_no(), user->get_user_no());
-			return fw::unexpected(error::code::pc_already_selected);
+			co_return fw::unexpected(error::code::pc_already_selected);
 		}
 
 		auto [it, inserted] = pc_list_.insert(new_pc);
-		ASSERT_RETURN_VALUE(inserted, fw::unexpected(error::code::pc_already_in_game));
+		CO_ASSERT_RETURN_VALUE(inserted, fw::unexpected(error::code::pc_already_in_game));
 
 		user->set_pc(new_pc);
 	}
@@ -486,7 +502,7 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 	{
 		FLOG_ERROR("pc_select :: enter map fail pc({}) user({}) map({}) error({})", pc_no, user->get_user_no(), map_no, error.value());
 		rollback_pc_select(user, new_pc);
-		return fw::unexpected(error);
+		co_return fw::unexpected(error);
 	}
 
 	bool still_selected = false;
@@ -503,12 +519,12 @@ auto user_manager::pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::
 			map_manager::instance()->exit_map(new_pc);
 		}
 		rollback_pc_select(user, new_pc);
-		return fw::unexpected(error::code::user_not_exist);
+		co_return fw::unexpected(error::code::user_not_exist);
 	}
 
 	FLOG_INFO("pc_select :: pc({}) object({}) enter map({}) pos({}, {}, {})", pc_no, new_pc->get_object_id().value, new_pc->get_map_id(),
 		new_pc->get_pos().x, new_pc->get_pos().y, new_pc->get_pos().z);
-	return new_pc;
+	co_return new_pc;
 }
 
 auto user_manager::rollback_pc_select(const user_s_ptr_t& user, const pc_s_ptr_t& pc) -> void

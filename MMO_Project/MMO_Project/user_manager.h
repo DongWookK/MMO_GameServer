@@ -7,6 +7,7 @@
 #include <shared_mutex>
 
 #include "object_pool.hpp"
+#include "coroutine.h"
 #include "user.h"
 #include "pc.h"
 
@@ -120,9 +121,22 @@ public:
 
 	auto pc_list(session_s_ptr_t session) -> fw::expected<std::vector<pc_summary>>;
 	auto pc_create(session_s_ptr_t session, std::wstring_view pc_name, common::pc_type pc_type) -> fw::expected<pc::pc_no_t>;
-	auto pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::expected<pc_s_ptr_t>;
+	auto pc_select(session_s_ptr_t session, pc::pc_no_t pc_no) -> fw::awaitable<fw::expected<pc_s_ptr_t>>;
 
 private:
+	struct pc_load_row
+	{
+		std::wstring pc_name{};
+		common::pc_type pc_type{};
+		int32_t level{};
+		int64_t exp{};
+		int32_t hp{};
+		int32_t mp{};
+		gobject::map_no_t map_no{ gobject::invalid_map_id };
+		vec3 pos{};
+	};
+
+	static auto pc_load_select(user_no_t user_no, pc::pc_no_t pc_no) -> fw::expected<pc_load_row>;
 	auto pc_save(const user_s_ptr_t& user, const pc_s_ptr_t& pc) -> fw::error;
 	auto rollback_pc_select(const user_s_ptr_t& user, const pc_s_ptr_t& pc) -> void;
 

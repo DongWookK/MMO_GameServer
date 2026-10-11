@@ -6,8 +6,6 @@ struct packet_header;
 
 template <typename T>
 using packet_handler_t = std::function<void(const std::shared_ptr<session>&, const T*)>;
-
-// 내부 저장을 위한 로우 바이트 핸들러 타입 (기존과 동일)
 using raw_handler_t = std::function<void(const std::shared_ptr<session>&, const uint8_t*, size_t)>;
 
 class packet_dispatcher : public singleton<packet_dispatcher>
@@ -26,7 +24,6 @@ public:
             handlers_.resize(packet_id + 1);
         }
 
-        // 바이트 데이터를 FlatBuffer 객체로 변환하는 람다 함수로 감싸서 저장
         handlers_[packet_id] = [handler = std::move(handler)](const std::shared_ptr<session>& sess,
             const uint8_t* body_data,
             size_t body_size)
@@ -51,7 +48,6 @@ public:
 
     auto post(const std::shared_ptr<session>& sess, std::function<void()> task) -> void;
 
-private:
     auto get_strand(const std::shared_ptr<session>& sess) const -> const strands_s_ptr_t&;
 
 private:

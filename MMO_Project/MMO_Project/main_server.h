@@ -71,6 +71,10 @@ private:
 	std::unique_ptr<work_guard_t> work_guard_;
 	std::unique_ptr<fw::thread_manager> thread_manager_{};
 
+	std::unique_ptr<worker_context_t> db_io_context_;
+	std::unique_ptr<work_guard_t> db_work_guard_;
+	std::unique_ptr<fw::thread_manager> db_thread_manager_{};
+
 	db_conn_str_list_t db_conn_str_list_{};
 	dbms_t dbms_{};
 	sql_registers_t sql_reigsters_{};
